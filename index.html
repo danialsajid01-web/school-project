@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
+    <style>
+        :root {
+            --primary: #0077b6;
+            --secondary: #0096c7;
+            --accent: #ffb703;
+            --success: #008037;
+            --danger: #d90429;
+            --warning: #f59e0b;
+            --bg-dark: #0a192f;
+            --bg-light: #f0f8ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            transition: background 0.8s ease;
+            overflow-x: hidden;
+        }
+
+        body.light-on { background-color: var(--bg-light); }
+
+        #toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .toast {
+            background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(12px); color: white; padding: 12px 20px;
+            border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-left: 4px solid var(--accent);
+            font-size: 13px; font-weight: 500; animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s forwards;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; position: relative;
+        }
+
+        .college-logo-preview {
+            width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--accent);
+            box-shadow: 0 0 30px rgba(255, 183, 3, 0.6); margin-bottom: 12px; background: white;
+            display: flex; align-items: center; justify-content: center; animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.03); } }
+
+        .lamp-container { position: relative; margin-bottom: 20px; cursor: pointer; animation: floatLogo 3s ease-in-out infinite; }
+        .lamp-wire { width: 4px; height: 40px; background: #475569; margin: 0 auto; }
+        .lamp-head { width: 80px; height: 45px; background: #1e293b; border-radius: 0 0 40px 40px; margin: 0 auto; position: relative; transition: background 0.4s; }
+        body.light-on .lamp-head { background: var(--accent); box-shadow: 0 0 35px var(--accent), 0 0 70px rgba(255, 183, 3, 0.6); }
+
+        .light-beam {
+            position: absolute; top: 240px; left: 50%; transform: translateX(-50%); width: 0px; height: 0px;
+            border-left: 90px solid transparent; border-right: 90px solid transparent; border-top: 0px solid rgba(255, 183, 3, 0);
+            transition: all 0.6s ease; pointer-events: none;
+        }
+        body.light-on .light-beam { border-top: 220px solid rgba(255, 183, 3, 0.15); filter: blur(10px); }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(14px); padding: 30px; border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1); width: 340px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        body.light-on .login-card { background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+        .login-card h2 { color: white; margin-top: 0; font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+        body.light-on .login-card h2 { color: var(--primary); }
+        .login-card p.sub-title { color: var(--accent); font-size: 13px; font-weight: 600; margin: 0 0 15px 0; }
+
+        .login-input, .login-select {
+            width: 100%; padding: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: white; box-sizing: border-box; outline: none;
+        }
+        body.light-on .login-input, body.light-on .login-select { background: #f8fafc; border: 1px solid #cbd5e0; color: #333; }
+
+        .login-btn {
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 119, 182, 0.3); transition: transform 0.2s;
+        }
+        .login-btn:hover { transform: translateY(-1px); }
+
+        /* --- DASHBOARD HEADER & NAVBAR --- */
+        #dashboard-screen { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        header {
+            background: linear-gradient(135deg, #005f73, #0a9396, var(--primary)); color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+            border-bottom: 5px solid var(--accent);
+        }
+        .header-left { display: flex; align-items: center; gap: 24px; }
+        .header-logo {
+            width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--accent);
+            box-shadow: 0 0 25px rgba(255, 183, 3, 0.7); background: white; display: flex; align-items: center; justify-content: center;
+        }
+        header h1 { margin: 0; font-size: 28px; font-weight: 800; text-transform: uppercase; }
+        header p { margin: 6px 0 0; font-size: 14px; color: var(--accent); font-weight: 700; }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none; padding: 10px 22px;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4);
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); display: flex; justify-content: space-between;
+            align-items: center; padding: 14px 35px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid rgba(255, 183, 3, 0.3);
+        }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 9px 14px;
+            font-size: 12px; font-weight: 600; color: #cbd5e1; cursor: pointer; border-radius: 8px; transition: all 0.3s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .nav-btn:hover { color: #ffffff; background: rgba(0, 119, 182, 0.25); border-color: rgba(0, 119, 182, 0.5); }
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #ffffff; border-color: var(--accent);
+            box-shadow: 0 6px 20px rgba(0, 119, 182, 0.5); font-weight: 700;
+        }
+        .role-badge { font-weight: 800; color: var(--accent); font-size: 12px; letter-spacing: 1px; padding: 7px 14px; background: rgba(255, 183, 3, 0.1); border-radius: 6px; border: 1px solid rgba(255, 183, 3, 0.3); text-transform: uppercase; }
+
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; animation: fadeInTab 0.4s ease; }
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: white; padding: 22px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px; border: 1px solid #e2e8f0; }
+        .card h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: 600; font-size: 12px; color: #4a5568; }
+        input, select, textarea { padding: 9px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1); }
+
+        button.submit-btn { background: var(--success); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        button.submit-btn:hover { opacity: 0.9; }
+
+        .btn-action { padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; margin-right: 4px; }
+        .btn-edit { background: var(--warning); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+
+        table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 13px; }
+        th { background-color: #f1f5f9; color: var(--primary); font-weight: 600; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="login-screen">
+        <div class="light-beam"></div>
+        <div class="college-logo-preview">
+            <svg width="120" height="120" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="5"/>
+                <text x="100" y="50" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+                <text x="100" y="70" fill="#ffb703" font-size="13" font-weight="bold" text-anchor="middle">MINCHINABAD</text>
+                <circle cx="100" cy="85" r="16" fill="#ffb703"/>
+                <text x="100" y="155" fill="#000000" font-size="22" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+            </svg>
+        </div>
+        
+        <div class="lamp-container" onclick="toggleLampAndLogin()" title="Click lamp to login">
+            <div class="lamp-wire"></div>
+            <div class="lamp-head"></div>
+        </div>
+
+        <div class="login-card">
+            <h2>City College Minchinabad</h2>
+            <p class="sub-title">Select Portal Role & Login</p>
+            <select id="login_role" class="login-select">
+                <option value="admin">Admin Portal</option>
+                <option value="principal">Principal Portal</option>
+                <option value="teacher">Teacher Portal</option>
+            </select>
+            <input type="text" id="username" class="login-input" placeholder="Username">
+            <input type="password" id="password" class="login-input" placeholder="Password">
+            <button class="login-btn" onclick="toggleLampAndLogin()">Turn On Light & Login</button>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 10px;">💡 Teachers will not see Fees and Expenses.</div>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD SCREEN ================= -->
+    <div id="dashboard-screen">
+        <header>
+            <div class="header-left">
+                <div class="header-logo">
+                    <svg width="75" height="75" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="6"/>
+                        <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+                        <text x="100" y="150" fill="#000000" font-size="24" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+                    </svg>
+                </div>
+                <div>
+                    <h1>City College Minchinabad (CHSS)</h1>
+                    <p>🎓 Faculty & Admin Management System</p>
+                </div>
+            </div>
+            <div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- DYNAMIC NAVBAR -->
+        <div class="navbar">
+            <div class="nav-links" id="navbarLinks">
+                <!-- Dynamically loaded based on role -->
+            </div>
+            <div class="role-badge" id="roleDisplayBadge">ADMIN</div>
+        </div>
+
+        <div class="container">
+            <!-- Analytics Cards (Hidden for Teachers) -->
+            <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
+                    <h2 id="stat_students" style="margin: 0; font-size: 24px;">0</h2>
+                </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #023e8a, #0077b6); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
+                    <h2 id="stat_teachers" style="margin: 0; font-size: 24px;">0</h2>
+                </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #008037, #028090); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
+                    <h2 id="stat_fees" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Expenses</h4>
+                    <h2 id="stat_expenses" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
+                    <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
+            </div>
+
+            <!-- STUDENTS TAB -->
+            <div id="students" class="tab-section active">
+                <div class="card">
+                    <h3 id="studentFormTitle">Register New Student</h3>
+                    <input type="hidden" id="edit_student_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
+                        <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
+                        <div class="form-group"><label>Class</label><select id="class_name">
+                            <option value="9th Class">9th Class</option>
+                            <option value="10th Class">10th Class</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                        </select></div>
+                        <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
+                        <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Address</label><input type="text" id="address" placeholder="Home Address / City"></div>
+                    </div>
+                    <button class="submit-btn" id="studentSubmitBtn" onclick="saveStudent()">Save Student Record</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Enrolled Students Directory</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="filter_class" onchange="fetchStudents()" style="padding: 5px; font-size: 12px;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
+                        </div>
+                    </h3>
+                    <table id="studentTable">
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Parent Name</th><th>Phone</th><th>Address</th><th>Actions</th></tr></thead>
+                        <tbody id="studentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TEACHERS TAB -->
+            <div id="teachers" class="tab-section">
+                <div class="card">
+                    <h3 id="teacherFormTitle">Register New Teacher</h3>
+                    <input type="hidden" id="edit_teacher_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Teacher Name</label><input type="text" id="t_name" placeholder="Sir Sajid"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="t_subject" placeholder="Computer Science"></div>
+                        <div class="form-group"><label>Phone</label><input type="text" id="t_phone" placeholder="03011223344"></div>
+                    </div>
+                    <button class="submit-btn" id="teacherSubmitBtn" onclick="saveTeacher()">Save Teacher Record</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Faculty Directory</span>
+                        <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export Excel</button>
+                    </h3>
+                    <table id="teacherTable">
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Subject</th><th>Phone</th><th>Actions</th></tr></thead>
+                        <tbody id="teacherTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GPS ATTENDANCE TAB (UPDATED WITH GEOFENCING & WEBCAM) -->
+            <div id="faculty-portal" class="tab-section">
+                <div class="card">
+                    <h3>Staff GPS Geofenced Self-Attendance & Webcam Verification</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="teacherPortalSelect">Select Teacher:</label>
+                            <select id="teacherPortalSelect" class="login-select" style="background:#fff; color:#333;">
+                                <option value="">-- Select Teacher --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="submit-btn" onclick="verifyAndMarkAttendance()">Verify Location & Capture Photo</button>
+                    
+                    <div id="camera-container" style="text-align: center; margin-top: 15px;">
+                        <video id="webcam" width="320" height="240" autoplay style="display:none; border-radius:5px; border:2px solid #ddd;"></video>
+                        <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
+                    </div>
+
+                    <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
+                </div>
+            </div>
+
+            <!-- STUDENT ATTENDANCE TAB -->
+            <div id="attendance" class="tab-section">
+                <div class="card">
+                    <h3>Mark Daily Student Attendance</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
+                        <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
+                    </div>
+                    <button class="submit-btn" onclick="markAttendance()">Submit Attendance</button>
+                </div>
+                <div class="card">
+                    <h3>Attendance Logs & WhatsApp Alerts</h3>
+                    <table id="attendanceTable">
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <tbody id="attendanceTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FEES TAB -->
+            <div id="fees" class="tab-section">
+                <div class="card">
+                    <h3>Fee Ledger Entry</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
+                        <div class="form-group"><label>Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="fee_date"></div>
+                    </div>
+                    <button class="submit-btn" onclick="addFee()">Save Fee Record</button>
+                </div>
+                <div class="card">
+                    <h3>Fee Collection Records</h3>
+                    <table id="feeTable">
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Amount</th><th>Status</th><th>Date</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <tbody id="feeTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MARKS TAB -->
+            <div id="marks" class="tab-section">
+                <div class="card">
+                    <h3>Exam Marks Entry</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Student ID</label><input type="number" id="marks_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="marks_subject" placeholder="Mathematics"></div>
+                        <div class="form-group"><label>Obtained Marks</label><input type="number" id="marks_obtained" placeholder="85"></div>
+                        <div class="form-group"><label>Total Marks</label><input type="number" id="total_marks" placeholder="100"></div>
+                    </div>
+                    <button class="submit-btn" onclick="addMarks()">Save Marks</button>
+                </div>
+                <div class="card">
+                    <h3>Exam Results Ledger</h3>
+                    <table id="marksTable">
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
+                        <tbody id="marksTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TIMETABLE TAB -->
+            <div id="timetable" class="tab-section">
+                <div class="card">
+                    <h3>Add Class Timetable</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Physics"></div>
+                        <div class="form-group"><label>Teacher Name</label><input type="text" id="tt_teacher" placeholder="Sir Sajid"></div>
+                        <div class="form-group"><label>Time Slot</label><input type="text" id="tt_time" placeholder="08:30 AM - 09:15 AM"></div>
+                    </div>
+                    <button class="submit-btn" onclick="addTimetable()">Save Timetable</button>
+                </div>
+                <div class="card">
+                    <h3>Master Timetable</h3>
+                    <table id="timetableTable">
+                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Actions</th></tr></thead>
+                        <tbody id="timetableTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EXPENSES TAB -->
+            <div id="expenses" class="tab-section">
+                <div class="card">
+                    <h3>College Expense / Salary Entry</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Title</label><input type="text" id="exp_title" placeholder="Utility Bills"></div>
+                        <div class="form-group"><label>Category</label><select id="exp_category"><option value="Salary">Salary</option><option value="Utility Bill">Utility Bill</option><option value="Maintenance">Maintenance</option><option value="Supplies">Supplies</option></select></div>
+                        <div class="form-group"><label>Amount (PKR)</label><input type="number" id="exp_amount" placeholder="30000"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="exp_date"></div>
+                    </div>
+                    <button class="submit-btn" onclick="addExpense()">Save Expense</button>
+                </div>
+                <div class="card">
+                    <h3>Financial Expense Ledger</h3>
+                    <table id="expenseTable">
+                        <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="expenseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ANNOUNCEMENTS TAB -->
+            <div id="announcements" class="tab-section">
+                <div class="card">
+                    <h3>Publish College Notice</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Notice Title</label><input type="text" id="ann_title" placeholder="Mid-Term Schedule"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="ann_date"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;"><label>Message</label><textarea id="ann_message" rows="3" placeholder="Write notice details..."></textarea></div>
+                    <button class="submit-btn" onclick="addAnnouncement()">Publish Notice</button>
+                </div>
+                <div class="card">
+                    <h3>Notice Board</h3>
+                    <table id="announcementTable">
+                        <thead><tr><th>ID</th><th>Title</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="announcementTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REPORT CARD TAB -->
+            <div id="report-card" class="tab-section">
+                <div class="card">
+                    <h3>Generate Student Report Card</h3>
+                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="number" id="rc_student_id" placeholder="Enter Student ID"></div></div>
+                    <button class="submit-btn" onclick="fetchReportCard()">Generate Report Card</button>
+                </div>
+                <div class="card" id="reportCardResult" style="display: none; background: #fff; border: 2px dashed var(--primary);">
+                    <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 15px;">
+                        <h2 style="color: var(--primary); margin: 0;">City College Minchinabad (CHSS)</h2>
+                        <p style="margin: 4px 0; color: #666; font-size: 13px;">Official Annual Examination Report Card</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px;">
+                        <div><strong>Student Name:</strong> <span id="rc_name"></span></div>
+                        <div><strong>Roll No:</strong> <span id="rc_roll"></span></div>
+                        <div><strong>Class:</strong> <span id="rc_class"></span></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Subject</th><th>Obtained Marks</th><th>Total Marks</th><th>Percentage</th></tr></thead>
+                        <tbody id="rcTableBody"></tbody>
+                    </table>
+                    <div style="margin-top: 15px; text-align: right;"><button class="submit-btn" onclick="window.print()">Print Report Card</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let currentUserRole = 'admin';
+
+    // School ki Exact GPS Coordinates (Minchinabad ke mutabiq set kar lein)
+    const SCHOOL_LAT = 30.1629886;  
+    const SCHOOL_LON = 73.5725527;  
+    const ALLOWED_RADIUS = 100;  // 100 Meters range
+
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `✅ <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function toggleLampAndLogin() {
+        currentUserRole = document.getElementById('login_role').value;
+        document.body.classList.add('light-on');
+        showToast(`Logged in as ${currentUserRole.toUpperCase()}`);
+        setTimeout(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'block';
+            setupNavbarByRole();
+            loadData();
+        }, 600);
+    }
+
+    function logout() {
+        document.body.classList.remove('light-on');
+        document.getElementById('dashboard-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        showToast("Logged out successfully!");
+    }
+
+    function setupNavbarByRole() {
+        const navbar = document.getElementById('navbarLinks');
+        document.getElementById('roleDisplayBadge').innerText = `${currentUserRole} PORTAL`;
+        
+        let navHtml = `<button class="nav-btn active" onclick="switchTab('students', this)">👨‍🎓 Students</button>
+                       <button class="nav-btn" onclick="switchTab('teachers', this)">👨‍🏫 Faculty</button>
+                       <button class="nav-btn" onclick="switchTab('faculty-portal', this)">📍 Staff GPS</button>
+                       <button class="nav-btn" onclick="switchTab('attendance', this)">📋 Attendance</button>`;
+        
+        if (currentUserRole !== 'teacher') {
+            navHtml += `<button class="nav-btn" onclick="switchTab('fees', this)">💳 Fees</button>`;
+        }
+        
+        navHtml += `<button class="nav-btn" onclick="switchTab('marks', this)">📊 Results</button>
+                    <button class="nav-btn" onclick="switchTab('timetable', this)">🕒 Timetable</button>`;
+        
+        if (currentUserRole !== 'teacher') {
+            navHtml += `<button class="nav-btn" onclick="switchTab('expenses', this)">💰 Expenses</button>`;
+        }
+        
+        navHtml += `<button class="nav-btn" onclick="switchTab('announcements', this)">📢 Notices</button>
+                    <button class="nav-btn" onclick="switchTab('report-card', this)">📜 Report Card</button>`;
+
+        navbar.innerHTML = navHtml;
+        document.getElementById('statsContainer').style.display = (currentUserRole === 'teacher') ? 'none' : 'grid';
+    }
+
+    function switchTab(tabId, btnElement) {
+        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    async function loadData() {
+        if(currentUserRole !== 'teacher') await fetchDashboardStats();
+        await fetchStudents();
+        await fetchTeachers();
+        if(currentUserRole !== 'teacher') await fetchFees();
+        await fetchMarks();
+        await fetchAttendance();
+        await fetchTimetable();
+        if(currentUserRole !== 'teacher') await fetchExpenses();
+        await fetchAnnouncements();
+    }
+
+    async function fetchDashboardStats() {
+        const res = await fetch('http://localhost:5000/dashboard-stats');
+        const data = await res.json();
+        document.getElementById('stat_students').innerText = data.totalStudents;
+        document.getElementById('stat_teachers').innerText = data.totalTeachers;
+        document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
+        document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
+        
+        // Net Balance Calculation (Fees Collected - Total Expenses)
+        const netBalance = data.totalFees - data.totalExpenses;
+        const balanceElement = document.getElementById('stat_balance');
+        balanceElement.innerText = `PKR ${netBalance}`;
+        
+        // Agar balance negative ho toh color warning/danger dikhayein
+        if(netBalance < 0) {
+            balanceElement.style.color = "#ffdddd";
+        } else {
+            balanceElement.style.color = "#ffffff";
+        }
+    }
+
+    async function fetchStudents() {
+        const selectedClass = document.getElementById('filter_class').value;
+        const url = selectedClass ? `http://localhost:5000/students?class=${encodeURIComponent(selectedClass)}` : 'http://localhost:5000/students';
+        const res = await fetch(url);
+        const data = await res.json();
+        const tbody = document.getElementById('studentTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+        data.forEach(s => {
+            tbody.innerHTML += `<tr>
+                <td>${s.id}</td><td>${s.name}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                <td>
+                    <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                    <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    async function saveStudent() {
+        const id = document.getElementById('edit_student_id').value;
+        const name = document.getElementById('name').value;
+        const roll_no = document.getElementById('roll_no').value;
+        const class_name = document.getElementById('class_name').value;
+        const parent_name = document.getElementById('parent_name').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+
+        if(!name || !roll_no) { alert('Fill out required fields!'); return; }
+
+        const endpoint = id ? `http://localhost:5000/update-student/${id}` : 'http://localhost:5000/add-student';
+        const method = id ? 'PUT' : 'POST';
+
+        await fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
+        });
+
+        resetStudentForm();
+        loadData();
+        showToast(id ? "Student updated successfully!" : "Student added successfully!");
+    }
+
+    function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
+        document.getElementById('edit_student_id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('roll_no').value = roll_no;
+        document.getElementById('class_name').value = class_name;
+        document.getElementById('parent_name').value = parent_name;
+        document.getElementById('phone').value = phone;
+        document.getElementById('address').value = address;
+        document.getElementById('studentFormTitle').innerText = "Edit Student Record";
+        document.getElementById('studentSubmitBtn').innerText = "Update Student";
+    }
+
+    function resetStudentForm() {
+        document.getElementById('edit_student_id').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('roll_no').value = '';
+        document.getElementById('parent_name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('studentFormTitle').innerText = "Register New Student";
+        document.getElementById('studentSubmitBtn').innerText = "Save Student Record";
+    }
+
+    async function fetchTeachers() {
+        const res = await fetch('http://localhost:5000/teachers');
+        const data = await res.json();
+        
+        const tbody = document.getElementById('teacherTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+        
+        const portalSelect = document.getElementById('teacherPortalSelect');
+        portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
+
+        data.forEach(t => {
+            tbody.innerHTML += `<tr>
+                <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
+                <td>
+                    <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
+                    <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
+                </td>
+            </tr>`;
+
+            let opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = `${t.name} (${t.subject})`;
+            portalSelect.appendChild(opt);
+        });
+    }
+
+    async function saveTeacher() {
+        const id = document.getElementById('edit_teacher_id').value;
+        const name = document.getElementById('t_name').value;
+        const subject = document.getElementById('t_subject').value;
+        const phone = document.getElementById('t_phone').value;
+
+        if(!name || !subject) { alert('Fill out required fields!'); return; }
+
+        const endpoint = id ? `http://localhost:5000/update-teacher/${id}` : 'http://localhost:5000/add-teacher';
+        const method = id ? 'PUT' : 'POST';
+
+        await fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, subject, phone})
+        });
+
+        document.getElementById('edit_teacher_id').value = '';
+        document.getElementById('t_name').value = '';
+        document.getElementById('t_subject').value = '';
+        document.getElementById('t_phone').value = '';
+        document.getElementById('teacherFormTitle').innerText = "Register New Teacher";
+        document.getElementById('teacherSubmitBtn').innerText = "Save Teacher Record";
+
+        loadData();
+        showToast("Teacher saved successfully!");
+    }
+
+    function editTeacher(id, name, subject, phone) {
+        document.getElementById('edit_teacher_id').value = id;
+        document.getElementById('t_name').value = name;
+        document.getElementById('t_subject').value = subject;
+        document.getElementById('t_phone').value = phone;
+        document.getElementById('teacherFormTitle').innerText = "Edit Teacher Record";
+        document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    }
+
+    function verifyAndMarkAttendance() {
+        const teacherId = document.getElementById('teacherPortalSelect').value;
+        const statusMsg = document.getElementById('location-status');
+
+        if (!teacherId) {
+            alert("Pehle apna naam (Teacher) select karein!");
+            return;
+        }
+
+        statusMsg.style.color = "blue";
+        statusMsg.textContent = "Location check ki ja rahi hai...";
+
+        if (!navigator.geolocation) {
+            alert("Aapka browser Geolocation support nahi karta.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+
+            const distance = calculateDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
+
+            if (distance > ALLOWED_RADIUS) {
+                statusMsg.style.color = "red";
+                statusMsg.textContent = `Aap college premises se bahar hain! (${Math.round(distance)} meters door). Attendance mark nahi ho sakti.`;
+                return;
+            }
+
+            statusMsg.style.color = "green";
+            statusMsg.textContent = "Location verified! Camera open ho raha hai...";
+            capturePhotoAndSubmit(teacherId, userLat, userLon);
+
+        }, (error) => {
+            statusMsg.style.color = "red";
+            statusMsg.textContent = "Location access error: " + error.message;
+        }, { enableHighAccuracy: true });
+    }
+
+    function capturePhotoAndSubmit(teacherId, lat, lon) {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('snapshot');
+        const statusMsg = document.getElementById('location-status');
+        
+        video.style.display = 'block';
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                
+                setTimeout(() => {
+                    const context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, 320, 240);
+                    const imageData = canvas.toDataURL('image/png');
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                    video.style.display = 'none';
+
+                    statusMsg.textContent = "Data server par bheja ja raha hai...";
+                    sendAttendanceToServer(teacherId, lat, lon, imageData);
+                }, 3000);
+            })
+            .catch(err => {
+                statusMsg.style.color = "red";
+                statusMsg.textContent = "Camera access nahi mil saka: " + err;
+            });
+    }
+
+    function sendAttendanceToServer(teacherId, lat, lon, photoData) {
+        fetch('http://localhost:5000/mark-teacher-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                teacher_id: teacherId,
+                latitude: lat,
+                longitude: lon,
+                photo: photoData
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('location-status').style.color = "green";
+            document.getElementById('location-status').textContent = data.message || "Attendance successfully marked!";
+            showToast("Faculty attendance marked successfully!");
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            document.getElementById('location-status').style.color = "red";
+            document.getElementById('location-status').textContent = "Server error!";
+        });
+    }
+
+    async function fetchFees() {
+        const res = await fetch('http://localhost:5000/fees');
+        const data = await res.json();
+        const tbody = document.getElementById('feeTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
+        data.forEach(f => {
+            const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+            const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+            tbody.innerHTML += `<tr><td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>PKR ${f.amount}</td><td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function fetchMarks() {
+        const res = await fetch('http://localhost:5000/marks');
+        const data = await res.json();
+        const tbody = document.getElementById('marksTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
+        data.forEach(m => {
+            tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function fetchAttendance() {
+        const res = await fetch('http://localhost:5000/all-attendance');
+        const data = await res.json();
+        const tbody = document.getElementById('attendanceTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+        data.forEach(rec => {
+            const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
+            const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} on ${rec.date.split('T')[0]}. - CHSS`);
+            tbody.innerHTML += `<tr><td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.date.split('T')[0]}</td><td><span class="${statusClass}">${rec.status}</span></td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function fetchTimetable() {
+        const res = await fetch('http://localhost:5000/timetable');
+        const data = await res.json();
+        const tbody = document.getElementById('timetableTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
+        data.forEach(t => {
+            tbody.innerHTML += `<tr><td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function fetchExpenses() {
+        const res = await fetch('http://localhost:5000/expenses');
+        const data = await res.json();
+        const tbody = document.getElementById('expenseTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
+        data.forEach(e => {
+            tbody.innerHTML += `<tr><td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function fetchAnnouncements() {
+        const res = await fetch('http://localhost:5000/announcements');
+        const data = await res.json();
+        const tbody = document.getElementById('announcementTableBody');
+        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
+        data.forEach(a => {
+            tbody.innerHTML += `<tr><td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button></td></tr>`;
+        });
+    }
+
+    async function deleteRecord(category, id) {
+        if(!confirm(`Are you sure you want to delete this ${category} record?`)) return;
+        let endpoint = '';
+        switch(category) {
+            case 'student': endpoint = `delete-student/${id}`; break;
+            case 'teacher': endpoint = `delete-teacher/${id}`; break;
+            case 'fee': endpoint = `delete-fee/${id}`; break;
+            case 'marks': endpoint = `delete-marks/${id}`; break;
+            case 'attendance': endpoint = `delete-attendance/${id}`; break;
+            case 'timetable': endpoint = `delete-timetable/${id}`; break;
+            case 'expense': endpoint = `delete-expense/${id}`; break;
+            case 'announcement': endpoint = `delete-announcement/${id}`; break;
+        }
+        const res = await fetch(`http://localhost:5000/${endpoint}`, { method: 'DELETE' });
+        if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
+    }
+
+    function exportTableToExcel(tableID, filename = ''){
+        var downloadLink;
+        var dataType = 'application/vnd.ms-excel';
+        var tableSelect = document.getElementById(tableID);
+        var tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/g, '');
+
+        filename = filename ? filename+'_data.xls' : 'excel_data.xls';
+        downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+
+        if(navigator.msSaveOrOpenBlob){
+            var blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+            navigator.msSaveOrOpenBlob(blob, filename);
+        } else{
+            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
+            downloadLink.download = filename;
+            downloadLink.click();
+        }
+    }
+
+    async function fetchReportCard() {
+        const studentId = document.getElementById('rc_student_id').value;
+        if(!studentId) { alert('Please enter Student ID!'); return; }
+        const res = await fetch(`http://localhost:5000/report-card/${studentId}`);
+        if(!res.ok) { alert('Student not found!'); return; }
+        const data = await res.json();
+        document.getElementById('rc_name').innerText = data.student.name;
+        document.getElementById('rc_roll').innerText = data.student.roll_no;
+        document.getElementById('rc_class').innerText = data.student.class;
+        const tbody = document.getElementById('rcTableBody');
+        tbody.innerHTML = '';
+        data.marks.forEach(m => {
+            const percentage = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
+            tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${percentage}%</td></tr>`;
+        });
+        document.getElementById('reportCardResult').style.display = 'block';
+    }
+
+    async function addFee() {
+        const student_id = document.getElementById('fee_student_id').value;
+        const amount = document.getElementById('fee_amount').value;
+        const status = document.getElementById('fee_status').value;
+        const date = document.getElementById('fee_date').value;
+        await fetch('http://localhost:5000/add-fee', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) });
+        loadData(); showToast("Fee saved!");
+    }
+
+    async function addMarks() {
+        const student_id = document.getElementById('marks_student_id').value;
+        const subject = document.getElementById('marks_subject').value;
+        const marks_obtained = document.getElementById('marks_obtained').value;
+        const total_marks = document.getElementById('total_marks').value;
+        await fetch('http://localhost:5000/add-marks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) });
+        loadData(); showToast("Marks saved!");
+    }
+
+    async function markAttendance() {
+        const student_id = document.getElementById('att_student_id').value;
+        const date = document.getElementById('att_date').value;
+        const status = document.getElementById('att_status').value;
+        await fetch('http://localhost:5000/mark-attendance', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
+        loadData(); showToast("Attendance marked!");
+    }
+
+    async function addTimetable() {
+        const class_name = document.getElementById('tt_class').value;
+        const subject = document.getElementById('tt_subject').value;
+        const teacher_name = document.getElementById('tt_teacher').value;
+        const time_slot = document.getElementById('tt_time').value;
+        await fetch('http://localhost:5000/add-timetable', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) });
+        loadData(); showToast("Timetable saved!");
+    }
+
+    async function addExpense() {
+        const title = document.getElementById('exp_title').value;
+        const category = document.getElementById('exp_category').value;
+        const amount = document.getElementById('exp_amount').value;
+        const date = document.getElementById('exp_date').value;
+        await fetch('http://localhost:5000/add-expense', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) });
+        loadData(); showToast("Expense saved!");
+    }
+
+    async function addAnnouncement() {
+        const title = document.getElementById('ann_title').value;
+        const message = document.getElementById('ann_message').value;
+        const date = document.getElementById('ann_date').value;
+        await fetch('http://localhost:5000/announcements', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) });
+        loadData(); showToast("Notice published!");
+    }
+</script>
+
+</body>
+</html>
