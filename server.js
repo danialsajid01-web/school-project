@@ -16,7 +16,11 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // Database connection setup
 const dbPath = process.env.PORT ? '/tmp/school.db' : './school.db';
 const db = new sqlite3.Database(dbPath, (err) => {
-    else console.log("Connected to SQLite database.");
+  if (err) {
+    console.error("Database opening error: " + err.message);
+  } else {
+    console.log("Connected to SQLite database.");
+  }
 });
 
 // Tables creation
