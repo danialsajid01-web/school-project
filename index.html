@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
+    
+    <!-- Live Railway Backend API URL Configuration -->
+    <script>
+        const API_URL = 'https://school-project-production-3962.up.railway.app';
+    </script>
+
     <style>
         :root {
             --primary: #0077b6;
@@ -219,14 +225,12 @@
 
         <!-- DYNAMIC NAVBAR -->
         <div class="navbar">
-            <div class="nav-links" id="navbarLinks">
-                <!-- Dynamically loaded based on role -->
-            </div>
+            <div class="nav-links" id="navbarLinks"></div>
             <div class="role-badge" id="roleDisplayBadge">ADMIN</div>
         </div>
 
         <div class="container">
-            <!-- Analytics Cards (Hidden for Teachers) -->
+            <!-- Analytics Cards -->
             <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
@@ -315,7 +319,7 @@
                 </div>
             </div>
 
-            <!-- GPS ATTENDANCE TAB (UPDATED WITH GEOFENCING & WEBCAM) -->
+            <!-- GPS ATTENDANCE TAB -->
             <div id="faculty-portal" class="tab-section">
                 <div class="card">
                     <h3>Staff GPS Geofenced Self-Attendance & Webcam Verification</h3>
@@ -492,10 +496,9 @@
 <script>
     let currentUserRole = 'admin';
 
-    // School ki Exact GPS Coordinates (Minchinabad ke mutabiq set kar lein)
     const SCHOOL_LAT = 30.1629886;  
     const SCHOOL_LON = 73.5725527;  
-    const ALLOWED_RADIUS = 100;  // 100 Meters range
+    const ALLOWED_RADIUS = 100;
 
     function showToast(message) {
         const container = document.getElementById('toast-container');
@@ -572,29 +575,22 @@
     }
 
     async function fetchDashboardStats() {
-        const res = await fetch('http://localhost:5000/dashboard-stats');
+        const res = await fetch(`${API_URL}/dashboard-stats`);
         const data = await res.json();
         document.getElementById('stat_students').innerText = data.totalStudents;
         document.getElementById('stat_teachers').innerText = data.totalTeachers;
         document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
         document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
         
-        // Net Balance Calculation (Fees Collected - Total Expenses)
         const netBalance = data.totalFees - data.totalExpenses;
         const balanceElement = document.getElementById('stat_balance');
         balanceElement.innerText = `PKR ${netBalance}`;
-        
-        // Agar balance negative ho toh color warning/danger dikhayein
-        if(netBalance < 0) {
-            balanceElement.style.color = "#ffdddd";
-        } else {
-            balanceElement.style.color = "#ffffff";
-        }
+        balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
     }
 
     async function fetchStudents() {
         const selectedClass = document.getElementById('filter_class').value;
-        const url = selectedClass ? `http://localhost:5000/students?class=${encodeURIComponent(selectedClass)}` : 'http://localhost:5000/students';
+        const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
         const res = await fetch(url);
         const data = await res.json();
         const tbody = document.getElementById('studentTableBody');
@@ -621,7 +617,7 @@
 
         if(!name || !roll_no) { alert('Fill out required fields!'); return; }
 
-        const endpoint = id ? `http://localhost:5000/update-student/${id}` : 'http://localhost:5000/add-student';
+        const endpoint = id ? `${API_URL}/update-student/${id}` : `${API_URL}/add-student`;
         const method = id ? 'PUT' : 'POST';
 
         await fetch(endpoint, {
@@ -659,7 +655,7 @@
     }
 
     async function fetchTeachers() {
-        const res = await fetch('http://localhost:5000/teachers');
+        const res = await fetch(`${API_URL}/teachers`);
         const data = await res.json();
         
         const tbody = document.getElementById('teacherTableBody');
@@ -692,7 +688,7 @@
 
         if(!name || !subject) { alert('Fill out required fields!'); return; }
 
-        const endpoint = id ? `http://localhost:5000/update-teacher/${id}` : 'http://localhost:5000/add-teacher';
+        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
         const method = id ? 'PUT' : 'POST';
 
         await fetch(endpoint, {
@@ -805,7 +801,7 @@
     }
 
     function sendAttendanceToServer(teacherId, lat, lon, photoData) {
-        fetch('http://localhost:5000/mark-teacher-attendance', {
+        fetch(`${API_URL}/mark-teacher-attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -829,7 +825,7 @@
     }
 
     async function fetchFees() {
-        const res = await fetch('http://localhost:5000/fees');
+        const res = await fetch(`${API_URL}/fees`);
         const data = await res.json();
         const tbody = document.getElementById('feeTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
@@ -841,7 +837,7 @@
     }
 
     async function fetchMarks() {
-        const res = await fetch('http://localhost:5000/marks');
+        const res = await fetch(`${API_URL}/marks`);
         const data = await res.json();
         const tbody = document.getElementById('marksTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
@@ -851,7 +847,7 @@
     }
 
     async function fetchAttendance() {
-        const res = await fetch('http://localhost:5000/all-attendance');
+        const res = await fetch(`${API_URL}/all-attendance`);
         const data = await res.json();
         const tbody = document.getElementById('attendanceTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
@@ -863,7 +859,7 @@
     }
 
     async function fetchTimetable() {
-        const res = await fetch('http://localhost:5000/timetable');
+        const res = await fetch(`${API_URL}/timetable`);
         const data = await res.json();
         const tbody = document.getElementById('timetableTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
@@ -873,7 +869,7 @@
     }
 
     async function fetchExpenses() {
-        const res = await fetch('http://localhost:5000/expenses');
+        const res = await fetch(`${API_URL}/expenses`);
         const data = await res.json();
         const tbody = document.getElementById('expenseTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
@@ -883,7 +879,7 @@
     }
 
     async function fetchAnnouncements() {
-        const res = await fetch('http://localhost:5000/announcements');
+        const res = await fetch(`${API_URL}/announcements`);
         const data = await res.json();
         const tbody = document.getElementById('announcementTableBody');
         tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
@@ -905,7 +901,7 @@
             case 'expense': endpoint = `delete-expense/${id}`; break;
             case 'announcement': endpoint = `delete-announcement/${id}`; break;
         }
-        const res = await fetch(`http://localhost:5000/${endpoint}`, { method: 'DELETE' });
+        const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
         if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
     }
 
@@ -932,7 +928,7 @@
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert('Please enter Student ID!'); return; }
-        const res = await fetch(`http://localhost:5000/report-card/${studentId}`);
+        const res = await fetch(`${API_URL}/report-card/${studentId}`);
         if(!res.ok) { alert('Student not found!'); return; }
         const data = await res.json();
         document.getElementById('rc_name').innerText = data.student.name;
@@ -952,7 +948,7 @@
         const amount = document.getElementById('fee_amount').value;
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
-        await fetch('http://localhost:5000/add-fee', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) });
+        await fetch(`${API_URL}/add-fee`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) });
         loadData(); showToast("Fee saved!");
     }
 
@@ -961,7 +957,7 @@
         const subject = document.getElementById('marks_subject').value;
         const marks_obtained = document.getElementById('marks_obtained').value;
         const total_marks = document.getElementById('total_marks').value;
-        await fetch('http://localhost:5000/add-marks', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) });
+        await fetch(`${API_URL}/add-marks`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) });
         loadData(); showToast("Marks saved!");
     }
 
@@ -969,7 +965,7 @@
         const student_id = document.getElementById('att_student_id').value;
         const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
-        await fetch('http://localhost:5000/mark-attendance', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
+        await fetch(`${API_URL}/mark-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
         loadData(); showToast("Attendance marked!");
     }
 
@@ -978,7 +974,7 @@
         const subject = document.getElementById('tt_subject').value;
         const teacher_name = document.getElementById('tt_teacher').value;
         const time_slot = document.getElementById('tt_time').value;
-        await fetch('http://localhost:5000/add-timetable', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) });
+        await fetch(`${API_URL}/add-timetable`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) });
         loadData(); showToast("Timetable saved!");
     }
 
@@ -987,7 +983,7 @@
         const category = document.getElementById('exp_category').value;
         const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
-        await fetch('http://localhost:5000/add-expense', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) });
+        await fetch(`${API_URL}/add-expense`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) });
         loadData(); showToast("Expense saved!");
     }
 
@@ -995,7 +991,7 @@
         const title = document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
-        await fetch('http://localhost:5000/announcements', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) });
+        await fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) });
         loadData(); showToast("Notice published!");
     }
 </script>
