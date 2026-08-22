@@ -4,6 +4,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
+app.get('/', (req, res) => {
+  res.send('School Project Backend is Running Successfully!');
+});
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -11,8 +14,8 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Database connection setup
-const db = new sqlite3.Database('./school.db', (err) => {
-    if (err) console.error("Database opening error: " + err.message);
+const dbPath = process.env.PORT ? '/tmp/school.db' : './school.db';
+const db = new sqlite3.Database(dbPath, (err) => {
     else console.log("Connected to SQLite database.");
 });
 
