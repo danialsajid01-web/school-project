@@ -141,7 +141,12 @@
         @keyframes fadeInTab { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: white; padding: 22px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px; border: 1px solid #e2e8f0; }
-        .card h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Updated Card Heading Style to properly fit Search & Filters */
+        .card h3 { 
+            margin-top: 0; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 12px; font-size: 16px; 
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
         .form-group { display: flex; flex-direction: column; }
@@ -151,7 +156,7 @@
 
         /* Search Box styling */
         .search-box {
-            padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 220px; outline: none;
+            padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 180px; outline: none; background: #fff;
         }
         .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.1); }
 
@@ -300,9 +305,9 @@
                 <div class="card">
                     <h3>
                         <span>Enrolled Students Directory</span>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <input type="text" id="search_student" class="search-box" placeholder="🔍 Search student name/roll..." onkeyup="filterTable('studentTable', this)">
-                            <select id="filter_class" onchange="fetchStudents()" style="padding: 5px; font-size: 12px;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
+                            <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
@@ -334,8 +339,8 @@
                 <div class="card">
                     <h3>
                         <span>Faculty Directory</span>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="search_teacher" class="search-box" placeholder="🔍 Search teacher/subject..." onkeyup="filterTable('teacherTable', this)">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_teacher" class="search-box" placeholder="🔍 Search teacher..." onkeyup="filterTable('teacherTable', this)">
                             <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
@@ -431,7 +436,7 @@
                 <div class="card">
                     <h3>
                         <span>Exam Results Ledger</span>
-                        <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results/subject..." onkeyup="filterTable('marksTable', this)">
+                        <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
                     </h3>
                     <table id="marksTable">
                         <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
@@ -1030,7 +1035,7 @@
 
     async function markAttendance() {
         const student_id = document.getElementById('att_student_id').value;
-        const date = document.getElementById('att_dateль').value;
+        const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
         await fetch(`${API_URL}/mark-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
         loadData(); showToast("Attendance marked!");
