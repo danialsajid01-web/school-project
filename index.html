@@ -163,6 +163,28 @@
         tr:nth-child(even) { background-color: #f8fafc; }
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+   @media print {
+  /* Website ke tamam baqi elements chhupa dein */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Sirf report card aur uske andar ka content visible ho */
+  #reportCardContainer, #reportCardContainer * {
+    visibility: visible;
+  }
+  
+  /* Report card ko bilkul page ke upar set karne ke liye */
+  #reportCardContainer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+    
     </style>
 </head>
 <body>
