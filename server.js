@@ -207,8 +207,9 @@ app.delete('/delete-marks/:id', (req, res) => {
 
 // --- Attendance APIs ---
 app.get('/all-attendance', (req, res) => {
-  db.all(`SELECT attendance.*, students.name, students.roll_no FROM attendance JOIN students ON attendance.student_id = students.id`, [], (rows) => {
-    res.json(rows);
+  db.all(`SELECT attendance.*, students.name, students.roll_no FROM attendance JOIN students ON attendance.student_id = students.id`, [], (err, rows) => {
+    if (err) res.status(500).json({ error: err.message });
+    else res.json(rows);
   });
 });
 
@@ -237,7 +238,6 @@ app.get('/timetable', (req, res) => {
 
 app.post('/add-timetable', (req, res) => {
   const { class_name, subject, teacher_name, time_slot } = req.body;
-  db.run(`CREATE TABLE IF NOT EXISTS timetable (id INTEGER PRIMARY KEY AUTOINCREMENT, class_name TEXT, subject TEXT, teacher_name TEXT, time_slot TEXT)`);
   db.run(`INSERT INTO timetable (class_name, subject, teacher_name, time_slot) VALUES (?, ?, ?, ?)`, [class_name, subject, teacher_name, time_slot], (err) => {
     if (err) res.status(500).json({ error: err.message });
     else res.json({ message: "Timetable added" });
@@ -295,6 +295,30 @@ app.delete('/delete-announcement/:id', (req, res) => {
     if (err) res.status(500).json({ error: err.message });
     else res.json({ message: "Notice deleted" });
   });
+});
+
+// --- REPORT CARD API (Added) ---
+app.get('/report-card/:id', (req, res) => {
+    const studentId = req.params.id;
+    
+    db.get(`SELECT * FROM students WHERE id = ?`, [studentId], (err, student) => {
+        if (err || !student) {
+            return res.status(404).json({ error: "Student not found!" });
+        }
+        
+        db.all(`SELECT * FROM marks WHERE student_id = ?`, [studentId], (err, marks) => {
+            db.all(`SELECT * FROM attendance WHERE student_id = ?`, [studentId], (err, attendance) => {
+                db.all(`SELECT * FROM fees WHERE student_id = ?`, [studentId], (err, fees) => {
+                    res.json({
+                        student: student,
+                        marks: marks || [],
+                        attendance: attendance || [],
+                        fees: fees || []
+                    });
+                });
+            });
+        });
+    });
 });
 
 // Start Server with PORT
