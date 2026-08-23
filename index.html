@@ -149,6 +149,12 @@
         input, select, textarea { padding: 9px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1); }
 
+        /* Search Box styling */
+        .search-box {
+            padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 220px; outline: none;
+        }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.1); }
+
         button.submit-btn { background: var(--success); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 600; }
         button.submit-btn:hover { opacity: 0.9; }
 
@@ -163,88 +169,23 @@
         tr:nth-child(even) { background-color: #f8fafc; }
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+    
     @media print {
-    /* 1. Baqi poori website hide kar dein */
-    body * {
-        visibility: hidden;
+        body * { visibility: hidden; }
+        #reportCardContainer, #reportCardContainer * { visibility: visible; }
+        #reportCardContainer {
+            position: absolute; left: 0; top: 0; width: 100% !important; background: #ffffff !important;
+            border: 2px dashed #0077b6 !important; border-radius: 12px !important; padding: 30px !important; box-shadow: none !important; margin: 0 !important;
+        }
+        #reportCardContainer h2 { color: #0077b6 !important; font-size: 26px !important; text-align: center !important; }
+        #reportCardContainer p { color: #333333 !important; text-align: center !important; }
+        #reportCardContainer div[style*="display: flex"] { display: flex !important; justify-content: space-between !important; background: #f8fafc !important; padding: 12px 20px !important; border-radius: 8px !important; margin: 15px 0 !important; border: 1px solid #e2e8f0 !important; }
+        #reportCardContainer table { width: 100% !important; border-collapse: collapse !important; margin-top: 15px !important; }
+        #reportCardContainer th { background-color: #f1f5f9 !important; color: #0077b6 !important; border: 1px solid #cbd5e0 !important; padding: 12px !important; text-align: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #reportCardContainer td { border: 1px solid #cbd5e0 !important; padding: 12px !important; text-align: center !important; color: #333333 !important; }
+        #reportCardContainer button { display: none !important; }
+        @page { size: A4; margin: 1.5cm; }
     }
-    
-    /* 2. Sirf Report Card ko visible karein */
-    #reportCardContainer, #reportCardContainer * {
-        visibility: visible;
-    }
-    
-    /* 3. Print container ko screen jaisi styling dein */
-    #reportCardContainer {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100% !important;
-        background: #ffffff !important;
-        border: 2px dashed #0077b6 !important;
-        border-radius: 12px !important;
-        padding: 30px !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-    }
-    
-    /* Header title aur college name */
-    #reportCardContainer h2 {
-        color: #0077b6 !important;
-        font-size: 26px !important;
-        text-align: center !important;
-    }
-    
-    #reportCardContainer p {
-        color: #333333 !important;
-        text-align: center !important;
-    }
-
-    /* Student info section styling */
-    #reportCardContainer div[style*="display: flex"] {
-        display: flex !important;
-        justify-content: space-between !important;
-        background: #f8fafc !important;
-        padding: 12px 20px !important;
-        border-radius: 8px !important;
-        margin: 15px 0 !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    /* Tables ko screen ki tarah professional look dein */
-    #reportCardContainer table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin-top: 15px !important;
-    }
-    
-    #reportCardContainer th {
-        background-color: #f1f5f9 !important;
-        color: #0077b6 !important;
-        border: 1px solid #cbd5e0 !important;
-        padding: 12px !important;
-        text-align: center !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    #reportCardContainer td {
-        border: 1px solid #cbd5e0 !important;
-        padding: 12px !important;
-        text-align: center !important;
-        color: #333333 !important;
-    }
-    
-    /* Print button ko print mein chupayein */
-    #reportCardContainer button {
-        display: none !important;
-    }
-    
-    @page {
-        size: A4;
-        margin: 1.5cm;
-    }
-}
     </style>
 </head>
 <body>
@@ -359,7 +300,8 @@
                 <div class="card">
                     <h3>
                         <span>Enrolled Students Directory</span>
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_student" class="search-box" placeholder="🔍 Search student name/roll..." onkeyup="filterTable('studentTable', this)">
                             <select id="filter_class" onchange="fetchStudents()" style="padding: 5px; font-size: 12px;">
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
@@ -392,7 +334,10 @@
                 <div class="card">
                     <h3>
                         <span>Faculty Directory</span>
-                        <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export Excel</button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="search_teacher" class="search-box" placeholder="🔍 Search teacher/subject..." onkeyup="filterTable('teacherTable', this)">
+                            <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="teacherTable">
                         <thead><tr><th>ID</th><th>Teacher Name</th><th>Subject</th><th>Phone</th><th>Actions</th></tr></thead>
@@ -436,7 +381,10 @@
                     <button class="submit-btn" onclick="markAttendance()">Submit Attendance</button>
                 </div>
                 <div class="card">
-                    <h3>Attendance Logs & WhatsApp Alerts</h3>
+                    <h3>
+                        <span>Attendance Logs & WhatsApp Alerts</span>
+                        <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search attendance..." onkeyup="filterTable('attendanceTable', this)">
+                    </h3>
                     <table id="attendanceTable">
                         <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="attendanceTableBody"></tbody>
@@ -457,7 +405,10 @@
                     <button class="submit-btn" onclick="addFee()">Save Fee Record</button>
                 </div>
                 <div class="card">
-                    <h3>Fee Collection Records</h3>
+                    <h3>
+                        <span>Fee Collection Records</span>
+                        <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee status..." onkeyup="filterTable('feeTable', this)">
+                    </h3>
                     <table id="feeTable">
                         <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Amount</th><th>Status</th><th>Date</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="feeTableBody"></tbody>
@@ -478,7 +429,10 @@
                     <button class="submit-btn" onclick="addMarks()">Save Marks</button>
                 </div>
                 <div class="card">
-                    <h3>Exam Results Ledger</h3>
+                    <h3>
+                        <span>Exam Results Ledger</span>
+                        <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results/subject..." onkeyup="filterTable('marksTable', this)">
+                    </h3>
                     <table id="marksTable">
                         <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
                         <tbody id="marksTableBody"></tbody>
@@ -499,7 +453,10 @@
                     <button class="submit-btn" onclick="addTimetable()">Save Timetable</button>
                 </div>
                 <div class="card">
-                    <h3>Master Timetable</h3>
+                    <h3>
+                        <span>Master Timetable</span>
+                        <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search timetable..." onkeyup="filterTable('timetableTable', this)">
+                    </h3>
                     <table id="timetableTable">
                         <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Actions</th></tr></thead>
                         <tbody id="timetableTableBody"></tbody>
@@ -520,7 +477,10 @@
                     <button class="submit-btn" onclick="addExpense()">Save Expense</button>
                 </div>
                 <div class="card">
-                    <h3>Financial Expense Ledger</h3>
+                    <h3>
+                        <span>Financial Expense Ledger</span>
+                        <input type="text" id="search_expense" class="search-box" placeholder="🔍 Search expenses..." onkeyup="filterTable('expenseTable', this)">
+                    </h3>
                     <table id="expenseTable">
                         <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="expenseTableBody"></tbody>
@@ -540,7 +500,10 @@
                     <button class="submit-btn" onclick="addAnnouncement()">Publish Notice</button>
                 </div>
                 <div class="card">
-                    <h3>Notice Board</h3>
+                    <h3>
+                        <span>Notice Board</span>
+                        <input type="text" id="search_announcement" class="search-box" placeholder="🔍 Search notices..." onkeyup="filterTable('announcementTable', this)">
+                    </h3>
                     <table id="announcementTable">
                         <thead><tr><th>ID</th><th>Title</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="announcementTableBody"></tbody>
@@ -642,6 +605,28 @@
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
+    }
+
+    // Universal Table Filter / Search Function
+    function filterTable(tableID, searchInput) {
+        const filter = searchInput.value.toLowerCase();
+        const table = document.getElementById(tableID);
+        const trs = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < trs.length; i++) {
+            let visible = false;
+            const tds = trs[i].getElementsByTagName('td');
+            for (let j = 0; j < tds.length; j++) {
+                if (tds[j]) {
+                    const textValue = tds[j].textContent || tds[j].innerText;
+                    if (textValue.toLowerCase().indexOf(filter) > -1) {
+                        visible = true;
+                        break;
+                    }
+                }
+            }
+            trs[i].style.display = visible ? '' : 'none';
+        }
     }
 
     async function loadData() {
@@ -1045,7 +1030,7 @@
 
     async function markAttendance() {
         const student_id = document.getElementById('att_student_id').value;
-        const date = document.getElementById('att_date').value;
+        const date = document.getElementById('att_dateль').value;
         const status = document.getElementById('att_status').value;
         await fetch(`${API_URL}/mark-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
         loadData(); showToast("Attendance marked!");
