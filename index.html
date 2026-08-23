@@ -163,98 +163,88 @@
         tr:nth-child(even) { background-color: #f8fafc; }
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-      @media print {
-    /* 1. Website ke tamam baqi elements ko hide (chhupa) dein */
+    @media print {
+    /* 1. Baqi poori website hide kar dein */
     body * {
         visibility: hidden;
-        margin: 0;
-        padding: 0;
     }
     
-    /* 2. Sirf Report Card wala container aur uske andar ka content visible ho */
+    /* 2. Sirf Report Card ko visible karein */
     #reportCardContainer, #reportCardContainer * {
         visibility: visible;
     }
     
-    /* 3. Report card ki style ko professional aur pyara banayein */
+    /* 3. Print container ko screen jaisi styling dein */
     #reportCardContainer {
         position: absolute;
         left: 0;
         top: 0;
-        width: 100%;
-        height: auto;
-        border: 2px solid #0077b6 !important; /* Primary color border */
+        width: 100% !important;
+        background: #ffffff !important;
+        border: 2px dashed #0077b6 !important;
+        border-radius: 12px !important;
+        padding: 30px !important;
         box-shadow: none !important;
-        padding: 20px;
-        background: #fff;
-        font-family: 'Times New Roman', serif; /* Professional font for print */
-        box-sizing: border-box;
-    }
-    
-    /* College ka Header */
-    #reportCardContainer div:first-child {
-        border-bottom: 2px solid #0077b6 !important;
-        padding-bottom: 15px !important;
-        margin-bottom: 20px !important;
-    }
-    
-    #reportCardContainer h2 {
-        font-size: 24px !important;
-        color: #0077b6 !important;
         margin: 0 !important;
-        font-weight: bold !important;
+    }
+    
+    /* Header title aur college name */
+    #reportCardContainer h2 {
+        color: #0077b6 !important;
+        font-size: 26px !important;
+        text-align: center !important;
     }
     
     #reportCardContainer p {
-        font-size: 16px !important;
-        color: #333 !important;
-        margin: 5px 0 0 !important;
+        color: #333333 !important;
+        text-align: center !important;
     }
-    
-    /* Student Info Section */
+
+    /* Student info section styling */
     #reportCardContainer div[style*="display: flex"] {
-        margin-bottom: 20px !important;
-        font-size: 14px !important;
-        color: #333 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        background: #f8fafc !important;
+        padding: 12px 20px !important;
+        border-radius: 8px !important;
+        margin: 15px 0 !important;
+        border: 1px solid #e2e8f0 !important;
     }
     
-    #reportCardContainer div strong {
-        font-weight: bold !important;
-    }
-    
-    /* 4. Report Card Marks Table ko Clean Design dein */
+    /* Tables ko screen ki tarah professional look dein */
     #reportCardContainer table {
         width: 100% !important;
         border-collapse: collapse !important;
-        margin-top: 10px !important;
-        page-break-inside: avoid !important; /* Table ko beech mein se break hone se bachaye */
-    }
-    
-    #reportCardContainer th, 
-    #reportCardContainer td {
-        border: 1px solid #666 !important; /* Dark border for print */
-        padding: 10px !important;
-        text-align: center !important;
-        font-size: 14px !important;
-        color: #000 !important;
+        margin-top: 15px !important;
     }
     
     #reportCardContainer th {
-        background-color: #eee !important; /* Light grey header */
-        font-weight: bold !important;
+        background-color: #f1f5f9 !important;
+        color: #0077b6 !important;
+        border: 1px solid #cbd5e0 !important;
+        padding: 12px !important;
+        text-align: center !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
     
-    /* Print Button ko chhupa dein */
+    #reportCardContainer td {
+        border: 1px solid #cbd5e0 !important;
+        padding: 12px !important;
+        text-align: center !important;
+        color: #333333 !important;
+    }
+    
+    /* Print button ko print mein chupayein */
     #reportCardContainer button {
         display: none !important;
     }
     
-    /* Aakhri hissa: Page numbers aur URL remove karein */
     @page {
-        margin: 1cm; /* Optional: Print margins adjust karein */
-        size: auto;   /* Auto size (A4) */
+        size: A4;
+        margin: 1.5cm;
     }
-} 
+}
     </style>
 </head>
 <body>
