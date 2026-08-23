@@ -97,7 +97,7 @@
         .login-btn:hover { transform: translateY(-1px); }
 
         /* --- DASHBOARD HEADER & NAVBAR --- */
-        #dashboard-screen { display: none; animation: fadeIn 0.5s ease; }
+        #dashboard-screen { display: none; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         header {
@@ -125,7 +125,7 @@
         .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .nav-btn {
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 9px 14px;
-            font-size: 12px; font-weight: 600; color: #cbd5e1; cursor: pointer; border-radius: 8px; transition: all 0.3s;
+            font-size: 12px; font-weight: 600; color: #cbd5e1; cursor: pointer; border-radius: 8px; transition: all 0.2s;
             display: flex; align-items: center; gap: 6px;
         }
         .nav-btn:hover { color: #ffffff; background: rgba(0, 119, 182, 0.25); border-color: rgba(0, 119, 182, 0.5); }
@@ -137,12 +137,11 @@
 
         .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
         .tab-section { display: none; }
-        .tab-section.active { display: block; animation: fadeInTab 0.4s ease; }
-        @keyframes fadeInTab { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-section.active { display: block; animation: fadeInTab 0.2s ease; }
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: white; padding: 22px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px; border: 1px solid #e2e8f0; }
         
-        /* Updated Card Heading Style to properly fit Search & Filters */
         .card h3 { 
             margin-top: 0; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 12px; font-size: 16px; 
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
@@ -154,7 +153,6 @@
         input, select, textarea { padding: 9px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1); }
 
-        /* Search Box styling */
         .search-box {
             padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 180px; outline: none; background: #fff;
         }
@@ -568,7 +566,7 @@
             document.getElementById('dashboard-screen').style.display = 'block';
             setupNavbarByRole();
             loadData();
-        }, 600);
+        }, 400);
     }
 
     function logout() {
@@ -612,7 +610,6 @@
         btnElement.classList.add('active');
     }
 
-    // Universal Table Filter / Search Function
     function filterTable(tableID, searchInput) {
         const filter = searchInput.value.toLowerCase();
         const table = document.getElementById(tableID);
@@ -635,47 +632,51 @@
     }
 
     async function loadData() {
-        if(currentUserRole !== 'teacher') await fetchDashboardStats();
-        await fetchStudents();
-        await fetchTeachers();
-        if(currentUserRole !== 'teacher') await fetchFees();
-        await fetchMarks();
-        await fetchAttendance();
-        await fetchTimetable();
-        if(currentUserRole !== 'teacher') await fetchExpenses();
-        await fetchAnnouncements();
+        if(currentUserRole !== 'teacher') fetchDashboardStats();
+        fetchStudents();
+        fetchTeachers();
+        if(currentUserRole !== 'teacher') fetchFees();
+        fetchMarks();
+        fetchAttendance();
+        fetchTimetable();
+        if(currentUserRole !== 'teacher') fetchExpenses();
+        fetchAnnouncements();
     }
 
     async function fetchDashboardStats() {
-        const res = await fetch(`${API_URL}/dashboard-stats`);
-        const data = await res.json();
-        document.getElementById('stat_students').innerText = data.totalStudents;
-        document.getElementById('stat_teachers').innerText = data.totalTeachers;
-        document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
-        document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
-        
-        const netBalance = data.totalFees - data.totalExpenses;
-        const balanceElement = document.getElementById('stat_balance');
-        balanceElement.innerText = `PKR ${netBalance}`;
-        balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+        try {
+            const res = await fetch(`${API_URL}/dashboard-stats`);
+            const data = await res.json();
+            document.getElementById('stat_students').innerText = data.totalStudents;
+            document.getElementById('stat_teachers').innerText = data.totalTeachers;
+            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
+            document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
+            
+            const netBalance = data.totalFees - data.totalExpenses;
+            const balanceElement = document.getElementById('stat_balance');
+            balanceElement.innerText = `PKR ${netBalance}`;
+            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+        } catch(e) { console.error(e); }
     }
 
     async function fetchStudents() {
-        const selectedClass = document.getElementById('filter_class').value;
-        const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
-        data.forEach(s => {
-            tbody.innerHTML += `<tr>
-                <td>${s.id}</td><td>${s.name}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
-                <td>
-                    <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
-                </td>
-            </tr>`;
-        });
+        try {
+            const selectedClass = document.getElementById('filter_class').value;
+            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            data.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td><td>${s.name}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function saveStudent() {
@@ -689,18 +690,23 @@
 
         if(!name || !roll_no) { alert('Fill out required fields!'); return; }
 
+        showToast(id ? "Updating student..." : "Adding student instantly...");
+        
+        // Optimistic instant UI feedback
+        resetStudentForm();
+        fetchStudents();
+
         const endpoint = id ? `${API_URL}/update-student/${id}` : `${API_URL}/add-student`;
         const method = id ? 'PUT' : 'POST';
 
-        await fetch(endpoint, {
+        fetch(endpoint, {
             method: method,
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
+        }).then(() => {
+            loadData();
+            showToast(id ? "Student updated successfully!" : "Student added successfully!");
         });
-
-        resetStudentForm();
-        loadData();
-        showToast(id ? "Student updated successfully!" : "Student added successfully!");
     }
 
     function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
@@ -727,29 +733,31 @@
     }
 
     async function fetchTeachers() {
-        const res = await fetch(`${API_URL}/teachers`);
-        const data = await res.json();
-        
-        const tbody = document.getElementById('teacherTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
-        
-        const portalSelect = document.getElementById('teacherPortalSelect');
-        portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
+        try {
+            const res = await fetch(`${API_URL}/teachers`);
+            const data = await res.json();
+            
+            const tbody = document.getElementById('teacherTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            
+            const portalSelect = document.getElementById('teacherPortalSelect');
+            portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
 
-        data.forEach(t => {
-            tbody.innerHTML += `<tr>
-                <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
-                <td>
-                    <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
-                </td>
-            </tr>`;
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
+                    </td>
+                </tr>`;
 
-            let opt = document.createElement('option');
-            opt.value = t.id;
-            opt.textContent = `${t.name} (${t.subject})`;
-            portalSelect.appendChild(opt);
-        });
+                let opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = `${t.name} (${t.subject})`;
+                portalSelect.appendChild(opt);
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function saveTeacher() {
@@ -760,15 +768,6 @@
 
         if(!name || !subject) { alert('Fill out required fields!'); return; }
 
-        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
-        const method = id ? 'PUT' : 'POST';
-
-        await fetch(endpoint, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({name, subject, phone})
-        });
-
         document.getElementById('edit_teacher_id').value = '';
         document.getElementById('t_name').value = '';
         document.getElementById('t_subject').value = '';
@@ -776,8 +775,18 @@
         document.getElementById('teacherFormTitle').innerText = "Register New Teacher";
         document.getElementById('teacherSubmitBtn').innerText = "Save Teacher Record";
 
-        loadData();
-        showToast("Teacher saved successfully!");
+        showToast("Saving teacher...");
+        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, subject, phone})
+        }).then(() => {
+            loadData();
+            showToast("Teacher saved successfully!");
+        });
     }
 
     function editTeacher(id, name, subject, phone) {
@@ -864,7 +873,7 @@
 
                     statusMsg.textContent = "Data server par bheja ja raha hai...";
                     sendAttendanceToServer(teacherId, lat, lon, imageData);
-                }, 3000);
+                }, 2000);
             })
             .catch(err => {
                 statusMsg.style.color = "red";
@@ -897,71 +906,84 @@
     }
 
     async function fetchFees() {
-        const res = await fetch(`${API_URL}/fees`);
-        const data = await res.json();
-        const tbody = document.getElementById('feeTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
-        data.forEach(f => {
-            const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-            const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
-            tbody.innerHTML += `<tr><td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>PKR ${f.amount}</td><td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/fees`);
+            const data = await res.json();
+            const tbody = document.getElementById('feeTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
+            data.forEach(f => {
+                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                tbody.innerHTML += `<tr><td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>PKR ${f.amount}</td><td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function fetchMarks() {
-        const res = await fetch(`${API_URL}/marks`);
-        const data = await res.json();
-        const tbody = document.getElementById('marksTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
-        data.forEach(m => {
-            tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/marks`);
+            const data = await res.json();
+            const tbody = document.getElementById('marksTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
+            data.forEach(m => {
+                tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function fetchAttendance() {
-        const res = await fetch(`${API_URL}/all-attendance`);
-        const data = await res.json();
-        const tbody = document.getElementById('attendanceTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
-        data.forEach(rec => {
-            const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-            const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} on ${rec.date.split('T')[0]}. - CHSS`);
-            tbody.innerHTML += `<tr><td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.date.split('T')[0]}</td><td><span class="${statusClass}">${rec.status}</span></td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/all-attendance`);
+            const data = await res.json();
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+            data.forEach(rec => {
+                const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
+                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} on ${rec.date.split('T')[0]}. - CHSS`);
+                tbody.innerHTML += `<tr><td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.date.split('T')[0]}</td><td><span class="${statusClass}">${rec.status}</span></td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function fetchTimetable() {
-        const res = await fetch(`${API_URL}/timetable`);
-        const data = await res.json();
-        const tbody = document.getElementById('timetableTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
-        data.forEach(t => {
-            tbody.innerHTML += `<tr><td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/timetable`);
+            const data = await res.json();
+            const tbody = document.getElementById('timetableTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
+            data.forEach(t => {
+                tbody.innerHTML += `<tr><td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function fetchExpenses() {
-        const res = await fetch(`${API_URL}/expenses`);
-        const data = await res.json();
-        const tbody = document.getElementById('expenseTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
-        data.forEach(e => {
-            tbody.innerHTML += `<tr><td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/expenses`);
+            const data = await res.json();
+            const tbody = document.getElementById('expenseTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
+            data.forEach(e => {
+                tbody.innerHTML += `<tr><td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function fetchAnnouncements() {
-        const res = await fetch(`${API_URL}/announcements`);
-        const data = await res.json();
-        const tbody = document.getElementById('announcementTableBody');
-        tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
-        data.forEach(a => {
-            tbody.innerHTML += `<tr><td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button></td></tr>`;
-        });
+        try {
+            const res = await fetch(`${API_URL}/announcements`);
+            const data = await res.json();
+            const tbody = document.getElementById('announcementTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
+            data.forEach(a => {
+                tbody.innerHTML += `<tr><td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button></td></tr>`;
+            });
+        } catch(e) { console.error(e); }
     }
 
     async function deleteRecord(category, id) {
         if(!confirm(`Are you sure you want to delete this ${category} record?`)) return;
+        showToast("Deleting record...");
         let endpoint = '';
         switch(category) {
             case 'student': endpoint = `delete-student/${id}`; break;
@@ -1000,6 +1022,7 @@
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert('Please enter Student ID!'); return; }
+        showToast("Generating report card...");
         const res = await fetch(`${API_URL}/report-card/${studentId}`);
         if(!res.ok) { alert('Student not found!'); return; }
         const data = await res.json();
@@ -1020,8 +1043,8 @@
         const amount = document.getElementById('fee_amount').value;
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
-        await fetch(`${API_URL}/add-fee`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) });
-        loadData(); showToast("Fee saved!");
+        showToast("Saving fee record...");
+        fetch(`${API_URL}/add-fee`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) }).then(() => { loadData(); showToast("Fee saved!"); });
     }
 
     async function addMarks() {
@@ -1029,25 +1052,25 @@
         const subject = document.getElementById('marks_subject').value;
         const marks_obtained = document.getElementById('marks_obtained').value;
         const total_marks = document.getElementById('total_marks').value;
-        await fetch(`${API_URL}/add-marks`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) });
-        loadData(); showToast("Marks saved!");
+        showToast("Saving marks...");
+        fetch(`${API_URL}/add-marks`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) }).then(() => { loadData(); showToast("Marks saved!"); });
     }
 
     async function markAttendance() {
         const student_id = document.getElementById('att_student_id').value;
         const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
-        await fetch(`${API_URL}/mark-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) });
-        loadData(); showToast("Attendance marked!");
+        showToast("Submitting attendance...");
+        fetch(`${API_URL}/mark-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, date, status}) }).then(() => { loadData(); showToast("Attendance marked!"); });
     }
 
     async function addTimetable() {
         const class_name = document.getElementById('tt_class').value;
-        const subject = document.getElementById('tt_subject').value;
+        const subject = document.getElementById('tt_subject5') || document.getElementById('tt_subject').value;
         const teacher_name = document.getElementById('tt_teacher').value;
         const time_slot = document.getElementById('tt_time').value;
-        await fetch(`${API_URL}/add-timetable`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) });
-        loadData(); showToast("Timetable saved!");
+        showToast("Saving timetable...");
+        fetch(`${API_URL}/add-timetable`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject: document.getElementById('tt_subject').value, teacher_name, time_slot}) }).then(() => { loadData(); showToast("Timetable saved!"); });
     }
 
     async function addExpense() {
@@ -1055,16 +1078,16 @@
         const category = document.getElementById('exp_category').value;
         const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
-        await fetch(`${API_URL}/add-expense`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) });
-        loadData(); showToast("Expense saved!");
+        showToast("Saving expense...");
+        fetch(`${API_URL}/add-expense`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) }).then(() => { loadData(); showToast("Expense saved!"); });
     }
 
     async function addAnnouncement() {
         const title = document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
-        await fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) });
-        loadData(); showToast("Notice published!");
+        showToast("Publishing notice...");
+        fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) }).then(() => { loadData(); showToast("Notice published!"); });
     }
 </script>
 
