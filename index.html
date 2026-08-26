@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
     
-    <!-- Live Railway Backend API URL Configuration -->
     <script>
         const API_URL = 'https://school-project-production-3962.up.railway.app';
     </script>
@@ -48,7 +47,6 @@
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
 
-        /* --- LOGIN SCREEN --- */
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; position: relative;
         }
@@ -94,9 +92,7 @@
             color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 119, 182, 0.3); transition: transform 0.2s;
         }
-        .login-btn:hover { transform: translateY(-1px); }
 
-        /* --- DASHBOARD HEADER & NAVBAR --- */
         #dashboard-screen { display: none; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -154,9 +150,8 @@
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1); }
 
         .search-box {
-            padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 180px; outline: none; background: #fff;
+            padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 160px; outline: none; background: #fff;
         }
-        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.1); }
 
         button.submit-btn { background: var(--success); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 600; }
         button.submit-btn:hover { opacity: 0.9; }
@@ -165,6 +160,7 @@
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-print { background: var(--primary); color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; }
 
         table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
         th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 13px; }
@@ -175,18 +171,12 @@
     
     @media print {
         body * { visibility: hidden; }
-        #reportCardContainer, #reportCardContainer * { visibility: visible; }
-        #reportCardContainer {
+        #printableArea, #printableArea *, #reportCardContainer, #reportCardContainer * { visibility: visible; }
+        #printableArea, #reportCardContainer {
             position: absolute; left: 0; top: 0; width: 100% !important; background: #ffffff !important;
-            border: 2px dashed #0077b6 !important; border-radius: 12px !important; padding: 30px !important; box-shadow: none !important; margin: 0 !important;
+            border: 2px solid #0077b6 !important; border-radius: 12px !important; padding: 30px !important; box-shadow: none !important; margin: 0 !important;
         }
-        #reportCardContainer h2 { color: #0077b6 !important; font-size: 26px !important; text-align: center !important; }
-        #reportCardContainer p { color: #333333 !important; text-align: center !important; }
-        #reportCardContainer div[style*="display: flex"] { display: flex !important; justify-content: space-between !important; background: #f8fafc !important; padding: 12px 20px !important; border-radius: 8px !important; margin: 15px 0 !important; border: 1px solid #e2e8f0 !important; }
-        #reportCardContainer table { width: 100% !important; border-collapse: collapse !important; margin-top: 15px !important; }
-        #reportCardContainer th { background-color: #f1f5f9 !important; color: #0077b6 !important; border: 1px solid #cbd5e0 !important; padding: 12px !important; text-align: center !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        #reportCardContainer td { border: 1px solid #cbd5e0 !important; padding: 12px !important; text-align: center !important; color: #333333 !important; }
-        #reportCardContainer button { display: none !important; }
+        button { display: none !important; }
         @page { size: A4; margin: 1.5cm; }
     }
     </style>
@@ -224,7 +214,6 @@
             <input type="text" id="username" class="login-input" placeholder="Username">
             <input type="password" id="password" class="login-input" placeholder="Password">
             <button class="login-btn" onclick="toggleLampAndLogin()">Turn On Light & Login</button>
-            <div style="font-size: 11px; color: #94a3b8; margin-top: 10px;">💡 Teachers will not see Fees and Expenses.</div>
         </div>
     </div>
 
@@ -249,14 +238,12 @@
             </div>
         </header>
 
-        <!-- DYNAMIC NAVBAR -->
         <div class="navbar">
             <div class="nav-links" id="navbarLinks"></div>
             <div class="role-badge" id="roleDisplayBadge">ADMIN</div>
         </div>
 
         <div class="container">
-            <!-- Analytics Cards -->
             <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
@@ -349,10 +336,10 @@
                 </div>
             </div>
 
-            <!-- GPS ATTENDANCE TAB -->
+            <!-- STAFF GPS ATTENDANCE TAB (UPDATED WITH CHECK-IN/OUT STATUS) -->
             <div id="faculty-portal" class="tab-section">
                 <div class="card">
-                    <h3>Staff GPS Geofenced Self-Attendance & Webcam Verification</h3>
+                    <h3>Staff GPS Geofenced Attendance & Departure Status</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="teacherPortalSelect">Select Teacher:</label>
@@ -360,8 +347,15 @@
                                 <option value="">-- Select Teacher --</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Action Mode:</label>
+                            <select id="attendance_action_type" class="login-select" style="background:#fff; color:#333;">
+                                <option value="Check-In">Mark Check-In (Present)</option>
+                                <option value="Check-Out">Mark Check-Out (Left College)</option>
+                            </select>
+                        </div>
                     </div>
-                    <button class="submit-btn" onclick="verifyAndMarkAttendance()">Verify Location & Capture Photo</button>
+                    <button class="submit-btn" onclick="verifyAndMarkAttendance()">Verify Location & Submit Status</button>
                     
                     <div id="camera-container" style="text-align: center; margin-top: 15px;">
                         <video id="webcam" width="320" height="240" autoplay style="display:none; border-radius:5px; border:2px solid #ddd;"></video>
@@ -370,9 +364,19 @@
 
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
                 </div>
+                <div class="card">
+                    <h3>
+                        <span>Today's Staff Geofenced Logs</span>
+                        <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
+                    </h3>
+                    <table id="staffAttTable">
+                        <thead><tr><th>ID</th><th>Teacher</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
+                        <tbody id="staffAttTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- STUDENT ATTENDANCE TAB -->
+            <!-- STUDENT ATTENDANCE TAB (CLASS-WISE) -->
             <div id="attendance" class="tab-section">
                 <div class="card">
                     <h3>Mark Daily Student Attendance</h3>
@@ -385,17 +389,27 @@
                 </div>
                 <div class="card">
                     <h3>
-                        <span>Attendance Logs & WhatsApp Alerts</span>
-                        <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search attendance..." onkeyup="filterTable('attendanceTable', this)">
+                        <span>Student Attendance Logs</span>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
+                            <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="attendanceTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="attendanceTableBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- FEES TAB -->
+            <!-- FEES TAB (CLASS-WISE & VOUCHER PRINTING) -->
             <div id="fees" class="tab-section">
                 <div class="card">
                     <h3>Fee Ledger Entry</h3>
@@ -410,16 +424,26 @@
                 <div class="card">
                     <h3>
                         <span>Fee Collection Records</span>
-                        <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee status..." onkeyup="filterTable('feeTable', this)">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee..." onkeyup="filterTable('feeTable', this)">
+                            <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="feeTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Amount</th><th>Status</th><th>Date</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Amount</th><th>Status</th><th>Date</th><th>Voucher</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="feeTableBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- MARKS TAB -->
+            <!-- MARKS TAB (CLASS-WISE) -->
             <div id="marks" class="tab-section">
                 <div class="card">
                     <h3>Exam Marks Entry</h3>
@@ -434,10 +458,20 @@
                 <div class="card">
                     <h3>
                         <span>Exam Results Ledger</span>
-                        <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
+                            <select id="filter_marks_class" onchange="fetchMarks()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="marksTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
                         <tbody id="marksTableBody"></tbody>
                     </table>
                 </div>
@@ -541,9 +575,11 @@
         </div>
     </div>
 
+    <!-- HIDDEN PRINT AREA FOR FEE VOUCHER -->
+    <div id="printableArea" style="display:none;"></div>
+
 <script>
     let currentUserRole = 'admin';
-
     const SCHOOL_LAT = 30.1629886;  
     const SCHOOL_LON = 73.5725527;  
     const ALLOWED_RADIUS = 100;
@@ -635,6 +671,7 @@
         if(currentUserRole !== 'teacher') fetchDashboardStats();
         fetchStudents();
         fetchTeachers();
+        fetchStaffAttendanceLogs();
         if(currentUserRole !== 'teacher') fetchFees();
         fetchMarks();
         fetchAttendance();
@@ -689,10 +726,7 @@
         const address = document.getElementById('address').value;
 
         if(!name || !roll_no) { alert('Fill out required fields!'); return; }
-
         showToast(id ? "Updating student..." : "Adding student instantly...");
-        
-        // Optimistic instant UI feedback
         resetStudentForm();
         fetchStudents();
 
@@ -703,10 +737,7 @@
             method: method,
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
-        }).then(() => {
-            loadData();
-            showToast(id ? "Student updated successfully!" : "Student added successfully!");
-        });
+        }).then(() => { loadData(); showToast("Saved successfully!"); });
     }
 
     function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
@@ -736,10 +767,8 @@
         try {
             const res = await fetch(`${API_URL}/teachers`);
             const data = await res.json();
-            
             const tbody = document.getElementById('teacherTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
-            
             const portalSelect = document.getElementById('teacherPortalSelect');
             portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
 
@@ -751,7 +780,6 @@
                         <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
                     </td>
                 </tr>`;
-
                 let opt = document.createElement('option');
                 opt.value = t.id;
                 opt.textContent = `${t.name} (${t.subject})`;
@@ -767,13 +795,10 @@
         const phone = document.getElementById('t_phone').value;
 
         if(!name || !subject) { alert('Fill out required fields!'); return; }
-
         document.getElementById('edit_teacher_id').value = '';
         document.getElementById('t_name').value = '';
         document.getElementById('t_subject').value = '';
         document.getElementById('t_phone').value = '';
-        document.getElementById('teacherFormTitle').innerText = "Register New Teacher";
-        document.getElementById('teacherSubmitBtn').innerText = "Save Teacher Record";
 
         showToast("Saving teacher...");
         const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
@@ -783,10 +808,7 @@
             method: method,
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, subject, phone})
-        }).then(() => {
-            loadData();
-            showToast("Teacher saved successfully!");
-        });
+        }).then(() => { loadData(); showToast("Teacher saved successfully!"); });
     }
 
     function editTeacher(id, name, subject, phone) {
@@ -804,143 +826,191 @@
         const φ2 = lat2 * Math.PI / 180;
         const Δφ = (lat2 - lat1) * Math.PI / 180;
         const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c;
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
     function verifyAndMarkAttendance() {
         const teacherId = document.getElementById('teacherPortalSelect').value;
+        const actionType = document.getElementById('attendance_action_type').value;
         const statusMsg = document.getElementById('location-status');
 
-        if (!teacherId) {
-            alert("Pehle apna naam (Teacher) select karein!");
-            return;
-        }
-
+        if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
         statusMsg.style.color = "blue";
         statusMsg.textContent = "Location check ki ja rahi hai...";
 
-        if (!navigator.geolocation) {
-            alert("Aapka browser Geolocation support nahi karta.");
-            return;
-        }
+        if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
 
         navigator.geolocation.getCurrentPosition((position) => {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
-
             const distance = calculateDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
 
             if (distance > ALLOWED_RADIUS) {
                 statusMsg.style.color = "red";
-                statusMsg.textContent = `Aap college premises se bahar hain! (${Math.round(distance)} meters door). Attendance mark nahi ho sakti.`;
+                statusMsg.textContent = `Aap college premises se bahar hain! (${Math.round(distance)} meters door).`;
                 return;
             }
 
             statusMsg.style.color = "green";
-            statusMsg.textContent = "Location verified! Camera open ho raha hai...";
-            capturePhotoAndSubmit(teacherId, userLat, userLon);
-
+            statusMsg.textContent = "Location verified! Capturing photo...";
+            capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
         }, (error) => {
             statusMsg.style.color = "red";
             statusMsg.textContent = "Location access error: " + error.message;
         }, { enableHighAccuracy: true });
     }
 
-    function capturePhotoAndSubmit(teacherId, lat, lon) {
+    function capturePhotoAndSubmitStaff(teacherId, lat, lon, actionType) {
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const statusMsg = document.getElementById('location-status');
-        
         video.style.display = 'block';
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                
-                setTimeout(() => {
-                    const context = canvas.getContext('2d');
-                    context.drawImage(video, 0, 0, 320, 240);
-                    const imageData = canvas.toDataURL('image/png');
-                    
-                    stream.getTracks().forEach(track => track.stop());
-                    video.style.display = 'none';
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            video.srcObject = stream;
+            setTimeout(() => {
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, 320, 240);
+                const imageData = canvas.toDataURL('image/png');
+                stream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
 
-                    statusMsg.textContent = "Data server par bheja ja raha hai...";
-                    sendAttendanceToServer(teacherId, lat, lon, imageData);
-                }, 2000);
-            })
-            .catch(err => {
-                statusMsg.style.color = "red";
-                statusMsg.textContent = "Camera access nahi mil saka: " + err;
-            });
+                statusMsg.textContent = "Submitting staff attendance status...";
+                sendStaffAttendanceToServer(teacherId, lat, lon, imageData, actionType);
+            }, 2000);
+        }).catch(err => {
+            statusMsg.style.color = "red";
+            statusMsg.textContent = "Camera access error: " + err;
+        });
     }
 
-    function sendAttendanceToServer(teacherId, lat, lon, photoData) {
+    function sendStaffAttendanceToServer(teacherId, lat, lon, photoData, actionType) {
         fetch(`${API_URL}/mark-teacher-attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                teacher_id: teacherId,
-                latitude: lat,
-                longitude: lon,
-                photo: photoData
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
+            body: JSON.stringify({ teacher_id: teacherId, latitude: lat, longitude: lon, photo: photoData, status_type: actionType })
+        }).then(res => res.json()).then(data => {
             document.getElementById('location-status').style.color = "green";
-            document.getElementById('location-status').textContent = data.message || "Attendance successfully marked!";
-            showToast("Faculty attendance marked successfully!");
-        })
-        .catch(err => {
-            console.error("Error:", err);
+            document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
+            showToast(`Staff Status: ${actionType} recorded!`);
+            fetchStaffAttendanceLogs();
+        }).catch(err => {
+            console.error(err);
             document.getElementById('location-status').style.color = "red";
             document.getElementById('location-status').textContent = "Server error!";
         });
     }
 
-    async function fetchFees() {
+    async function fetchStaffAttendanceLogs() {
         try {
-            const res = await fetch(`${API_URL}/fees`);
+            const res = await fetch(`${API_URL}/staff-attendance-logs`);
+            if(!res.ok) return;
             const data = await res.json();
-            const tbody = document.getElementById('feeTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
-            data.forEach(f => {
-                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
-                tbody.innerHTML += `<tr><td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>PKR ${f.amount}</td><td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button></td></tr>`;
+            const tbody = document.getElementById('staffAttTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs today.</td></tr>` : '';
+            data.forEach(s => {
+                const badge = s.status_type === 'Check-Out' ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
+                tbody.innerHTML += `<tr><td>${s.id}</td><td>${s.name}</td><td>${badge}</td><td>${s.timestamp}</td><td>${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}</td></tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
+    async function fetchStudents() {
+        try {
+            const selectedClass = document.getElementById('filter_class').value;
+            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            data.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td><td>${s.name}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function fetchFees() {
+        try {
+            const selectedClass = document.getElementById('filter_fee_class').value;
+            const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('feeTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
+            data.forEach(f => {
+                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                tbody.innerHTML += `<tr>
+                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${f.class || '-'}</td><td>PKR ${f.amount}</td>
+                    <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
+                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${f.class || '-'}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
+                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button></td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    function printFeeVoucher(name, roll, className, amount, status, date) {
+        const area = document.getElementById('printableArea');
+        area.style.display = 'block';
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 2px solid #0077b6; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="color: #0077b6; margin: 0;">City College Minchinabad (CHSS)</h2>
+                <p style="margin: 4px 0; font-weight: bold; font-size: 14px;">Official Fee Voucher / Receipt</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px;">
+                <div><strong>Student Name:</strong> ${name}</div>
+                <div><strong>Roll No:</strong> ${roll}</div>
+                <div><strong>Class:</strong> ${className}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr><th style="border:1px solid #ddd; padding:8px; background:#f1f5f9;">Description</th><th style="border:1px solid #ddd; padding:8px; background:#f1f5f9;">Amount (PKR)</th></tr>
+                <tr><td style="border:1px solid #ddd; padding:8px;">Tuition & College Dues (${date})</td><td style="border:1px solid #ddd; padding:8px;">PKR ${amount}</td></tr>
+                <tr><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">Status</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold; color:${status==='Paid'?'green':'red'};">${status}</td></tr>
+            </table>
+            <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px;">
+                <div>___________________________<br>Cashier Signature</div>
+                <div>___________________________<br>Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+        area.style.display = 'none';
+    }
+
     async function fetchMarks() {
         try {
-            const res = await fetch(`${API_URL}/marks`);
+            const selectedClass = document.getElementById('filter_marks_class').value;
+            const url = selectedClass ? `${API_URL}/marks?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/marks`;
+            const res = await fetch(url);
             const data = await res.json();
             const tbody = document.getElementById('marksTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
             data.forEach(m => {
-                tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button></td></tr>`;
+                tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.class || '-'}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td><button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button></td></tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
     async function fetchAttendance() {
         try {
-            const res = await fetch(`${API_URL}/all-attendance`);
+            const selectedClass = document.getElementById('filter_att_class').value;
+            const url = selectedClass ? `${API_URL}/all-attendance?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/all-attendance`;
+            const res = await fetch(url);
             const data = await res.json();
             const tbody = document.getElementById('attendanceTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} on ${rec.date.split('T')[0]}. - CHSS`);
-                tbody.innerHTML += `<tr><td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.date.split('T')[0]}</td><td><span class="${statusClass}">${rec.status}</span></td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button></td></tr>`;
+                tbody.innerHTML += `<tr><td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.class || '-'}</td><td>${rec.date.split('T')[0]}</td><td><span class="${statusClass}">${rec.status}</span></td><td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td><td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button></td></tr>`;
             });
         } catch(e) { console.error(e); }
     }
@@ -1066,11 +1136,11 @@
 
     async function addTimetable() {
         const class_name = document.getElementById('tt_class').value;
-        const subject = document.getElementById('tt_subject5') || document.getElementById('tt_subject').value;
+        const subject = document.getElementById('tt_subject').value;
         const teacher_name = document.getElementById('tt_teacher').value;
         const time_slot = document.getElementById('tt_time').value;
         showToast("Saving timetable...");
-        fetch(`${API_URL}/add-timetable`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject: document.getElementById('tt_subject').value, teacher_name, time_slot}) }).then(() => { loadData(); showToast("Timetable saved!"); });
+        fetch(`${API_URL}/add-timetable`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) }).then(() => { loadData(); showToast("Timetable saved!"); });
     }
 
     async function addExpense() {
@@ -1083,11 +1153,11 @@
     }
 
     async function addAnnouncement() {
-        const title = document.getElementById('ann_title').value;
+        const title = document.getElementById('ann_title_text') || document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
         showToast("Publishing notice...");
-        fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) }).then(() => { loadData(); showToast("Notice published!"); });
+        fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title: document.getElementById('ann_title').value, message, date}) }).then(() => { loadData(); showToast("Notice published!"); });
     }
 </script>
 
