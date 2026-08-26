@@ -198,7 +198,7 @@
             </svg>
         </div>
         
-        <div class="lamp-container" onclick="toggleLampAndLogin()" title="Click lamp to login">
+        <div class="lamp-container" onclick="attemptLogin()" title="Click lamp to login">
             <div class="lamp-wire"></div>
             <div class="lamp-head"></div>
         </div>
@@ -211,9 +211,9 @@
                 <option value="principal">Principal Portal</option>
                 <option value="teacher">Teacher Portal</option>
             </select>
-            <input type="text" id="username" class="login-input" placeholder="Username">
+            <input type="text" id="username" class="login-input" placeholder="Username (e.g. admin)">
             <input type="password" id="password" class="login-input" placeholder="Password">
-            <button class="login-btn" onclick="toggleLampAndLogin()">Turn On Light & Login</button>
+            <button class="login-btn" onclick="attemptLogin()">Turn On Light & Login</button>
         </div>
     </div>
 
@@ -275,11 +275,15 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
                         <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
-                        <div class="form-group"><label>Class</label><select id="class_name">
+                        <div class="form-group"><label>Class / Faculty</label><select id="class_name">
                             <option value="9th Class">9th Class</option>
                             <option value="10th Class">10th Class</option>
-                            <option value="1st Year">1st Year</option>
-                            <option value="2nd Year">2nd Year</option>
+                            <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                            <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                            <option value="1st Year ICS">1st Year ICS</option>
+                            <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                            <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                            <option value="2nd Year ICS">2nd Year ICS</option>
                         </select></div>
                         <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
@@ -296,8 +300,12 @@
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
                         </div>
@@ -336,7 +344,7 @@
                 </div>
             </div>
 
-            <!-- STAFF GPS ATTENDANCE TAB (UPDATED WITH CHECK-IN/OUT STATUS) -->
+            <!-- STAFF GPS ATTENDANCE TAB -->
             <div id="faculty-portal" class="tab-section">
                 <div class="card">
                     <h3>Staff GPS Geofenced Attendance & Departure Status</h3>
@@ -396,8 +404,12 @@
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
                         </div>
@@ -430,8 +442,12 @@
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export Excel</button>
                         </div>
@@ -464,8 +480,12 @@
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
-                                <option value="1st Year">1st Year</option>
-                                <option value="2nd Year">2nd Year</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export Excel</button>
                         </div>
@@ -482,7 +502,7 @@
                 <div class="card">
                     <h3>Add Class Timetable</h3>
                     <div class="form-grid">
-                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year"></div>
+                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year Pre-Medical"></div>
                         <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Physics"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="tt_teacher" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Time Slot</label><input type="text" id="tt_time" placeholder="08:30 AM - 09:15 AM"></div>
@@ -580,9 +600,38 @@
 
 <script>
     let currentUserRole = 'admin';
+    let currentActiveTab = 'students';
     const SCHOOL_LAT = 30.1629886;  
     const SCHOOL_LON = 73.5725527;  
     const ALLOWED_RADIUS = 100;
+
+    // Credentials database configuration
+    const CREDENTIALS = {
+        admin: { user: 'admin', pass: 'admin123' },
+        principal: { user: 'principal', pass: 'principal123' },
+        teacher: { user: 'teacher', pass: 'teacher123' }
+    };
+
+    window.onload = function() {
+        const savedRole = localStorage.getItem('chss_role');
+        const savedTab = localStorage.getItem('chss_tab');
+        const isLogged = localStorage.getItem('chss_logged');
+
+        if (isLogged === 'true' && savedRole) {
+            currentUserRole = savedRole;
+            currentActiveTab = savedTab || 'students';
+            document.body.classList.add('light-on');
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'block';
+            setupNavbarByRole();
+            loadData();
+            // Switch to saved tab after a short delay to ensure elements render
+            setTimeout(() => {
+                const targetBtn = document.querySelector(`.nav-btn[onclick*="${currentActiveTab}"]`);
+                if(targetBtn) switchTab(currentActiveTab, targetBtn);
+            }, 50);
+        }
+    };
 
     function showToast(message) {
         const container = document.getElementById('toast-container');
@@ -593,19 +642,34 @@
         setTimeout(() => toast.remove(), 3000);
     }
 
-    function toggleLampAndLogin() {
-        currentUserRole = document.getElementById('login_role').value;
-        document.body.classList.add('light-on');
-        showToast(`Logged in as ${currentUserRole.toUpperCase()}`);
-        setTimeout(() => {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('dashboard-screen').style.display = 'block';
-            setupNavbarByRole();
-            loadData();
-        }, 400);
+    function attemptLogin() {
+        const role = document.getElementById('login_role').value;
+        const uInput = document.getElementById('username').value.trim();
+        const pInput = document.getElementById('password').value.trim();
+
+        const validCreds = CREDENTIALS[role];
+
+        if (uInput === validCreds.user && pInput === validCreds.pass) {
+            currentUserRole = role;
+            localStorage.setItem('chss_role', role);
+            localStorage.setItem('chss_logged', 'true');
+            localStorage.setItem('chss_tab', 'students');
+
+            document.body.classList.add('light-on');
+            showToast(`Logged in successfully as ${role.toUpperCase()}`);
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard-screen').style.display = 'block';
+                setupNavbarByRole();
+                loadData();
+            }, 400);
+        } else {
+            alert(`Ghalat Username ya Password! (${role.toUpperCase()} ke liye correct credentials enter karein).`);
+        }
     }
 
     function logout() {
+        localStorage.clear();
         document.body.classList.remove('light-on');
         document.getElementById('dashboard-screen').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
@@ -640,10 +704,12 @@
     }
 
     function switchTab(tabId, btnElement) {
+        currentActiveTab = tabId;
+        localStorage.setItem('chss_tab', tabId);
         document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        btnElement.classList.add('active');
+        if(btnElement) btnElement.classList.add('active');
     }
 
     function filterTable(tableID, searchInput) {
@@ -916,26 +982,6 @@
         } catch(e) { console.error(e); }
     }
 
-    async function fetchStudents() {
-        try {
-            const selectedClass = document.getElementById('filter_class').value;
-            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
-            const res = await fetch(url);
-            const data = await res.json();
-            const tbody = document.getElementById('studentTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
-            data.forEach(s => {
-                tbody.innerHTML += `<tr>
-                    <td>${s.id}</td><td>${s.name}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
-                    </td>
-                </tr>`;
-            });
-        } catch(e) { console.error(e); }
-    }
-
     async function fetchFees() {
         try {
             const selectedClass = document.getElementById('filter_fee_class').value;
@@ -1153,11 +1199,11 @@
     }
 
     async function addAnnouncement() {
-        const title = document.getElementById('ann_title_text') || document.getElementById('ann_title').value;
+        const title = document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
         showToast("Publishing notice...");
-        fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title: document.getElementById('ann_title').value, message, date}) }).then(() => { loadData(); showToast("Notice published!"); });
+        fetch(`${API_URL}/announcements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) }).then(() => { loadData(); showToast("Notice published!"); });
     }
 </script>
 
