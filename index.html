@@ -218,7 +218,7 @@
     </div>
 
     <!-- ================= DASHBOARD SCREEN ================= -->
-    <div id="dashboard-screen">
+    <div id="dashboard-screen" style="display: none;">
         <header>
             <div class="header-left">
                 <div class="header-logo">
@@ -605,7 +605,6 @@
     const SCHOOL_LON = 73.5725527;  
     const ALLOWED_RADIUS = 100;
 
-    // Credentials database configuration
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
         principal: { user: 'principal', pass: 'principal123' },
@@ -613,10 +612,11 @@
     };
 
     window.onload = function() {
+        const isLogged = localStorage.getItem('chss_logged');
         const savedRole = localStorage.getItem('chss_role');
         const savedTab = localStorage.getItem('chss_tab');
-        const isLogged = localStorage.getItem('chss_logged');
 
+        // Force login screen if not explicitly logged in
         if (isLogged === 'true' && savedRole) {
             currentUserRole = savedRole;
             currentActiveTab = savedTab || 'students';
@@ -625,11 +625,16 @@
             document.getElementById('dashboard-screen').style.display = 'block';
             setupNavbarByRole();
             loadData();
-            // Switch to saved tab after a short delay to ensure elements render
             setTimeout(() => {
                 const targetBtn = document.querySelector(`.nav-btn[onclick*="${currentActiveTab}"]`);
                 if(targetBtn) switchTab(currentActiveTab, targetBtn);
             }, 50);
+        } else {
+            // Ensure login screen is visible and dashboard is hidden
+            localStorage.removeItem('chss_logged');
+            document.body.classList.remove('light-on');
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard-screen').style.display = 'none';
         }
     };
 
@@ -669,7 +674,9 @@
     }
 
     function logout() {
-        localStorage.clear();
+        localStorage.removeItem('chss_logged');
+        localStorage.removeItem('chss_role');
+        localStorage.removeItem('chss_tab');
         document.body.classList.remove('light-on');
         document.getElementById('dashboard-screen').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
