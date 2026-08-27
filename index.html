@@ -1066,7 +1066,7 @@
         } catch(e) { console.error("Error fetching staff logs:", e); }
     }
 
-    // STUDENT ATTENDANCE & EDIT
+    // STUDENT ATTENDANCE & EDIT (Updated to fetch student's class automatically)
     async function markAttendance() {
         const id = document.getElementById('edit_att_id').value;
         const student_id = document.getElementById('att_student_id').value;
@@ -1080,11 +1080,11 @@
             const studentRes = await fetch(`${API_URL}/students`);
             const students = await studentRes.json();
             const currentStudent = students.find(s => s.id == student_id);
-            const className = currentStudent ? currentStudent.class : '';
+            const className = currentStudent ? (currentStudent.class || currentStudent.class_name) : 'Unassigned Class';
 
             const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
             const method = id ? 'PUT' : 'POST';
-            const payload = id ? { student_id, date, status, class_name: className } : { student_id, date, status, class_name: className };
+            const payload = { student_id, date, status, class_name: className };
 
             document.getElementById('edit_att_id').value = '';
             document.getElementById('attFormTitle').innerText = "Mark Daily Student Attendance";
@@ -1128,9 +1128,10 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} on ${rec.date.split('T')[0]}. - CHSS`);
+                const attendanceClass = rec.class_name || rec.class || '-';
+                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
                 tbody.innerHTML += `<tr>
-                    <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td>${rec.class || '-'}</td><td>${rec.date.split('T')[0]}</td>
+                    <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
                     <td><span class="${statusClass}">${rec.status}</span></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
