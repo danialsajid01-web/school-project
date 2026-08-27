@@ -374,11 +374,14 @@
                 </div>
                 <div class="card">
                     <h3>
-                        <span>Today's Staff Geofenced Logs</span>
-                        <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
+                        <span>Staff Geofenced Logs</span>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_staff_att" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('staffAttTable', this)">
+                            <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -601,9 +604,6 @@
 <script>
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
-    const SCHOOL_LAT = 30.1629886;  
-    const SCHOOL_LON = 73.5725527;  
-    const ALLOWED_RADIUS = 100;
 
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
@@ -616,7 +616,12 @@
         const savedRole = localStorage.getItem('chss_role');
         const savedTab = localStorage.getItem('chss_tab');
 
-        // Force login screen if not explicitly logged in
+        const todayStr = new Date().toISOString().split('T')[0];
+        ['att_date', 'fee_date', 'exp_date', 'ann_date'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = todayStr;
+        });
+
         if (isLogged === 'true' && savedRole) {
             currentUserRole = savedRole;
             currentActiveTab = savedTab || 'students';
@@ -630,7 +635,6 @@
                 if(targetBtn) switchTab(currentActiveTab, targetBtn);
             }, 50);
         } else {
-            // Ensure login screen is visible and dashboard is hidden
             localStorage.removeItem('chss_logged');
             document.body.classList.remove('light-on');
             document.getElementById('login-screen').style.display = 'flex';
@@ -893,16 +897,6 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI / 180;
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-    }
-
     function verifyAndMarkAttendance() {
         const teacherId = document.getElementById('teacherPortalSelect').value;
         const actionType = document.getElementById('attendance_action_type').value;
@@ -910,20 +904,13 @@
 
         if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
         statusMsg.style.color = "blue";
-        statusMsg.textContent = "Location check ki ja rahi hai...";
+        statusMsg.textContent = "Current location fetch ki ja rahi hai...";
 
         if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
 
         navigator.geolocation.getCurrentPosition((position) => {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
-            const distance = calculateDistance(userLat, userLon, SCHOOL_LAT, SCHOOL_LON);
-
-            if (distance > ALLOWED_RADIUS) {
-                statusMsg.style.color = "red";
-                statusMsg.textContent = `Aap college premises se bahar hain! (${Math.round(distance)} meters door).`;
-                return;
-            }
 
             statusMsg.style.color = "green";
             statusMsg.textContent = "Location verified! Capturing photo...";
@@ -977,16 +964,28 @@
 
     async function fetchStaffAttendanceLogs() {
         try {
-            const res = await fetch(`${API_URL}/staff-attendance-logs`);
+            let res = await fetch(`${API_URL}/staff-attendance-logs`);
+            if (!res.ok) {
+                res = await fetch(`${API_URL}/staff-attendance`);
+            }
             if(!res.ok) return;
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs today.</td></tr>` : '';
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
             data.forEach(s => {
-                const badge = s.status_type === 'Check-Out' ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                tbody.innerHTML += `<tr><td>${s.id}</td><td>${s.name}</td><td>${badge}</td><td>${s.timestamp}</td><td>${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}</td></tr>`;
+                const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
+                const timeVal = s.timestamp || s.date || '-';
+                const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
+                const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.name || s.teacher_name || 'Staff Member'}</td>
+                    <td>${badge}</td>
+                    <td>${timeVal}</td>
+                    <td>${latVal}, ${lonVal}</td>
+                </tr>`;
             });
-        } catch(e) { console.error(e); }
+        } catch(e) { console.error("Error fetching staff logs:", e); }
     }
 
     async function fetchFees() {
