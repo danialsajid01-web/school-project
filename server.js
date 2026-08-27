@@ -31,7 +31,7 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS fees (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER, amount REAL, status TEXT, date TEXT )`);
   db.run(`CREATE TABLE IF NOT EXISTS marks (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER, subject TEXT, marks_obtained REAL, total_marks REAL )`);
   db.run(`CREATE TABLE IF NOT EXISTS attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER, date TEXT, status TEXT )`);
-  db.run(`CREATE TABLE IF NOT EXISTS teacher_attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, teacher_id INTEGER, latitude REAL, longitude REAL, photo TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP )`);
+  db.run(`CREATE TABLE IF NOT EXISTS teacher_attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, teacher_id INTEGER, latitude REAL, longitude REAL, photo TEXT, status_type TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP )`);
   db.run(`CREATE TABLE IF NOT EXISTS timetable (id INTEGER PRIMARY KEY AUTOINCREMENT, class_name TEXT, subject TEXT, teacher_name TEXT, time_slot TEXT )`);
   db.run(`CREATE TABLE IF NOT EXISTS expenses (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, category TEXT, amount REAL, date TEXT )`);
   db.run(`CREATE TABLE IF NOT EXISTS announcements (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, message TEXT, date TEXT )`);
@@ -140,7 +140,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // --- GPS Teacher Attendance API ---
 app.post('/mark-teacher-attendance', (req, res) => {
-  const { teacher_id, latitude, longitude, photo } = req.body;
+  const { teacher_id, latitude, longitude, photo, status_type } = req.body;
   const SCHOOL_LAT = 30.1629886;
   const SCHOOL_LONG = 73.5725527;
   const ALLOWED_DISTANCE = 100; 
@@ -152,15 +152,16 @@ app.post('/mark-teacher-attendance', (req, res) => {
   if (distance > ALLOWED_DISTANCE) {
     return res.status(400).json({ error: `Aap school ki location par mojood nahi hain! (${Math.round(distance)} meters door hain, limit 100m hai)` });
   }
-  db.run(`INSERT INTO teacher_attendance (teacher_id, latitude, longitude, photo) VALUES (?, ?, ?, ?)`, 
-    [teacher_id, latitude, longitude, photo], function(err) {
+  db.run(`INSERT INTO teacher_attendance (teacher_id, latitude, longitude, photo, status_type) VALUES (?, ?, ?, ?, ?)`, 
+    [teacher_id, latitude, longitude, photo, status_type || 'Check-In'], function(err) {
     if (err) res.status(500).json({ error: err.message });
     else res.json({ message: "Teacher attendance & GPS verified successfully!" });
   });
 });
+
 // --- Get Staff Attendance Logs API ---
 app.get('/staff-attendance-logs', (req, res) => {
-  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
+  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance LEFT JOIN teachers ON teacher_attendance.teacher_id = teachers.id ORDER BY teacher_attendance.id DESC`, [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -168,9 +169,10 @@ app.get('/staff-attendance-logs', (req, res) => {
     }
   });
 });
-// --- Get Teacher Attendance Logs API (Added Here) ---
+
+// --- Get Teacher Attendance Logs API ---
 app.get('/teacher-attendance-logs', (req, res) => {
-  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
+  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance LEFT JOIN teachers ON teacher_attendance.teacher_id = teachers.id ORDER BY teacher_attendance.id DESC`, [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -279,7 +281,7 @@ app.get('/expenses', (req, res) => {
   });
 });
 
-app.post('/add-expense', (req, res) => {
+app.post('/add-expense', (req, res, next) => {
   const { title, category, amount, date } = req.body;
   db.run(`INSERT INTO expenses (title, category, amount, date) VALUES (?, ?, ?, ?)`, [title, category, amount, date], (err) => {
     if (err) res.status(500).json({ error: err.message });
@@ -340,16 +342,7 @@ app.get('/report-card/:id', (req, res) => {
         });
     });
 });
-// --- Get Teacher Attendance Logs API ---
-app.get('/teacher-attendance-logs', (req, res) => {
-  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json(rows);
-    }
-  });
-});
+
 // Start Server with PORT
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
