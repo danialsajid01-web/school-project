@@ -159,6 +159,17 @@ app.post('/mark-teacher-attendance', (req, res) => {
   });
 });
 
+// --- Get Teacher Attendance Logs API (Added Here) ---
+app.get('/teacher-attendance-logs', (req, res) => {
+  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 // --- Fees APIs ---
 app.get('/fees', (req, res) => {
   db.all(`SELECT fees.*, students.name, students.roll_no FROM fees JOIN students ON fees.student_id = students.id`, [], (err, rows) => {
