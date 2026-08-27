@@ -418,6 +418,19 @@
                     <input type="hidden" id="edit_att_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
+                        <div class="form-group">
+                            <label>Class</label>
+                            <select id="att_class_select">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
                         <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
                     </div>
@@ -1066,10 +1079,11 @@
         } catch(e) { console.error("Error fetching staff logs:", e); }
     }
 
-    // STUDENT ATTENDANCE & EDIT (Updated to fetch student's class automatically)
+    // STUDENT ATTENDANCE & EDIT (Updated to use selected class from dropdown)
     async function markAttendance() {
         const id = document.getElementById('edit_att_id').value;
         const student_id = document.getElementById('att_student_id').value;
+        const className = document.getElementById('att_class_select').value;
         const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
 
@@ -1077,11 +1091,6 @@
         showToast(id ? "Updating attendance..." : "Submitting attendance...");
 
         try {
-            const studentRes = await fetch(`${API_URL}/students`);
-            const students = await studentRes.json();
-            const currentStudent = students.find(s => s.id == student_id);
-            const className = currentStudent ? (currentStudent.class || currentStudent.class_name) : 'Unassigned Class';
-
             const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
             const method = id ? 'PUT' : 'POST';
             const payload = { student_id, date, status, class_name: className };
@@ -1108,9 +1117,10 @@
         }
     }
 
-    function editAttendance(id, student_id, date, status) {
+    function editAttendance(id, student_id, className, date, status) {
         document.getElementById('edit_att_id').value = id;
         document.getElementById('att_student_id').value = student_id;
+        if(className) document.getElementById('att_class_select').value = className;
         document.getElementById('att_date').value = date.split('T')[0];
         document.getElementById('att_status').value = status;
         document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
@@ -1135,7 +1145,7 @@
                     <td><span class="${statusClass}">${rec.status}</span></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editAttendance(${rec.id}, ${rec.student_id}, '${rec.date}', '${rec.status}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editAttendance(${rec.id}, ${rec.student_id}, '${attendanceClass}', '${rec.date}', '${rec.status}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
                     </td>
                 </tr>`;
