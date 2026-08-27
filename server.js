@@ -331,7 +331,16 @@ app.get('/report-card/:id', (req, res) => {
         });
     });
 });
-
+// --- Get Teacher Attendance Logs API ---
+app.get('/teacher-attendance-logs', (req, res) => {
+  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+  });
+});
 // Start Server with PORT
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
