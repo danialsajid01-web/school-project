@@ -954,6 +954,7 @@
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
             showToast(`Staff Status: ${actionType} recorded!`);
+            // Table ko foran update karne ke liye fetch function call kiya gaya hai
             fetchStaffAttendanceLogs();
         }).catch(err => {
             console.error(err);
