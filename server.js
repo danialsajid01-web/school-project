@@ -158,7 +158,16 @@ app.post('/mark-teacher-attendance', (req, res) => {
     else res.json({ message: "Teacher attendance & GPS verified successfully!" });
   });
 });
-
+// --- Get Staff Attendance Logs API ---
+app.get('/staff-attendance-logs', (req, res) => {
+  db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json(rows);
+    }
+  });
+});
 // --- Get Teacher Attendance Logs API (Added Here) ---
 app.get('/teacher-attendance-logs', (req, res) => {
   db.all(`SELECT teacher_attendance.*, teachers.name, teachers.subject FROM teacher_attendance JOIN teachers ON teacher_attendance.teacher_id = teachers.id`, [], (err, rows) => {
