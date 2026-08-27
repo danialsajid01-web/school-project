@@ -344,10 +344,10 @@
                 </div>
             </div>
 
-            <!-- STAFF GPS ATTENDANCE TAB -->
+            <!-- STAFF GPS ATTENDANCE TAB (UPDATED WITH GEOFENCING & LIVE PHOTO) -->
             <div id="faculty-portal" class="tab-section">
                 <div class="card">
-                    <h3>Staff GPS Geofenced Attendance & Departure Status</h3>
+                    <h3>Staff Geofenced Attendance & Live Photo Capture</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="teacherPortalSelect">Select Teacher:</label>
@@ -363,15 +363,22 @@
                             </select>
                         </div>
                     </div>
-                    <button class="submit-btn" onclick="verifyAndMarkAttendance()">Verify Location & Submit Status</button>
-                    
-                    <div id="camera-container" style="text-align: center; margin-top: 15px;">
-                        <video id="webcam" width="320" height="240" autoplay style="display:none; border-radius:5px; border:2px solid #ddd;"></video>
-                        <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
+
+                    <!-- LIVE CAMERA PREVIEW SECTION -->
+                    <div style="text-align: center; margin: 15px 0;">
+                        <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--primary);">Live Camera Photo (Required at College Premises):</label>
+                        <div style="position: relative; width: 320px; height: 240px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #cbd5e0;">
+                            <video id="webcam" width="320" height="240" autoplay playsinline style="transform: scaleX(-1); width:100%; height:100%; object-fit:cover;"></video>
+                            <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
+                        </div>
+                        <button type="button" class="btn-action" style="background:var(--primary); color:white; padding: 6px 14px; margin-top: 8px; font-size:12px;" onclick="initCameraStream()">🔄 Start/Reset Camera</button>
                     </div>
 
+                    <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify College Location & Submit Attendance</button>
+                    
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
                 </div>
+                
                 <div class="card">
                     <h3>
                         <span>Staff Geofenced Logs</span>
@@ -424,7 +431,7 @@
                 </div>
             </div>
 
-            <!-- FEES TAB (CLASS-WISE & VOUCHER PRINTING) -->
+            <!-- FEES TAB -->
             <div id="fees" class="tab-section">
                 <div class="card">
                     <h3>Fee Ledger Entry</h3>
@@ -462,7 +469,7 @@
                 </div>
             </div>
 
-            <!-- MARKS TAB (CLASS-WISE) -->
+            <!-- MARKS TAB -->
             <div id="marks" class="tab-section">
                 <div class="card">
                     <h3>Exam Marks Entry</h3>
@@ -605,6 +612,11 @@
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
 
+    // College Geofence Location Settings (City College Minchinabad Coordinates)
+    const COLLEGE_LAT = 29.8945; 
+    const COLLEGE_LON = 73.6523;
+    const ALLOWED_RADIUS_METERS = 200; // 200 meters radius limit inside campus
+
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
         principal: { user: 'principal', pass: 'principal123' },
@@ -721,6 +733,11 @@
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         if(btnElement) btnElement.classList.add('active');
+
+        // Agar Staff GPS tab open ho tou camera stream start karein
+        if (tabId === 'faculty-portal') {
+            initCameraStream();
+        }
     }
 
     function filterTable(tableID, searchInput) {
@@ -897,52 +914,86 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
+    // Camera Stream Initialization
+    function initCameraStream() {
+        const video = document.getElementById('webcam');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Camera access error:", err);
+            });
+    }
+
+    // Distance Calculation Formula (Haversine Formula)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Earth radius in meters
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2-lat1) * Math.PI/180;
+        const Δλ = (lon2-lon1) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // Distance in meters
+    }
+
     function verifyAndMarkAttendance() {
         const teacherId = document.getElementById('teacherPortalSelect').value;
         const actionType = document.getElementById('attendance_action_type').value;
         const statusMsg = document.getElementById('location-status');
 
         if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
-        statusMsg.style.color = "blue";
-        statusMsg.textContent = "Current location fetch ki ja rahi hai...";
+        
+        statusMsg.style.color = "orange";
+        statusMsg.textContent = "🔍 GPS location verify ki ja rahi hai...";
 
-        if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
+        if (!navigator.geolocation) { 
+            alert("Geolocation is not supported by your browser"); 
+            return; 
+        }
 
         navigator.geolocation.getCurrentPosition((position) => {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
 
-            statusMsg.style.color = "green";
-            statusMsg.textContent = "Location verified! Capturing photo...";
-            capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
+            // Distance calculation from College premises
+            const distance = calculateDistance(userLat, userLon, COLLEGE_LAT, COLLEGE_LON);
+
+            if (distance <= ALLOWED_RADIUS_METERS) {
+                statusMsg.style.color = "green";
+                statusMsg.textContent = `📍 Location Verified! (Approx. ${Math.round(distance)}m away). Capturing photo...`;
+                capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
+            } else {
+                statusMsg.style.color = "red";
+                statusMsg.textContent = `❌ Access Denied! Aap college ke premises se bahar hain (${Math.round(distance)}m door).`;
+            }
         }, (error) => {
             statusMsg.style.color = "red";
-            statusMsg.textContent = "Location access error: " + error.message;
-        }, { enableHighAccuracy: true });
+            statusMsg.textContent = "⚠️ Location error: GPS permission allow karein. " + error.message;
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     }
 
     function capturePhotoAndSubmitStaff(teacherId, lat, lon, actionType) {
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('snapshot');
         const statusMsg = document.getElementById('location-status');
-        video.style.display = 'block';
 
-        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-            video.srcObject = stream;
-            setTimeout(() => {
-                const context = canvas.getContext('2d');
-                context.drawImage(video, 0, 0, 320, 240);
-                const imageData = canvas.toDataURL('image/png');
-                stream.getTracks().forEach(track => track.stop());
-                video.style.display = 'none';
-
-                statusMsg.textContent = "Submitting staff attendance status...";
-                sendStaffAttendanceToServer(teacherId, lat, lon, imageData, actionType);
-            }, 2000);
-        }).catch(err => {
+        if (!video.srcObject) {
             statusMsg.style.color = "red";
-            statusMsg.textContent = "Camera access error: " + err;
-        });
+            statusMsg.textContent = "⚠️ Camera not initialized. Click 'Start Camera' button first.";
+            return;
+        }
+
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/png');
+
+        statusMsg.textContent = "📤 Submitting attendance & photo to server...";
+        sendStaffAttendanceToServer(teacherId, lat, lon, imageData, actionType);
     }
 
     function sendStaffAttendanceToServer(teacherId, lat, lon, photoData, actionType) {
@@ -953,13 +1004,12 @@
         }).then(res => res.json()).then(data => {
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
-            showToast(`Staff Status: ${actionType} recorded!`);
-            // Table ko foran update karne ke liye fetch function call kiya gaya hai
+            showToast(`Staff Status: ${actionType} recorded successfully!`);
             fetchStaffAttendanceLogs();
         }).catch(err => {
             console.error(err);
             document.getElementById('location-status').style.color = "red";
-            document.getElementById('location-status').textContent = "Server error!";
+            document.getElementById('location-status').textContent = "Server connection error!";
         });
     }
 
@@ -1199,7 +1249,7 @@
     async function addExpense() {
         const title = document.getElementById('exp_title').value;
         const category = document.getElementById('exp_category').value;
-        const amount = document.getElementById('exp_amount').value;
+        const amount = document.getElementById('exp_amount++').value || document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
         showToast("Saving expense...");
         fetch(`${API_URL}/add-expense`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) }).then(() => { loadData(); showToast("Expense saved!"); });
