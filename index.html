@@ -612,9 +612,9 @@
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
 
-    // College Geofence Location Settings (City College Minchinabad Coordinates)
-    const COLLEGE_LAT = 29.8945; 
-    const COLLEGE_LON = 73.6523;
+    // Updated College Geofence Coordinates (City College Minchinabad)
+    const COLLEGE_LAT = 30.1660091; 
+    const COLLEGE_LON = 73.5671333;
     const ALLOWED_RADIUS_METERS = 200; // 200 meters radius limit inside campus
 
     const CREDENTIALS = {
@@ -1249,7 +1249,7 @@
     async function addExpense() {
         const title = document.getElementById('exp_title').value;
         const category = document.getElementById('exp_category').value;
-        const amount = document.getElementById('exp_amount++').value || document.getElementById('exp_amount').value;
+        const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
         showToast("Saving expense...");
         fetch(`${API_URL}/add-expense`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) }).then(() => { loadData(); showToast("Expense saved!"); });
