@@ -1142,7 +1142,6 @@
             
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                // Agar backend se class na mile, toh form wale select dropdown ya default se utha lein
                 const attendanceClass = rec.class_name || rec.class || document.getElementById('att_class_select').value || '-';
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
                 
