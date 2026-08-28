@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -1062,7 +1062,7 @@
             if(!res.ok) return;
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
                 const timeVal = s.timestamp || s.date || '-';
@@ -1074,6 +1074,9 @@
                     <td>${badge}</td>
                     <td>${timeVal}</td>
                     <td>${latVal}, ${lonVal}</td>
+                    <td>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error("Error fetching staff logs:", e); }
@@ -1462,6 +1465,7 @@
             case 'timetable': endpoint = `delete-timetable/${id}`; break;
             case 'expense': endpoint = `delete-expense/${id}`; break;
             case 'announcement': endpoint = `delete-announcement/${id}`; break;
+            case 'staff-attendance': endpoint = `delete-staff-attendance/${id}`; break;
         }
         const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
         if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
