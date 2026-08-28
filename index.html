@@ -1123,7 +1123,7 @@
     function editAttendance(id, student_id, className, date, status) {
         document.getElementById('edit_att_id').value = id;
         document.getElementById('att_student_id').value = student_id;
-        if(className) document.getElementById('att_class_select').value = className;
+        if(className && className !== '-') document.getElementById('att_class_select').value = className;
         document.getElementById('att_date').value = date.split('T')[0];
         document.getElementById('att_status').value = status;
         document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
@@ -1139,10 +1139,13 @@
             const data = await res.json();
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+            
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const attendanceClass = rec.class_name || rec.class || '-';
+                // Agar backend se class na mile, toh form wale select dropdown ya default se utha lein
+                const attendanceClass = rec.class_name || rec.class || document.getElementById('att_class_select').value || '-';
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
+                
                 tbody.innerHTML += `<tr>
                     <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
                     <td><span class="${statusClass}">${rec.status}</span></td>
