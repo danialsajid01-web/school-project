@@ -658,6 +658,23 @@
         teacher: { user: 'teacher', pass: 'teacher123' }
     };
 
+    // Helper for formatting Pak Time (Asia/Karachi)
+    function formatPakTime(dateString) {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return dateString;
+        return d.toLocaleString('en-PK', {
+            timeZone: 'Asia/Karachi',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    }
+
     window.onload = function() {
         const isLogged = localStorage.getItem('chss_logged');
         const savedRole = localStorage.getItem('chss_role');
@@ -1039,10 +1056,12 @@
     }
 
     function sendStaffAttendanceToServer(teacherId, lat, lon, photoData, actionType) {
+        // Send timestamp formatted according to Pakistan local time
+        const currentPakTimestamp = new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' });
         fetch(`${API_URL}/mark-teacher-attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ teacher_id: teacherId, latitude: lat, longitude: lon, photo: photoData, status_type: actionType })
+            body: JSON.stringify({ teacher_id: teacherId, latitude: lat, longitude: lon, photo: photoData, status_type: actionType, timestamp: currentPakTimestamp })
         }).then(res => res.json()).then(data => {
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
@@ -1065,9 +1084,13 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = s.timestamp || s.date || '-';
-                const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
-                const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                
+                // Pakistani Timezone conversion
+                const rawTime = s.timestamp || s.date || s.created_at;
+                const timeVal = formatPakTime(rawTime);
+                
+                const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
+                const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td>
                     <td>${s.name || s.teacher_name || 'Staff Member'}</td>
@@ -1469,8 +1492,25 @@
             case 'announcement': endpoint = `delete-announcement/${id}`; break;
             case 'staff-attendance': endpoint = `delete-staff-attendance/${id}`; break;
         }
-        const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
-        if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
+
+        try {
+            let res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
+            
+            // Fallback request in case backend endpoint naming varies
+            if (!res.ok && category === 'staff-attendance') {
+                res = await fetch(`${API_URL}/delete-staff-log/${id}`, { method: 'DELETE' });
+            }
+
+            if (res.ok) { 
+                loadData(); 
+                showToast("Record deleted successfully!"); 
+            } else {
+                showToast("Failed to delete record.");
+            }
+        } catch(err) {
+            console.error("Delete Error:", err);
+            showToast("Error deleting record.");
+        }
     }
 
     function exportTableToExcel(tableID, filename = ''){
