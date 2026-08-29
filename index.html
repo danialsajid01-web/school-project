@@ -658,13 +658,13 @@
         teacher: { user: 'teacher', pass: 'teacher123' }
     };
 
-    // Helper for formatting Pak Time (Asia/Karachi)
+    // Helper for formatting Pak Time (Asia/Islamabad)
     function formatPakTime(dateString) {
         if (!dateString) return '-';
         const d = new Date(dateString);
         if (isNaN(d.getTime())) return dateString;
         return d.toLocaleString('en-PK', {
-            timeZone: 'Asia/Karachi',
+            timeZone: 'Asia/Islamabad',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
