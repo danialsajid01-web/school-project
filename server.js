@@ -2,6 +2,8 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 
@@ -14,8 +16,18 @@ app.get('/', (req, res) => {
   res.send('School Project Backend is Running Successfully!');
 });
 
-// Database connection setup (Railway ke liye /tmp folder)
-const dbPath = process.env.PORT ? '/tmp/school.db' : './school.db';
+// Database connection setup (Railway Volume Permanent Path)
+let dbPath;
+if (process.env.PORT) {
+  const dbDir = '/app/data';
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+  dbPath = path.join(dbDir, 'school.db');
+} else {
+  dbPath = './school.db';
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error("Database opening error: " + err.message);
@@ -319,7 +331,7 @@ app.delete('/delete-announcement/:id', (req, res) => {
   });
 });
 
-// --- REPORT CARD API (Added) ---
+// --- REPORT CARD API ---
 app.get('/report-card/:id', (req, res) => {
     const studentId = req.params.id;
     
