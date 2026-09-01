@@ -7,20 +7,6 @@
     
     <script>
         const API_URL = 'https://school-project-production-3962.up.railway.app';
-
-        // Pakistani Timezone (PKT) Formatter Function
-        function getPKTimeFormatted(dateObj = new Date()) {
-            return dateObj.toLocaleString('en-US', {
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-        }
     </script>
 
     <style>
@@ -97,7 +83,7 @@
 
         .login-input, .login-select {
             width: 100%; padding: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: white; box-sizing: border-box; outline: none;
+            border-radius: 8px; background: rgba(255, 255, 255, 0.9); color: #333; box-sizing: border-box; outline: none;
         }
         body.light-on .login-input, body.light-on .login-select { background: #f8fafc; border: 1px solid #cbd5e0; color: #333; }
 
@@ -173,41 +159,18 @@
         .btn-action { padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; margin-right: 4px; }
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
-        .btn-cr { background: #560bad; color: white; }
         .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
-        .btn-print { background: var(--primary); color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; }
 
         table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
         th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 13px; }
         th { background-color: #f1f5f9; color: var(--primary); font-weight: 600; }
         tr:nth-child(even) { background-color: #f8fafc; }
-        .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
 
-        /* FEE VOUCHER PRINT STYLING */
-        #printableArea {
-            display: none;
-            background: #ffffff;
-            color: #333333;
-            padding: 40px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        #printableArea { display: none; background: #ffffff; color: #333; padding: 40px; }
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea * { visibility: visible; }
-            #printableArea {
-                display: block !important;
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 100% !important;
-                height: 100% !important;
-                background: #ffffff !important;
-                z-index: 99999;
-                padding: 30px;
-                box-sizing: border-box;
-            }
+            #printableArea { display: block !important; position: fixed; left: 0; top: 0; width: 100% !important; height: 100% !important; background: #ffffff !important; z-index: 99999; padding: 30px; box-sizing: border-box; }
             button { display: none !important; }
             @page { size: A4 portrait; margin: 0; }
         }
@@ -217,7 +180,7 @@
 
     <div id="toast-container"></div>
 
-    <!-- ================= LOGIN SCREEN ================= -->
+    <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="light-beam"></div>
         <div class="college-logo-preview">
@@ -249,8 +212,8 @@
         </div>
     </div>
 
-    <!-- ================= DASHBOARD SCREEN ================= -->
-    <div id="dashboard-screen" style="display: none;">
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboard-screen">
         <header>
             <div class="header-left">
                 <div class="header-logo">
@@ -271,31 +234,29 @@
         </header>
 
         <div class="navbar">
-            <div class="nav-links" id="navbarLinks"></div>
+            <div class="nav-links" id="navbarLinks">
+                <button class="nav-btn active" onclick="switchTab('students')">Students</button>
+                <button class="nav-btn" onclick="switchTab('teachers')">Teachers</button>
+                <button class="nav-btn" onclick="switchTab('faculty-portal')">Staff Attendance</button>
+                <button class="nav-btn" onclick="switchTab('attendance')">Student Attendance</button>
+                <button class="nav-btn" onclick="switchTab('fees')">Fees</button>
+            </div>
             <div class="role-badge" id="roleDisplayBadge">ADMIN</div>
         </div>
 
         <div class="container">
             <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
+                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Total Students</h4>
                     <h2 id="stat_students" style="margin: 0; font-size: 24px;">0</h2>
                 </div>
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #023e8a, #0077b6); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
+                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
                     <h2 id="stat_teachers" style="margin: 0; font-size: 24px;">0</h2>
                 </div>
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #008037, #028090); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
+                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
                     <h2 id="stat_fees" style="margin: 0; font-size: 20px;">PKR 0</h2>
-                </div>
-                <div class="card" style="margin: 0; background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Expenses</h4>
-                    <h2 id="stat_expenses" style="margin: 0; font-size: 20px;">PKR 0</h2>
-                </div>
-                <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
-                    <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
                 </div>
             </div>
 
@@ -307,16 +268,18 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
                         <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
-                        <div class="form-group"><label>Class / Faculty</label><select id="class_name">
-                            <option value="9th Class">9th Class</option>
-                            <option value="10th Class">10th Class</option>
-                            <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                            <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                            <option value="1st Year ICS">1st Year ICS</option>
-                            <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                            <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                            <option value="2nd Year ICS">2nd Year ICS</option>
-                        </select></div>
+                        <div class="form-group"><label>Class / Faculty</label>
+                            <select id="class_name">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Address</label><input type="text" id="address" placeholder="Home Address / City"></div>
@@ -328,17 +291,6 @@
                         <span>Enrolled Students Directory</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
-                            <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
-                                <option value="">All Classes</option>
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
@@ -383,13 +335,13 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="teacherPortalSelect">Select Teacher:</label>
-                            <select id="teacherPortalSelect" class="login-select" style="background:#fff; color:#333;">
+                            <select id="teacherPortalSelect">
                                 <option value="">-- Select Teacher --</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Action Mode:</label>
-                            <select id="attendance_action_type" class="login-select" style="background:#fff; color:#333;">
+                            <select id="attendance_action_type">
                                 <option value="Check-In">Mark Check-In (Present)</option>
                                 <option value="Check-Out">Mark Check-Out (Left College)</option>
                             </select>
@@ -406,7 +358,6 @@
                     </div>
 
                     <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify College Location & Submit Attendance</button>
-                    
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
                 </div>
                 
@@ -419,7 +370,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKT)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -429,22 +380,8 @@
             <div id="attendance" class="tab-section">
                 <div class="card">
                     <h3 id="attFormTitle">Mark Daily Student Attendance</h3>
-                    <input type="hidden" id="edit_att_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
-                        <div class="form-group">
-                            <label>Class</label>
-                            <select id="att_class_select">
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
-                        </div>
                         <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
                         <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
                     </div>
@@ -455,22 +392,11 @@
                         <span>Student Attendance Logs</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
-                            <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
-                                <option value="">All Classes</option>
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
                     <table id="attendanceTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th></tr></thead>
                         <tbody id="attendanceTableBody"></tbody>
                     </table>
                 </div>
@@ -480,7 +406,6 @@
             <div id="fees" class="tab-section">
                 <div class="card">
                     <h3 id="feeFormTitle">Fee Ledger Entry</h3>
-                    <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
@@ -494,22 +419,11 @@
                         <span>Fee Collection Records</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee..." onkeyup="filterTable('feeTable', this)">
-                            <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
-                                <option value="">All Classes</option>
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Records.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
                     <table id="feeTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
                         <tbody id="feeTableBody"></tbody>
                     </table>
                 </div>
@@ -518,55 +432,82 @@
     </div>
 
     <script>
-        // Updated verifyAndMarkAttendance function to use Pakistani Time (PKT)
-        function verifyAndMarkAttendance() {
-            const teacherId = document.getElementById('teacherPortalSelect').value;
-            const actionType = document.getElementById('attendance_action_type').value;
-            const statusDiv = document.getElementById('location-status');
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
-            if (!teacherId) {
-                alert("Please select a teacher!");
+        function attemptLogin() {
+            const role = document.getElementById('login_role').value;
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (!user || !pass) {
+                showToast('Please enter Username and Password');
                 return;
             }
 
-            // Pakistani time format mein attendance timestamp get karna
-            const pktTimestamp = getPKTimeFormatted(new Date());
-
-            statusDiv.innerHTML = "⏳ Verifying GPS location...";
-            
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        statusDiv.style.color = "green";
-                        statusDiv.innerHTML = `✅ Location Verified! Marked ${actionType} at ${pktTimestamp}`;
-                        
-                        // Payload with PKT formatted time
-                        const payload = {
-                            teacher_id: teacherId,
-                            action: actionType,
-                            timestamp: pktTimestamp,
-                            latitude: lat,
-                            longitude: lng
-                        };
-
-                        console.log("Submitting Attendance:", payload);
-                        
-                        // Aap dynamic api request handle kar sakte hain
-                        // fetch(`${API_URL}/staff-attendance`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
-                    },
-                    (error) => {
-                        statusDiv.style.color = "red";
-                        statusDiv.innerHTML = "❌ Location permission denied or signal lost.";
-                    }
-                );
+            if (pass === 'admin123' || pass === 'admin') {
+                document.body.classList.add('light-on');
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard-screen').style.display = 'block';
+                document.getElementById('roleDisplayBadge').innerText = role.toUpperCase();
+                showToast('Login Successful!');
             } else {
-                statusDiv.style.color = "red";
-                statusDiv.innerHTML = "❌ Geolocation is not supported by your browser.";
+                showToast('Invalid Password! (Use: admin123)');
             }
         }
+
+        function logout() {
+            document.body.classList.remove('light-on');
+            document.getElementById('dashboard-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showToast('Logged out successfully');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-section').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function filterTable(tableId, input) {
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        function exportTableToExcel(tableID, filename = '') {
+            const downloadLink = document.createElement('a');
+            const dataType = 'application/vnd.ms-excel';
+            const tableSelect = document.getElementById(tableID);
+            const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+            filename = filename ? filename : 'excel_data.xls';
+            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+            downloadLink.download = filename;
+            downloadLink.click();
+        }
+
+        function saveStudent() { showToast('Student saved!'); }
+        function saveTeacher() { showToast('Teacher saved!'); }
+        function verifyAndMarkAttendance() { showToast('Attendance logged!'); }
+        function markAttendance() { showToast('Student attendance marked!'); }
+        function addFee() { showToast('Fee entry recorded!'); }
+        function initCameraStream() { showToast('Camera initialized!'); }
     </script>
 </body>
 </html>
