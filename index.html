@@ -1,513 +1,985 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
+
     
+
     <script>
+
         const API_URL = 'https://school-project-production-3962.up.railway.app';
+
     </script>
 
+
+
     <style>
+
         :root {
+
             --primary: #0077b6;
+
             --secondary: #0096c7;
+
             --accent: #ffb703;
+
             --success: #008037;
+
             --danger: #d90429;
+
             --warning: #f59e0b;
+
             --bg-dark: #0a192f;
+
             --bg-light: #f0f8ff;
+
         }
 
+
+
         body {
+
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
             background-color: var(--bg-dark);
+
             margin: 0;
+
             padding: 0;
+
             color: #333;
+
             transition: background 0.8s ease;
+
             overflow-x: hidden;
+
         }
+
+
 
         body.light-on { background-color: var(--bg-light); }
 
+
+
         #toast-container {
+
             position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+
         }
+
+
 
         .toast {
+
             background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(12px); color: white; padding: 12px 20px;
+
             border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-left: 4px solid var(--accent);
+
             font-size: 13px; font-weight: 500; animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s forwards;
+
             display: flex; align-items: center; gap: 10px;
+
         }
+
+
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         @keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
 
+
+
         #login-screen {
+
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; position: relative;
+
         }
 
+
+
         .college-logo-preview {
+
             width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--accent);
+
             box-shadow: 0 0 30px rgba(255, 183, 3, 0.6); margin-bottom: 12px; background: white;
+
             display: flex; align-items: center; justify-content: center; animation: floatLogo 3s ease-in-out infinite;
+
         }
+
+
 
         @keyframes floatLogo { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.03); } }
 
+
+
         .lamp-container { position: relative; margin-bottom: 20px; cursor: pointer; animation: floatLogo 3s ease-in-out infinite; }
+
         .lamp-wire { width: 4px; height: 40px; background: #475569; margin: 0 auto; }
+
         .lamp-head { width: 80px; height: 45px; background: #1e293b; border-radius: 0 0 40px 40px; margin: 0 auto; position: relative; transition: background 0.4s; }
+
         body.light-on .lamp-head { background: var(--accent); box-shadow: 0 0 35px var(--accent), 0 0 70px rgba(255, 183, 3, 0.6); }
 
+
+
         .light-beam {
+
             position: absolute; top: 240px; left: 50%; transform: translateX(-50%); width: 0px; height: 0px;
+
             border-left: 90px solid transparent; border-right: 90px solid transparent; border-top: 0px solid rgba(255, 183, 3, 0);
+
             transition: all 0.6s ease; pointer-events: none;
+
         }
+
         body.light-on .light-beam { border-top: 220px solid rgba(255, 183, 3, 0.15); filter: blur(10px); }
 
+
+
         .login-card {
+
             background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(14px); padding: 30px; border-radius: 16px;
+
             border: 1px solid rgba(255, 255, 255, 0.1); width: 340px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+
         }
+
         body.light-on .login-card { background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
 
+
+
         .login-card h2 { color: white; margin-top: 0; font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+
         body.light-on .login-card h2 { color: var(--primary); }
+
         .login-card p.sub-title { color: var(--accent); font-size: 13px; font-weight: 600; margin: 0 0 15px 0; }
 
+
+
         .login-input, .login-select {
+
             width: 100%; padding: 11px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px; background: rgba(255, 255, 255, 0.9); color: #333; box-sizing: border-box; outline: none;
+
+            border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: white; box-sizing: border-box; outline: none;
+
         }
+
         body.light-on .login-input, body.light-on .login-select { background: #f8fafc; border: 1px solid #cbd5e0; color: #333; }
 
+
+
         .login-btn {
+
             width: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary));
+
             color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;
+
             box-shadow: 0 4px 15px rgba(0, 119, 182, 0.3); transition: transform 0.2s;
+
         }
+
+
 
         #dashboard-screen { display: none; animation: fadeIn 0.3s ease; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+
+
         header {
+
             background: linear-gradient(135deg, #005f73, #0a9396, var(--primary)); color: white; padding: 20px 40px;
+
             display: flex; justify-content: space-between; align-items: center; box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+
             border-bottom: 5px solid var(--accent);
+
         }
+
         .header-left { display: flex; align-items: center; gap: 24px; }
+
         .header-logo {
+
             width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--accent);
+
             box-shadow: 0 0 25px rgba(255, 183, 3, 0.7); background: white; display: flex; align-items: center; justify-content: center;
+
         }
+
         header h1 { margin: 0; font-size: 28px; font-weight: 800; text-transform: uppercase; }
+
         header p { margin: 6px 0 0; font-size: 14px; color: var(--accent); font-weight: 700; }
 
+
+
         .logout-btn {
+
             background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none; padding: 10px 22px;
+
             border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4);
+
         }
+
+
 
         .navbar {
+
             background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); display: flex; justify-content: space-between;
+
             align-items: center; padding: 14px 35px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid rgba(255, 183, 3, 0.3);
+
         }
+
         .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
         .nav-btn {
+
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 9px 14px;
+
             font-size: 12px; font-weight: 600; color: #cbd5e1; cursor: pointer; border-radius: 8px; transition: all 0.2s;
+
             display: flex; align-items: center; gap: 6px;
+
         }
+
         .nav-btn:hover { color: #ffffff; background: rgba(0, 119, 182, 0.25); border-color: rgba(0, 119, 182, 0.5); }
+
         .nav-btn.active {
+
             background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #ffffff; border-color: var(--accent);
+
             box-shadow: 0 6px 20px rgba(0, 119, 182, 0.5); font-weight: 700;
+
         }
+
         .role-badge { font-weight: 800; color: var(--accent); font-size: 12px; letter-spacing: 1px; padding: 7px 14px; background: rgba(255, 183, 3, 0.1); border-radius: 6px; border: 1px solid rgba(255, 183, 3, 0.3); text-transform: uppercase; }
 
+
+
         .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
+
         .tab-section { display: none; }
+
         .tab-section.active { display: block; animation: fadeInTab 0.2s ease; }
+
         @keyframes fadeInTab { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
+
+
         .card { background: white; padding: 22px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 22px; border: 1px solid #e2e8f0; }
+
         
+
         .card h3 { 
+
             margin-top: 0; color: var(--primary); border-bottom: 2px solid #edf2f7; padding-bottom: 12px; font-size: 16px; 
+
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+
         }
+
+
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+
         .form-group { display: flex; flex-direction: column; }
+
         label { margin-bottom: 5px; font-weight: 600; font-size: 12px; color: #4a5568; }
+
         input, select, textarea { padding: 9px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
+
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1); }
 
+
+
         .search-box {
+
             padding: 7px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 12px; width: 160px; outline: none; background: #fff;
+
         }
+
+
 
         button.submit-btn { background: var(--success); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 600; }
+
         button.submit-btn:hover { opacity: 0.9; }
 
+
+
         .btn-action { padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; margin-right: 4px; }
+
         .btn-edit { background: var(--warning); color: white; }
+
         .btn-delete { background: var(--danger); color: white; }
+
+        .btn-cr { background: #560bad; color: white; }
+
         .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
 
+        .btn-print { background: var(--primary); color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; }
+
+
+
         table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
+
         th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 13px; }
+
         th { background-color: #f1f5f9; color: var(--primary); font-weight: 600; }
+
         tr:nth-child(even) { background-color: #f8fafc; }
 
-        #printableArea { display: none; background: #ffffff; color: #333; padding: 40px; }
-        @media print {
-            body * { visibility: hidden; }
-            #printableArea, #printableArea * { visibility: visible; }
-            #printableArea { display: block !important; position: fixed; left: 0; top: 0; width: 100% !important; height: 100% !important; background: #ffffff !important; z-index: 99999; padding: 30px; box-sizing: border-box; }
-            button { display: none !important; }
-            @page { size: A4 portrait; margin: 0; }
+        .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
+        .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
+
+
+        /* FEE VOUCHER PRINT STYLING */
+
+        #printableArea {
+
+            display: none;
+
+            background: #ffffff;
+
+            color: #333333;
+
+            padding: 40px;
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
         }
+
+
+
+        @media print {
+
+            body * { visibility: hidden; }
+
+            #printableArea, #printableArea * { visibility: visible; }
+
+            #printableArea {
+
+                display: block !important;
+
+                position: fixed;
+
+                left: 0;
+
+                top: 0;
+
+                width: 100% !important;
+
+                height: 100% !important;
+
+                background: #ffffff !important;
+
+                z-index: 99999;
+
+                padding: 30px;
+
+                box-sizing: border-box;
+
+            }
+
+            button { display: none !important; }
+
+            @page { size: A4 portrait; margin: 0; }
+
+        }
+
     </style>
+
 </head>
+
 <body>
+
+
 
     <div id="toast-container"></div>
 
-    <!-- LOGIN SCREEN -->
+
+
+    <!-- ================= LOGIN SCREEN ================= -->
+
     <div id="login-screen">
+
         <div class="light-beam"></div>
+
         <div class="college-logo-preview">
+
             <svg width="120" height="120" viewBox="0 0 200 200">
+
                 <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="5"/>
+
                 <text x="100" y="50" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+
                 <text x="100" y="70" fill="#ffb703" font-size="13" font-weight="bold" text-anchor="middle">MINCHINABAD</text>
+
                 <circle cx="100" cy="85" r="16" fill="#ffb703"/>
+
                 <text x="100" y="155" fill="#000000" font-size="22" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+
             </svg>
+
         </div>
+
         
+
         <div class="lamp-container" onclick="attemptLogin()" title="Click lamp to login">
+
             <div class="lamp-wire"></div>
+
             <div class="lamp-head"></div>
+
         </div>
+
+
 
         <div class="login-card">
+
             <h2>City College Minchinabad</h2>
+
             <p class="sub-title">Select Portal Role & Login</p>
+
             <select id="login_role" class="login-select">
+
                 <option value="admin">Admin Portal</option>
+
                 <option value="principal">Principal Portal</option>
+
                 <option value="teacher">Teacher Portal</option>
+
             </select>
+
             <input type="text" id="username" class="login-input" placeholder="Username (e.g. admin)">
+
             <input type="password" id="password" class="login-input" placeholder="Password">
+
             <button class="login-btn" onclick="attemptLogin()">Turn On Light & Login</button>
+
         </div>
+
     </div>
 
-    <!-- DASHBOARD SCREEN -->
-    <div id="dashboard-screen">
+
+
+    <!-- ================= DASHBOARD SCREEN ================= -->
+
+    <div id="dashboard-screen" style="display: none;">
+
         <header>
+
             <div class="header-left">
+
                 <div class="header-logo">
+
                     <svg width="75" height="75" viewBox="0 0 200 200">
+
                         <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="6"/>
+
                         <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+
                         <text x="100" y="150" fill="#000000" font-size="24" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+
                     </svg>
+
                 </div>
+
                 <div>
+
                     <h1>City College Minchinabad (CHSS)</h1>
+
                     <p>🎓 Faculty & Admin Management System</p>
+
                 </div>
+
             </div>
+
             <div>
+
                 <button class="logout-btn" onclick="logout()">Logout</button>
+
             </div>
+
         </header>
 
+
+
         <div class="navbar">
-            <div class="nav-links" id="navbarLinks">
-                <button class="nav-btn active" onclick="switchTab('students')">Students</button>
-                <button class="nav-btn" onclick="switchTab('teachers')">Teachers</button>
-                <button class="nav-btn" onclick="switchTab('faculty-portal')">Staff Attendance</button>
-                <button class="nav-btn" onclick="switchTab('attendance')">Student Attendance</button>
-                <button class="nav-btn" onclick="switchTab('fees')">Fees</button>
-            </div>
+
+            <div class="nav-links" id="navbarLinks"></div>
+
             <div class="role-badge" id="roleDisplayBadge">ADMIN</div>
+
         </div>
+
+
 
         <div class="container">
+
             <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Total Students</h4>
+
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
+
                     <h2 id="stat_students" style="margin: 0; font-size: 24px;">0</h2>
+
                 </div>
+
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #023e8a, #0077b6); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
+
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
+
                     <h2 id="stat_teachers" style="margin: 0; font-size: 24px;">0</h2>
+
                 </div>
+
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #008037, #028090); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
+
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
+
                     <h2 id="stat_fees" style="margin: 0; font-size: 20px;">PKR 0</h2>
+
                 </div>
+
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none;">
+
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Expenses</h4>
+
+                    <h2 id="stat_expenses" style="margin: 0; font-size: 20px;">PKR 0</h2>
+
+                </div>
+
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
+
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
+
+                    <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
+
+                </div>
+
             </div>
+
+
 
             <!-- STUDENTS TAB -->
+
             <div id="students" class="tab-section active">
+
                 <div class="card">
+
                     <h3 id="studentFormTitle">Register New Student</h3>
+
                     <input type="hidden" id="edit_student_id">
+
                     <div class="form-grid">
+
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
+
                         <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
-                        <div class="form-group"><label>Class / Faculty</label>
-                            <select id="class_name">
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
-                        </div>
+
+                        <div class="form-group"><label>Class / Faculty</label><select id="class_name">
+
+                            <option value="9th Class">9th Class</option>
+
+                            <option value="10th Class">10th Class</option>
+
+                            <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+
+                            <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+
+                            <option value="1st Year ICS">1st Year ICS</option>
+
+                            <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+
+                            <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+
+                            <option value="2nd Year ICS">2nd Year ICS</option>
+
+                        </select></div>
+
                         <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
+
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
+
                         <div class="form-group" style="grid-column: span 2;"><label>Address</label><input type="text" id="address" placeholder="Home Address / City"></div>
+
                     </div>
+
                     <button class="submit-btn" id="studentSubmitBtn" onclick="saveStudent()">Save Student Record</button>
+
                 </div>
+
                 <div class="card">
+
                     <h3>
+
                         <span>Enrolled Students Directory</span>
+
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
+
+                            <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+
+                                <option value="">All Classes</option>
+
+                                <option value="9th Class">9th Class</option>
+
+                                <option value="10th Class">10th Class</option>
+
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+
+                                <option value="1st Year ICS">1st Year ICS</option>
+
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+
+                            </select>
+
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
+
                         </div>
+
                     </h3>
+
                     <table id="studentTable">
+
                         <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Parent Name</th><th>Phone</th><th>Address</th><th>Actions</th></tr></thead>
+
                         <tbody id="studentTableBody"></tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
+
 
             <!-- TEACHERS TAB -->
+
             <div id="teachers" class="tab-section">
+
                 <div class="card">
+
                     <h3 id="teacherFormTitle">Register New Teacher</h3>
+
                     <input type="hidden" id="edit_teacher_id">
+
                     <div class="form-grid">
+
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="t_name" placeholder="Sir Sajid"></div>
+
                         <div class="form-group"><label>Subject</label><input type="text" id="t_subject" placeholder="Computer Science"></div>
+
                         <div class="form-group"><label>Phone</label><input type="text" id="t_phone" placeholder="03011223344"></div>
+
                     </div>
+
                     <button class="submit-btn" id="teacherSubmitBtn" onclick="saveTeacher()">Save Teacher Record</button>
+
                 </div>
+
                 <div class="card">
+
                     <h3>
+
                         <span>Faculty Directory</span>
+
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
                             <input type="text" id="search_teacher" class="search-box" placeholder="🔍 Search teacher..." onkeyup="filterTable('teacherTable', this)">
+
                             <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export Excel</button>
+
                         </div>
+
                     </h3>
+
                     <table id="teacherTable">
+
                         <thead><tr><th>ID</th><th>Teacher Name</th><th>Subject</th><th>Phone</th><th>Actions</th></tr></thead>
+
                         <tbody id="teacherTableBody"></tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
+
 
             <!-- STAFF GPS ATTENDANCE TAB -->
+
             <div id="faculty-portal" class="tab-section">
+
                 <div class="card">
+
                     <h3>Staff Geofenced Attendance & Live Photo Capture</h3>
+
                     <div class="form-grid">
+
                         <div class="form-group">
+
                             <label for="teacherPortalSelect">Select Teacher:</label>
-                            <select id="teacherPortalSelect">
+
+                            <select id="teacherPortalSelect" class="login-select" style="background:#fff; color:#333;">
+
                                 <option value="">-- Select Teacher --</option>
+
                             </select>
+
                         </div>
+
                         <div class="form-group">
+
                             <label>Action Mode:</label>
-                            <select id="attendance_action_type">
+
+                            <select id="attendance_action_type" class="login-select" style="background:#fff; color:#333;">
+
                                 <option value="Check-In">Mark Check-In (Present)</option>
+
                                 <option value="Check-Out">Mark Check-Out (Left College)</option>
+
                             </select>
+
                         </div>
+
                     </div>
+
+
 
                     <div style="text-align: center; margin: 15px 0;">
+
                         <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--primary);">Live Camera Photo (Required at College Premises):</label>
+
                         <div style="position: relative; width: 320px; height: 240px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #cbd5e0;">
+
                             <video id="webcam" width="320" height="240" autoplay playsinline style="transform: scaleX(-1); width:100%; height:100%; object-fit:cover;"></video>
+
                             <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
+
                         </div>
+
                         <button type="button" class="btn-action" style="background:var(--primary); color:white; padding: 6px 14px; margin-top: 8px; font-size:12px;" onclick="initCameraStream()">🔄 Start/Reset Camera</button>
+
                     </div>
+
+
 
                     <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify College Location & Submit Attendance</button>
+
+                    
+
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
+
                 </div>
+
                 
+
                 <div class="card">
+
                     <h3>
+
                         <span>Staff Geofenced Logs</span>
+
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
                             <input type="text" id="search_staff_att" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('staffAttTable', this)">
+
                             <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
+
                         </div>
+
                     </h3>
+
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
+
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
+
                         <tbody id="staffAttTableBody"></tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
+
 
             <!-- STUDENT ATTENDANCE TAB -->
+
             <div id="attendance" class="tab-section">
+
                 <div class="card">
+
                     <h3 id="attFormTitle">Mark Daily Student Attendance</h3>
+
+                    <input type="hidden" id="edit_att_id">
+
                     <div class="form-grid">
+
                         <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
-                        <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
-                        <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
-                    </div>
-                    <button class="submit-btn" id="attSubmitBtn" onclick="markAttendance()">Submit Attendance</button>
-                </div>
-                <div class="card">
-                    <h3>
-                        <span>Student Attendance Logs</span>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                            <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
-                            <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
+
+                        <div class="form-group">
+
+                            <label>Class</label>
+
+                            <select id="att_class_select">
+
+                                <option value="9th Class">9th Class</option>
+
+                                <option value="10th Class">10th Class</option>
+
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+
+                                <option value="1st Year ICS">1st Year ICS</option>
+
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+
+                            </select>
+
                         </div>
-                    </h3>
-                    <table id="attendanceTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th></tr></thead>
-                        <tbody id="attendanceTableBody"></tbody>
-                    </table>
+
+                        <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
+
+                        <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
+
+                    </div>
+
+                    <button class="submit-btn" id="attSubmitBtn" onclick="markAttendance()">Submit Attendance</button>
+
                 </div>
+
+                <div class="card">
+
+                    <h3>
+
+                        <span>Student Attendance Logs</span>
+
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
+                            <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
+
+                            <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+
+                                <option value="">All Classes</option>
+
+                                <option value="9th Class">9th Class</option>
+
+                                <option value="10th Class">10th Class</option>
+
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+
+                                <option value="1st Year ICS">1st Year ICS</option>
+
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+
+                            </select>
+
+                            <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
+
+                        </div>
+
+                    </h3>
+
+                    <table id="attendanceTable">
+
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+
+                        <tbody id="attendanceTableBody"></tbody>
+
+                    </table>
+
+                </div>
+
             </div>
+
+
 
             <!-- FEES TAB -->
+
             <div id="fees" class="tab-section">
+
                 <div class="card">
+
                     <h3 id="feeFormTitle">Fee Ledger Entry</h3>
+
+                    <input type="hidden" id="edit_fee_id">
+
                     <div class="form-grid">
+
                         <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
+
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
+
                         <div class="form-group"><label>Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
+
                         <div class="form-group"><label>Date</label><input type="date" id="fee_date"></div>
+
                     </div>
+
                     <button class="submit-btn" id="feeSubmitBtn" onclick="addFee()">Save Fee Record</button>
+
                 </div>
+
                 <div class="card">
+
                     <h3>
+
                         <span>Fee Collection Records</span>
+
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
                             <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee..." onkeyup="filterTable('feeTable', this)">
-                            <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Records.xls')">📥 Export Excel</button>
-                        </div>
-                    </h3>
-                    <table id="feeTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-                        <tbody id="feeTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+                            <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
 
-        function attemptLogin() {
-            const role = document.getElementById('login_role').value;
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
+                                <option value="">All Classes</option>
 
-            if (!user || !pass) {
-                showToast('Please enter Username and Password');
-                return;
-            }
+                                <option value="9th Class">9th Class</option>
 
-            if (pass === 'admin123' || pass === 'admin') {
-                document.body.classList.add('light-on');
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('dashboard-screen').style.display = 'block';
-                document.getElementById('roleDisplayBadge').innerText = role.toUpperCase();
-                showToast('Login Successful!');
-            } else {
-                showToast('Invalid Password! (Use: admin123)');
-            }
-        }
+                                <option value="10th Class">10th Class</option>
 
-        function logout() {
-            document.body.classList.remove('light-on');
-            document.getElementById('dashboard-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            showToast('Logged out successfully');
-        }
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-section').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
 
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) targetTab.classList.add('active');
+                                <option value="1st Year ICS">1st Year ICS</option>
 
-            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-            if (activeBtn) activeBtn.classList.add('active');
-        }
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
 
-        function filterTable(tableId, input) {
-            const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(filter) ? '' : 'none';
-            });
-        }
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
 
-        function exportTableToExcel(tableID, filename = '') {
-            const downloadLink = document.createElement('a');
-            const dataType = 'application/vnd.ms-excel';
-            const tableSelect = document.getElementById(tableID);
-            const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
-            filename = filename ? filename : 'excel_data.xls';
-            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
-            downloadLink.download = filename;
-            downloadLink.click();
-        }
+                                <option value="2nd Year ICS">2nd Year ICS</option>
 
-        function saveStudent() { showToast('Student saved!'); }
-        function saveTeacher() { showToast('Teacher saved!'); }
-        function verifyAndMarkAttendance() { showToast('Attendance logged!'); }
-        function markAttendance() { showToast('Student attendance marked!'); }
-        function addFee() { showToast('Fee entry recorded!'); }
-        function initCameraStream() { showToast('Camera initialized!'); }
-    </script>
-</body>
-</html>
+                            </select>
