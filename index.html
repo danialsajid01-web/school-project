@@ -983,3 +983,269 @@
                                 <option value="2nd Year ICS">2nd Year ICS</option>
 
                             </select>
+
+                            <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Records.xls')">📥 Export Excel</button>
+
+                        </div>
+
+                    </h3>
+
+                    <table id="feeTable">
+
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+
+                        <tbody id="feeTableBody"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+
+    <script>
+
+        let currentUserRole = 'admin';
+
+
+
+        // Toast Notification System
+
+        function showToast(message, type = 'info') {
+
+            const container = document.getElementById('toast-container');
+
+            const toast = document.createElement('div');
+
+            toast.className = 'toast';
+
+            toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--accent)';
+
+            toast.innerHTML = `<span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+
+        }
+
+
+
+        // Login Functionality
+
+        function attemptLogin() {
+
+            const role = document.getElementById('login_role').value;
+
+            const user = document.getElementById('username').value.trim();
+
+            const pass = document.getElementById('password').value.trim();
+
+
+
+            // Turn on background light effect
+
+            document.body.classList.add('light-on');
+
+
+
+            // Input Validation Check
+
+            if (!user || !pass) {
+
+                showToast('براہ کرم یوزر نیم اور پاس ورڈ درج کریں۔', 'error');
+
+                return;
+
+            }
+
+
+
+            currentUserRole = role;
+
+
+
+            // Smooth Switch to Dashboard
+
+            setTimeout(() => {
+
+                document.getElementById('login-screen').style.display = 'none';
+
+                document.getElementById('dashboard-screen').style.display = 'block';
+
+                document.getElementById('roleDisplayBadge').innerText = role.toUpperCase();
+
+                
+
+                // Dynamic Navigation Links Based on Role
+
+                setupNavbar(role);
+
+                showToast(`خوش آمدید! آپ بطور ${role.toUpperCase()} لاگ ان ہو چکے ہیں۔`);
+
+            }, 600);
+
+        }
+
+
+
+        // Build Dynamic Navigation Tabs
+
+        function setupNavbar(role) {
+
+            const navContainer = document.getElementById('navbarLinks');
+
+            navContainer.innerHTML = '';
+
+
+
+            const tabs = [
+
+                { id: 'students', label: '👨‍🎓 Students', roles: ['admin', 'principal', 'teacher'] },
+
+                { id: 'teachers', label: '👨‍🏫 Teachers', roles: ['admin', 'principal'] },
+
+                { id: 'faculty-portal', label: '📸 GPS Attendance', roles: ['admin', 'teacher'] },
+
+                { id: 'attendance', label: '📋 Daily Attendance', roles: ['admin', 'principal', 'teacher'] },
+
+                { id: 'fees', label: '💳 Fee Ledger', roles: ['admin', 'principal'] }
+
+            ];
+
+
+
+            let firstActive = true;
+
+            tabs.forEach(tab => {
+
+                if (tab.roles.includes(role)) {
+
+                    const btn = document.createElement('button');
+
+                    btn.className = `nav-btn ${firstActive ? 'active' : ''}`;
+
+                    btn.innerText = tab.label;
+
+                    btn.onclick = () => switchTab(tab.id, btn);
+
+                    navContainer.appendChild(btn);
+
+
+
+                    if (firstActive) {
+
+                        switchTab(tab.id, btn);
+
+                        firstActive = false;
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+
+        // Tab Switch Logic
+
+        function switchTab(tabId, btnElement) {
+
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+
+
+            const targetTab = document.getElementById(tabId);
+
+            if (targetTab) {
+
+                targetTab.classList.add('active');
+
+            }
+
+            if (btnElement) {
+
+                btnElement.classList.add('active');
+
+            }
+
+        }
+
+
+
+        // Logout Logic
+
+        function logout() {
+
+            document.getElementById('dashboard-screen').style.display = 'none';
+
+            document.getElementById('login-screen').style.display = 'flex';
+
+            document.body.classList.remove('light-on');
+
+            document.getElementById('username').value = '';
+
+            document.getElementById('password').value = '';
+
+            showToast('آپ کامیابی سے لاگ آؤٹ ہو چکے ہیں۔');
+
+        }
+
+
+
+        // Helper functions to handle placeholders
+
+        function saveStudent() { showToast('Student Record Saved Successfully!'); }
+
+        function saveTeacher() { showToast('Teacher Record Saved Successfully!'); }
+
+        function markAttendance() { showToast('Attendance Marked!'); }
+
+        function addFee() { showToast('Fee Record Saved!'); }
+
+        function filterTable(tableId, inputElem) {
+
+            const filter = inputElem.value.toLowerCase();
+
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+            rows.forEach(row => {
+
+                row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
+
+            });
+
+        }
+
+        function exportTableToExcel(tableID, filename = ''){
+
+            showToast('Exporting to Excel...');
+
+        }
+
+        function initCameraStream() { showToast('Initializing Camera...'); }
+
+        function verifyAndMarkAttendance() { showToast('Location Verified & Attendance Marked!'); }
+
+        function fetchStudents() {}
+
+        function fetchFees() {}
+
+        function fetchAttendance() {}
+
+    </script>
+
+</body>
+
+</html>
