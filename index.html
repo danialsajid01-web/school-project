@@ -1346,8 +1346,9 @@
             const tbody = document.getElementById('marksTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
             data.forEach(m => {
+                const marksClass = m.class_name || m.class || '-';
                 tbody.innerHTML += `<tr>
-                    <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.class || '-'}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
+                    <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${marksClass}</span></td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button>
