@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKR Time)</th><th>Location Coordinates</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -648,9 +648,9 @@
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
 
-    const COLLEGE_LAT = 30.1660108; 
-    const COLLEGE_LON = 73.5671890;
-    const ALLOWED_RADIUS_METERS = 1000;
+    const COLLEGE_LAT = 30.1629793; 
+    const COLLEGE_LON = 73.5725112;
+    const ALLOWED_RADIUS_METERS = 200;
 
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
@@ -771,7 +771,6 @@
 
         if (tabId === 'faculty-portal') {
             initCameraStream();
-            fetchStaffAttendanceLogs(); // Refresh logs when opening staff attendance tab
         }
     }
 
@@ -1056,7 +1055,6 @@
         });
     }
 
-    // UPDATED STAFF ATTENDANCE FETCH WITH PAKISTANI TIMEZONE FORMATTING
     async function fetchStaffAttendanceLogs() {
         try {
             let res = await fetch(`${API_URL}/staff-attendance-logs`);
@@ -1064,30 +1062,21 @@
             if(!res.ok) return;
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
-            
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                
-                // Convert timestamp to Pakistani Standard Time (PST) format
-                let rawTime = s.timestamp || s.date || new Date();
-                let pkrTimeString = rawTime;
-                try {
-                    let d = new Date(rawTime);
-                    if(!isNaN(d.getTime())) {
-                        pkrTimeString = d.toLocaleString('en-PK', { timeZone: 'Asia/Karachi', hour12: true, dateStyle: 'medium', timeStyle: 'medium' });
-                    }
-                } catch(ex) { console.error("Time parse error:", ex); }
-
+                const timeVal = s.timestamp || s.date || '-';
                 const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
                 const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
-                
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td>
                     <td>${s.name || s.teacher_name || 'Staff Member'}</td>
                     <td>${badge}</td>
-                    <td>${pkrTimeString}</td>
+                    <td>${timeVal}</td>
                     <td>${latVal}, ${lonVal}</td>
+                    <td>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error("Error fetching staff logs:", e); }
@@ -1134,7 +1123,7 @@
     function editAttendance(id, student_id, className, date, status) {
         document.getElementById('edit_att_id').value = id;
         document.getElementById('att_student_id').value = student_id;
-        if(className) document.getElementById('att_class_select').value = className;
+        if(className && className !== '-') document.getElementById('att_class_select').value = className;
         document.getElementById('att_date').value = date.split('T')[0];
         document.getElementById('att_status').value = status;
         document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
@@ -1150,10 +1139,12 @@
             const data = await res.json();
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+            
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const attendanceClass = rec.class_name || rec.class || '-';
+                const attendanceClass = rec.class_name || rec.class || document.getElementById('att_class_select').value || '-';
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
+                
                 tbody.innerHTML += `<tr>
                     <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
                     <td><span class="${statusClass}">${rec.status}</span></td>
@@ -1476,6 +1467,7 @@
             case 'timetable': endpoint = `delete-timetable/${id}`; break;
             case 'expense': endpoint = `delete-expense/${id}`; break;
             case 'announcement': endpoint = `delete-announcement/${id}`; break;
+            case 'staff-attendance': endpoint = `delete-staff-attendance/${id}`; break;
         }
         const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
         if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
