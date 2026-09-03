@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKT)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKR)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -1100,7 +1100,6 @@
 
     async function fetchStaffAttendanceLogs() {
         try {
-            // Updated endpoint fallback to handle both possible route configurations
             let res = await fetch(`${API_URL}/staff-attendance-logs`);
             if (!res.ok) { res = await fetch(`${API_URL}/staff-attendance`); }
             if(!res.ok) return;
@@ -1111,7 +1110,6 @@
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
                 
-                // Pakistani Time formatting integration
                 const rawTime = s.timestamp || s.date || s.created_at;
                 const timeVal = formatPakistaniDateTime(rawTime);
                 
