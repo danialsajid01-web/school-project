@@ -522,6 +522,19 @@
                     <input type="hidden" id="edit_marks_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="marks_student_id" placeholder="Student ID"></div>
+                        <div class="form-group">
+                            <label>Class / Faculty</label>
+                            <select id="marks_class_name">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Subject</label><input type="text" id="marks_subject" placeholder="Mathematics"></div>
                         <div class="form-group"><label>Obtained Marks</label><input type="number" id="marks_obtained" placeholder="85"></div>
                         <div class="form-group"><label>Total Marks</label><input type="number" id="total_marks" placeholder="100"></div>
@@ -1308,6 +1321,7 @@
     async function addMarks() {
         const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
+        const class_name = document.getElementById('marks_class_name').value;
         const subject = document.getElementById('marks_subject').value;
         const marks_obtained = document.getElementById('marks_obtained').value;
         const total_marks = document.getElementById('total_marks').value;
@@ -1322,13 +1336,16 @@
         document.getElementById('marksFormTitle').innerText = "Exam Marks Entry";
         document.getElementById('marksSubmitBtn').innerText = "Save Marks";
 
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) })
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, subject, marks_obtained, total_marks}) })
         .then(() => { loadData(); showToast("Marks saved!"); });
     }
 
-    function editMarks(id, student_id, subject, obtained, total) {
+    function editMarks(id, student_id, class_name, subject, obtained, total) {
         document.getElementById('edit_marks_id').value = id;
         document.getElementById('marks_student_id').value = student_id;
+        if(class_name && class_name !== '-') {
+            document.getElementById('marks_class_name').value = class_name;
+        }
         document.getElementById('marks_subject').value = subject;
         document.getElementById('marks_obtained').value = obtained;
         document.getElementById('total_marks').value = total;
@@ -1350,7 +1367,7 @@
                 tbody.innerHTML += `<tr>
                     <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${marksClass}</span></td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${marksClass}', '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button>
                     </td>
                 </tr>`;
