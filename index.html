@@ -1148,7 +1148,7 @@
     async function markAttendance() {
         const id = document.getElementById('edit_att_id').value;
         const student_id = document.getElementById('att_student_id').value;
-        const className = document.getElementById('att_class_select').value;
+        const class_name = document.getElementById('att_class_select').value;
         const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
 
@@ -1158,7 +1158,7 @@
         try {
             const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
             const method = id ? 'PUT' : 'POST';
-            const payload = { student_id, date, status, class_name: className };
+            const payload = { student_id, date, status, class_name };
 
             document.getElementById('edit_att_id').value = '';
             document.getElementById('attFormTitle').innerText = "Mark Daily Student Attendance";
@@ -1182,10 +1182,10 @@
         }
     }
 
-    function editAttendance(id, student_id, className, date, status) {
+    function editAttendance(id, student_id, class_name, date, status) {
         document.getElementById('edit_att_id').value = id;
         document.getElementById('att_student_id').value = student_id;
-        if(className && className !== '-') document.getElementById('att_class_select').value = className;
+        if(class_name && class_name !== '-') document.getElementById('att_class_select').value = class_name;
         document.getElementById('att_date').value = date.split('T')[0];
         document.getElementById('att_status').value = status;
         document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
@@ -1204,7 +1204,7 @@
             
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const attendanceClass = rec.class_name || rec.class || document.getElementById('att_class_select').value || '-';
+                const attendanceClass = rec.class_name || rec.class || '-';
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
                 
                 tbody.innerHTML += `<tr>
