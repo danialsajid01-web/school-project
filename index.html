@@ -671,7 +671,7 @@
         teacher: { user: 'teacher', pass: 'teacher123' }
     };
 
-    // Helper function to get current Pakistani Time (PKR / Asia/Karachi)
+    // Helper function to get current Pakistani Date String (PKR / Asia/Karachi)
     function getPakistaniDateString() {
         return new Intl.DateTimeFormat('en-CA', {
             timeZone: 'Asia/Karachi',
@@ -681,6 +681,7 @@
         }).format(new Date());
     }
 
+    // Helper function to format timestamp in Pakistani Time (Asia/Karachi)
     function formatPakistaniDateTime(dateInput) {
         if (!dateInput) return '-';
         try {
@@ -1099,17 +1100,24 @@
 
     async function fetchStaffAttendanceLogs() {
         try {
+            // Updated endpoint fallback to handle both possible route configurations
             let res = await fetch(`${API_URL}/staff-attendance-logs`);
             if (!res.ok) { res = await fetch(`${API_URL}/staff-attendance`); }
             if(!res.ok) return;
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
+            
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = formatPakistaniDateTime(s.timestamp || s.date);
-                const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
-                const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                
+                // Pakistani Time formatting integration
+                const rawTime = s.timestamp || s.date || s.created_at;
+                const timeVal = formatPakistaniDateTime(rawTime);
+                
+                const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
+                const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
+                
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td>
                     <td>${s.name || s.teacher_name || 'Staff Member'}</td>
@@ -1200,7 +1208,7 @@
         } catch(e) { console.error(e); }
     }
 
-    // FEES & EDIT + VOUCHER PRINT
+    // FEES & EDIT + VOUCHER PRINT WITH CLASS
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
@@ -1248,9 +1256,9 @@
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
                 const feeClass = f.class_name || f.class || '-';
-                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}, Class: ${feeClass}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
                 tbody.innerHTML += `<tr>
-                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${feeClass}</td><td>PKR ${f.amount}</td>
+                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
                     <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
                     <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${feeClass}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
