@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKT)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -469,6 +469,19 @@
                     <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
+                        <div class="form-group">
+                            <label>Class / Faculty</label>
+                            <select id="fee_class_name">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
                         <div class="form-group"><label>Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
                         <div class="form-group"><label>Date</label><input type="date" id="fee_date"></div>
@@ -650,7 +663,7 @@
 
     const COLLEGE_LAT = 30.1629793; 
     const COLLEGE_LON = 73.5725112;
-    const ALLOWED_RADIUS_METERS = 200;
+    const ALLOWED_RADIUS_METERS = 100000;
 
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
@@ -658,12 +671,41 @@
         teacher: { user: 'teacher', pass: 'teacher123' }
     };
 
+    // Helper function to get current Pakistani Time (PKR / Asia/Karachi)
+    function getPakistaniDateString() {
+        return new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Karachi',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date());
+    }
+
+    function formatPakistaniDateTime(dateInput) {
+        if (!dateInput) return '-';
+        try {
+            const d = new Date(dateInput);
+            if (isNaN(d.getTime())) return dateInput;
+            return new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Karachi',
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }).format(d);
+        } catch (e) {
+            return dateInput;
+        }
+    }
+
     window.onload = function() {
         const isLogged = localStorage.getItem('chss_logged');
         const savedRole = localStorage.getItem('chss_role');
         const savedTab = localStorage.getItem('chss_tab');
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getPakistaniDateString();
         ['att_date', 'fee_date', 'exp_date', 'ann_date'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = todayStr;
@@ -1065,7 +1107,7 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = s.timestamp || s.date || '-';
+                const timeVal = formatPakistaniDateTime(s.timestamp || s.date);
                 const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
                 const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
                 tbody.innerHTML += `<tr>
@@ -1162,6 +1204,7 @@
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
+        const class_name = document.getElementById('fee_class_name').value;
         const amount = document.getElementById('fee_amount').value;
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
@@ -1176,13 +1219,16 @@
         document.getElementById('feeFormTitle').innerText = "Fee Ledger Entry";
         document.getElementById('feeSubmitBtn').innerText = "Save Fee Record";
 
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) })
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, amount, status, date}) })
         .then(() => { loadData(); showToast("Fee saved!"); });
     }
 
-    function editFee(id, student_id, amount, status, date) {
+    function editFee(id, student_id, class_name, amount, status, date) {
         document.getElementById('edit_fee_id').value = id;
         document.getElementById('fee_student_id').value = student_id;
+        if(class_name && class_name !== '-') {
+            document.getElementById('fee_class_name').value = class_name;
+        }
         document.getElementById('fee_amount').value = amount;
         document.getElementById('fee_status').value = status;
         document.getElementById('fee_date').value = date.split('T')[0];
@@ -1201,14 +1247,15 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                const feeClass = f.class_name || f.class || '-';
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
                 tbody.innerHTML += `<tr>
-                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${f.class || '-'}</td><td>PKR ${f.amount}</td>
+                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${feeClass}</td><td>PKR ${f.amount}</td>
                     <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
-                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${f.class || '-'}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
+                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${feeClass}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
                     </td>
                 </tr>`;
