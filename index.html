@@ -40,11 +40,12 @@
         .toast {
             background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(12px); color: white; padding: 12px 20px;
             border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-left: 4px solid var(--accent);
-            font-size: 13px; font-weight: 500; animation: slideInRight 0.4s ease;
+            font-size: 13px; font-weight: 500; animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s forwards;
             display: flex; align-items: center; gap: 10px;
         }
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
 
         #login-screen {
             display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; position: relative;
@@ -158,21 +159,51 @@
         .btn-action { padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; margin-right: 4px; }
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
+        .btn-cr { background: #560bad; color: white; }
         .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-print { background: var(--primary); color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; }
 
         table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
         th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; font-size: 13px; }
         th { background-color: #f1f5f9; color: var(--primary); font-weight: 600; }
         tr:nth-child(even) { background-color: #f8fafc; }
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-absent, .badge-unpaid { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
+        /* FEE VOUCHER PRINT STYLING */
+        #printableArea {
+            display: none;
+            background: #ffffff;
+            color: #333333;
+            padding: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea {
+                display: block !important;
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                height: 100% !important;
+                background: #ffffff !important;
+                z-index: 99999;
+                padding: 30px;
+                box-sizing: border-box;
+            }
+            button { display: none !important; }
+            @page { size: A4 portrait; margin: 0; }
+        }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
 
-    <!-- LOGIN SCREEN -->
+    <!-- ================= LOGIN SCREEN ================= -->
     <div id="login-screen">
         <div class="light-beam"></div>
         <div class="college-logo-preview">
@@ -204,8 +235,8 @@
         </div>
     </div>
 
-    <!-- DASHBOARD SCREEN -->
-    <div id="dashboard-screen">
+    <!-- ================= DASHBOARD SCREEN ================= -->
+    <div id="dashboard-screen" style="display: none;">
         <header>
             <div class="header-left">
                 <div class="header-logo">
@@ -244,6 +275,14 @@
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
                     <h2 id="stat_fees" style="margin: 0; font-size: 20px;">PKR 0</h2>
                 </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Expenses</h4>
+                    <h2 id="stat_expenses" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
+                <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
+                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
+                    <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
             </div>
 
             <!-- STUDENTS TAB -->
@@ -275,6 +314,17 @@
                         <span>Enrolled Students Directory</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
+                            <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
@@ -333,7 +383,7 @@
                     </div>
 
                     <div style="text-align: center; margin: 15px 0;">
-                        <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--primary);">Live Camera Photo:</label>
+                        <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--primary);">Live Camera Photo (Required at College Premises):</label>
                         <div style="position: relative; width: 320px; height: 240px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #cbd5e0;">
                             <video id="webcam" width="320" height="240" autoplay playsinline style="transform: scaleX(-1); width:100%; height:100%; object-fit:cover;"></video>
                             <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
@@ -342,6 +392,7 @@
                     </div>
 
                     <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify College Location & Submit Attendance</button>
+                    
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
                 </div>
                 
@@ -364,20 +415,48 @@
             <div id="attendance" class="tab-section">
                 <div class="card">
                     <h3 id="attFormTitle">Mark Daily Student Attendance</h3>
+                    <input type="hidden" id="edit_att_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
+                        <div class="form-group">
+                            <label>Class</label>
+                            <select id="att_class_select">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
                         <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
                     </div>
-                    <button class="submit-btn" onclick="markAttendance()">Submit Attendance</button>
+                    <button class="submit-btn" id="attSubmitBtn" onclick="markAttendance()">Submit Attendance</button>
                 </div>
                 <div class="card">
                     <h3>
                         <span>Student Attendance Logs</span>
-                        <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
+                            <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="attendanceTable">
-                        <thead><tr><th>ID</th><th>Student ID</th><th>Date</th><th>Status</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Date</th><th>Status</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="attendanceTableBody"></tbody>
                     </table>
                 </div>
@@ -387,390 +466,1046 @@
             <div id="fees" class="tab-section">
                 <div class="card">
                     <h3 id="feeFormTitle">Fee Ledger Entry</h3>
+                    <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
                         <div class="form-group"><label>Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
                         <div class="form-group"><label>Date</label><input type="date" id="fee_date"></div>
                     </div>
-                    <button class="submit-btn" onclick="addFee()">Save Fee Record</button>
+                    <button class="submit-btn" id="feeSubmitBtn" onclick="addFee()">Save Fee Record</button>
                 </div>
                 <div class="card">
                     <h3>
                         <span>Fee Collection Records</span>
-                        <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Records.xls')">📥 Export Excel</button>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee..." onkeyup="filterTable('feeTable', this)">
+                            <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export Excel</button>
+                        </div>
                     </h3>
                     <table id="feeTable">
-                        <thead><tr><th>ID</th><th>Student ID</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Amount</th><th>Status</th><th>Date</th><th>Voucher</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="feeTableBody"></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- MARKS TAB -->
+            <div id="marks" class="tab-section">
+                <div class="card">
+                    <h3 id="marksFormTitle">Exam Marks Entry</h3>
+                    <input type="hidden" id="edit_marks_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Student ID</label><input type="number" id="marks_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="marks_subject" placeholder="Mathematics"></div>
+                        <div class="form-group"><label>Obtained Marks</label><input type="number" id="marks_obtained" placeholder="85"></div>
+                        <div class="form-group"><label>Total Marks</label><input type="number" id="total_marks" placeholder="100"></div>
+                    </div>
+                    <button class="submit-btn" id="marksSubmitBtn" onclick="addMarks()">Save Marks</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Exam Results Ledger</span>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
+                            <select id="filter_marks_class" onchange="fetchMarks()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                            <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export Excel</button>
+                        </div>
+                    </h3>
+                    <table id="marksTable">
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Subject</th><th>Obtained</th><th>Total</th><th>Actions</th></tr></thead>
+                        <tbody id="marksTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TIMETABLE TAB -->
+            <div id="timetable" class="tab-section">
+                <div class="card">
+                    <h3 id="ttFormTitle">Add Class Timetable</h3>
+                    <input type="hidden" id="edit_tt_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year Pre-Medical"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Physics"></div>
+                        <div class="form-group"><label>Teacher Name</label><input type="text" id="tt_teacher" placeholder="Sir Sajid"></div>
+                        <div class="form-group"><label>Time Slot</label><input type="text" id="tt_time" placeholder="08:30 AM - 09:15 AM"></div>
+                    </div>
+                    <button class="submit-btn" id="ttSubmitBtn" onclick="addTimetable()">Save Timetable</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Master Timetable</span>
+                        <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search timetable..." onkeyup="filterTable('timetableTable', this)">
+                    </h3>
+                    <table id="timetableTable">
+                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Actions</th></tr></thead>
+                        <tbody id="timetableTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EXPENSES TAB -->
+            <div id="expenses" class="tab-section">
+                <div class="card">
+                    <h3 id="expFormTitle">College Expense / Salary Entry</h3>
+                    <input type="hidden" id="edit_exp_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Title</label><input type="text" id="exp_title" placeholder="Utility Bills"></div>
+                        <div class="form-group"><label>Category</label><select id="exp_category"><option value="Salary">Salary</option><option value="Utility Bill">Utility Bill</option><option value="Maintenance">Maintenance</option><option value="Supplies">Supplies</option></select></div>
+                        <div class="form-group"><label>Amount (PKR)</label><input type="number" id="exp_amount" placeholder="30000"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="exp_date"></div>
+                    </div>
+                    <button class="submit-btn" id="expSubmitBtn" onclick="addExpense()">Save Expense</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Financial Expense Ledger</span>
+                        <input type="text" id="search_expense" class="search-box" placeholder="🔍 Search expenses..." onkeyup="filterTable('expenseTable', this)">
+                    </h3>
+                    <table id="expenseTable">
+                        <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="expenseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ANNOUNCEMENTS TAB -->
+            <div id="announcements" class="tab-section">
+                <div class="card">
+                    <h3 id="annFormTitle">Publish College Notice</h3>
+                    <input type="hidden" id="edit_ann_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Notice Title</label><input type="text" id="ann_title" placeholder="Mid-Term Schedule"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="ann_date"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;"><label>Message</label><textarea id="ann_message" rows="3" placeholder="Write notice details..."></textarea></div>
+                    <button class="submit-btn" id="annSubmitBtn" onclick="addAnnouncement()">Publish Notice</button>
+                </div>
+                <div class="card">
+                    <h3>
+                        <span>Notice Board</span>
+                        <input type="text" id="search_announcement" class="search-box" placeholder="🔍 Search notices..." onkeyup="filterTable('announcementTable', this)">
+                    </h3>
+                    <table id="announcementTable">
+                        <thead><tr><th>ID</th><th>Title</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="announcementTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REPORT CARD TAB -->
+            <div id="report-card" class="tab-section">
+                <div class="card">
+                    <h3>Generate Student Report Card</h3>
+                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="number" id="rc_student_id" placeholder="Enter Student ID"></div></div>
+                    <button class="submit-btn" onclick="fetchReportCard()">Generate Report Card</button>
+                </div>
+                <div class="card" id="reportCardResult" style="display: none; background: #fff; border: 2px dashed var(--primary);">
+                    <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 15px;">
+                        <h2 style="color: var(--primary); margin: 0;">City College Minchinabad (CHSS)</h2>
+                        <p style="margin: 4px 0; color: #666; font-size: 13px;">Official Annual Examination Report Card</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px;">
+                        <div><strong>Student Name:</strong> <span id="rc_name"></span></div>
+                        <div><strong>Roll No:</strong> <span id="rc_roll"></span></div>
+                        <div><strong>Class:</strong> <span id="rc_class"></span></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Subject</th><th>Obtained Marks</th><th>Total Marks</th><th>Percentage</th></tr></thead>
+                        <tbody id="rcTableBody"></tbody>
+                    </table>
+                    <div style="margin-top: 15px; text-align: right;"><button class="submit-btn" onclick="window.print()">Print Report Card</button></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        let currentUserRole = 'admin';
-        let mediaStream = null;
+    <!-- CLEAN FEE VOUCHER PRINTABLE AREA -->
+    <div id="printableArea"></div>
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--accent)';
-            toast.innerHTML = `<span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+<script>
+    let currentUserRole = 'admin';
+    let currentActiveTab = 'students';
 
-        // Page Load Session Check
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('erp_user');
-            const savedRole = localStorage.getItem('erp_role');
-            if (savedUser && savedRole) {
-                currentUserRole = savedRole;
-                loadDashboardUI(savedRole);
-            }
+    const COLLEGE_LAT = 30.1629793; 
+    const COLLEGE_LON = 73.5725112;
+    const ALLOWED_RADIUS_METERS = 200;
+
+    const CREDENTIALS = {
+        admin: { user: 'admin', pass: 'admin123' },
+        principal: { user: 'principal', pass: 'principal123' },
+        teacher: { user: 'teacher', pass: 'teacher123' }
+    };
+
+    window.onload = function() {
+        const isLogged = localStorage.getItem('chss_logged');
+        const savedRole = localStorage.getItem('chss_role');
+        const savedTab = localStorage.getItem('chss_tab');
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        ['att_date', 'fee_date', 'exp_date', 'ann_date'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = todayStr;
         });
 
-        function attemptLogin() {
-            const role = document.getElementById('login_role').value;
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-
-            if (!user || !pass) {
-                showToast('براہ کرم یوزر نیم اور پاس ورڈ درج کریں۔', 'error');
-                return;
-            }
-
+        if (isLogged === 'true' && savedRole) {
+            currentUserRole = savedRole;
+            currentActiveTab = savedTab || 'students';
             document.body.classList.add('light-on');
-
-            // Save session to localStorage
-            localStorage.setItem('erp_user', user);
-            localStorage.setItem('erp_role', role);
-
-            setTimeout(() => {
-                loadDashboardUI(role);
-                showToast(`خوش آمدید! آپ بطور ${role.toUpperCase()} لاگ ان ہو چکے ہیں۔`);
-            }, 600);
-        }
-
-        function loadDashboardUI(role) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('dashboard-screen').style.display = 'block';
-            document.getElementById('roleDisplayBadge').innerText = role.toUpperCase();
-            
-            setupNavbar(role);
-            loadAllBackendData();
+            setupNavbarByRole();
+            loadData();
+            setTimeout(() => {
+                const targetBtn = document.querySelector(`.nav-btn[onclick*="${currentActiveTab}"]`);
+                if(targetBtn) switchTab(currentActiveTab, targetBtn);
+            }, 50);
+        } else {
+            localStorage.removeItem('chss_logged');
+            document.body.classList.remove('light-on');
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard-screen').style.display = 'none';
+        }
+    };
+
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `✅ <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function attemptLogin() {
+        const role = document.getElementById('login_role').value;
+        const uInput = document.getElementById('username').value.trim();
+        const pInput = document.getElementById('password').value.trim();
+
+        const validCreds = CREDENTIALS[role];
+
+        if (uInput === validCreds.user && pInput === validCreds.pass) {
+            currentUserRole = role;
+            localStorage.setItem('chss_role', role);
+            localStorage.setItem('chss_logged', 'true');
+            localStorage.setItem('chss_tab', 'students');
+
+            document.body.classList.add('light-on');
+            showToast(`Logged in successfully as ${role.toUpperCase()}`);
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard-screen').style.display = 'block';
+                setupNavbarByRole();
+                loadData();
+            }, 400);
+        } else {
+            alert(`Ghalat Username ya Password! (${role.toUpperCase()} ke liye correct credentials enter karein).`);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('chss_logged');
+        localStorage.removeItem('chss_role');
+        localStorage.removeItem('chss_tab');
+        document.body.classList.remove('light-on');
+        document.getElementById('dashboard-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        showToast("Logged out successfully!");
+    }
+
+    function setupNavbarByRole() {
+        const navbar = document.getElementById('navbarLinks');
+        document.getElementById('roleDisplayBadge').innerText = `${currentUserRole} PORTAL`;
+        
+        let navHtml = `<button class="nav-btn active" onclick="switchTab('students', this)">👨‍🎓 Students</button>
+                       <button class="nav-btn" onclick="switchTab('teachers', this)">👨‍🏫 Faculty</button>
+                       <button class="nav-btn" onclick="switchTab('faculty-portal', this)">📍 Staff GPS</button>
+                       <button class="nav-btn" onclick="switchTab('attendance', this)">📋 Attendance</button>`;
+        
+        if (currentUserRole !== 'teacher') {
+            navHtml += `<button class="nav-btn" onclick="switchTab('fees', this)">💳 Fees</button>`;
+        }
+        
+        navHtml += `<button class="nav-btn" onclick="switchTab('marks', this)">📊 Results</button>
+                    <button class="nav-btn" onclick="switchTab('timetable', this)">🕒 Timetable</button>`;
+        
+        if (currentUserRole !== 'teacher') {
+            navHtml += `<button class="nav-btn" onclick="switchTab('expenses', this)">💰 Expenses</button>`;
+        }
+        
+        navHtml += `<button class="nav-btn" onclick="switchTab('announcements', this)">📢 Notices</button>
+                    <button class="nav-btn" onclick="switchTab('report-card', this)">📜 Report Card</button>`;
+
+        navbar.innerHTML = navHtml;
+        document.getElementById('statsContainer').style.display = (currentUserRole === 'teacher') ? 'none' : 'grid';
+    }
+
+    function switchTab(tabId, btnElement) {
+        currentActiveTab = tabId;
+        localStorage.setItem('chss_tab', tabId);
+        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if(btnElement) btnElement.classList.add('active');
+
+        if (tabId === 'faculty-portal') {
             initCameraStream();
         }
+    }
 
-        function setupNavbar(role) {
-            const navContainer = document.getElementById('navbarLinks');
-            navContainer.innerHTML = '';
+    function filterTable(tableID, searchInput) {
+        const filter = searchInput.value.toLowerCase();
+        const table = document.getElementById(tableID);
+        const trs = table.getElementsByTagName('tr');
 
-            const tabs = [
-                { id: 'students', label: '👨‍🎓 Students', roles: ['admin', 'principal', 'teacher'] },
-                { id: 'teachers', label: '👨‍🏫 Teachers', roles: ['admin', 'principal'] },
-                { id: 'faculty-portal', label: '📸 GPS Attendance', roles: ['admin', 'teacher'] },
-                { id: 'attendance', label: '📋 Daily Attendance', roles: ['admin', 'principal', 'teacher'] },
-                { id: 'fees', label: '💳 Fee Ledger', roles: ['admin', 'principal'] }
-            ];
-
-            let firstActive = true;
-            tabs.forEach(tab => {
-                if (tab.roles.includes(role)) {
-                    const btn = document.createElement('button');
-                    btn.className = `nav-btn ${firstActive ? 'active' : ''}`;
-                    btn.innerText = tab.label;
-                    btn.onclick = () => switchTab(tab.id, btn);
-                    navContainer.appendChild(btn);
-
-                    if (firstActive) {
-                        switchTab(tab.id, btn);
-                        firstActive = false;
+        for (let i = 1; i < trs.length; i++) {
+            let visible = false;
+            const tds = trs[i].getElementsByTagName('td');
+            for (let j = 0; j < tds.length; j++) {
+                if (tds[j]) {
+                    const textValue = tds[j].textContent || tds[j].innerText;
+                    if (textValue.toLowerCase().indexOf(filter) > -1) {
+                        visible = true;
+                        break;
                     }
                 }
-            });
-        }
-
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-
-            const targetTab = document.getElementById(tabId);
-            if (targetTab) targetTab.classList.add('active');
-            if (btnElement) btnElement.classList.add('active');
-
-            if (tabId === 'faculty-portal') {
-                initCameraStream();
             }
+            trs[i].style.display = visible ? '' : 'none';
         }
+    }
 
-        function logout() {
-            localStorage.removeItem('erp_user');
-            localStorage.removeItem('erp_role');
-            if (mediaStream) {
-                mediaStream.getTracks().forEach(track => track.stop());
-            }
-            document.getElementById('dashboard-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-            document.body.classList.remove('light-on');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            showToast('آپ کامیابی سے لاگ آؤٹ ہو چکے ہیں۔');
-        }
+    async function loadData() {
+        if(currentUserRole !== 'teacher') fetchDashboardStats();
+        fetchStudents();
+        fetchTeachers();
+        fetchStaffAttendanceLogs();
+        if(currentUserRole !== 'teacher') fetchFees();
+        fetchMarks();
+        fetchAttendance();
+        fetchTimetable();
+        if(currentUserRole !== 'teacher') fetchExpenses();
+        fetchAnnouncements();
+    }
 
-        // Camera Initialization
-        async function initCameraStream() {
-            const video = document.getElementById('webcam');
-            if (!video) return;
-
-            try {
-                if (mediaStream) {
-                    mediaStream.getTracks().forEach(track => track.stop());
-                }
-                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                video.srcObject = mediaStream;
-            } catch (err) {
-                showToast('کیمرا تک رسائی ممکن نہیں ہوئی۔ اجازت چیک کریں۔', 'error');
-                console.error('Camera error:', err);
-            }
-        }
-
-        // Backend Data Fetching Functions
-        async function loadAllBackendData() {
-            await Promise.all([
-                fetchStudents(),
-                fetchTeachers(),
-                fetchAttendance(),
-                fetchFees()
-            ]);
-        }
-
-        async function fetchStudents() {
-            try {
-                const res = await fetch(`${API_URL}/students`);
-                if (!res.ok) throw new Error('Failed to fetch students');
-                const data = await res.json();
-                
-                document.getElementById('stat_students').innerText = data.length || 0;
-                
-                const tbody = document.getElementById('studentTableBody');
-                tbody.innerHTML = '';
-                data.forEach(s => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${s.id || '-'}</td>
-                            <td>${s.name || '-'}</td>
-                            <td>${s.roll_no || '-'}</td>
-                            <td>${s.class_name || '-'}</td>
-                            <td>${s.parent_name || '-'}</td>
-                            <td>${s.phone || '-'}</td>
-                            <td>${s.address || '-'}</td>
-                            <td><button class="btn-action btn-delete" onclick="deleteStudent(${s.id})">Delete</button></td>
-                        </tr>`;
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function fetchTeachers() {
-            try {
-                const res = await fetch(`${API_URL}/teachers`);
-                if (!res.ok) throw new Error('Failed to fetch teachers');
-                const data = await res.json();
-                
-                document.getElementById('stat_teachers').innerText = data.length || 0;
-                
-                const tbody = document.getElementById('teacherTableBody');
-                const select = document.getElementById('teacherPortalSelect');
-                tbody.innerHTML = '';
-                select.innerHTML = '<option value="">-- Select Teacher --</option>';
-
-                data.forEach(t => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${t.id || '-'}</td>
-                            <td>${t.name || '-'}</td>
-                            <td>${t.subject || '-'}</td>
-                            <td>${t.phone || '-'}</td>
-                            <td><button class="btn-action btn-delete" onclick="deleteTeacher(${t.id})">Delete</button></td>
-                        </tr>`;
-                    
-                    select.innerHTML += `<option value="${t.id}">${t.name} (${t.subject})</option>`;
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function fetchAttendance() {
-            try {
-                const res = await fetch(`${API_URL}/attendance`);
-                if (!res.ok) throw new Error('Failed to fetch attendance');
-                const data = await res.json();
-                
-                const tbody = document.getElementById('attendanceTableBody');
-                tbody.innerHTML = '';
-                data.forEach(a => {
-                    const badgeClass = a.status === 'Present' ? 'badge-present' : 'badge-absent';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${a.id || '-'}</td>
-                            <td>${a.student_id || '-'}</td>
-                            <td>${a.date || '-'}</td>
-                            <td><span class="${badgeClass}">${a.status || '-'}</span></td>
-                        </tr>`;
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function fetchFees() {
-            try {
-                const res = await fetch(`${API_URL}/fees`);
-                if (!res.ok) throw new Error('Failed to fetch fees');
-                const data = await res.json();
-                
-                let totalPaid = 0;
-                const tbody = document.getElementById('feeTableBody');
-                tbody.innerHTML = '';
-
-                data.forEach(f => {
-                    if (f.status === 'Paid') totalPaid += Number(f.amount || 0);
-                    const badgeClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${f.id || '-'}</td>
-                            <td>${f.student_id || '-'}</td>
-                            <td>PKR ${f.amount || 0}</td>
-                            <td><span class="${badgeClass}">${f.status || '-'}</span></td>
-                            <td>${f.date || '-'}</td>
-                        </tr>`;
-                });
-
-                document.getElementById('stat_fees').innerText = `PKR ${totalPaid.toLocaleString()}`;
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // Form Submit Operations
-        async function saveStudent() {
-            const body = {
-                name: document.getElementById('name').value,
-                roll_no: document.getElementById('roll_no').value,
-                class_name: document.getElementById('class_name').value,
-                parent_name: document.getElementById('parent_name').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/students`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    showToast('Student saved successfully!');
-                    fetchStudents();
-                }
-            } catch(e) { showToast('Error saving student', 'error'); }
-        }
-
-        async function saveTeacher() {
-            const body = {
-                name: document.getElementById('t_name').value,
-                subject: document.getElementById('t_subject').value,
-                phone: document.getElementById('t_phone').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/teachers`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    showToast('Teacher saved successfully!');
-                    fetchTeachers();
-                }
-            } catch(e) { showToast('Error saving teacher', 'error'); }
-        }
-
-        async function markAttendance() {
-            const body = {
-                student_id: document.getElementById('att_student_id').value,
-                date: document.getElementById('att_date').value,
-                status: document.getElementById('att_status').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/attendance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    showToast('Attendance recorded!');
-                    fetchAttendance();
-                }
-            } catch(e) { showToast('Error marking attendance', 'error'); }
-        }
-
-        async function addFee() {
-            const body = {
-                student_id: document.getElementById('fee_student_id').value,
-                amount: document.getElementById('fee_amount').value,
-                status: document.getElementById('fee_status').value,
-                date: document.getElementById('fee_date').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/fees`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    showToast('Fee saved!');
-                    fetchFees();
-                }
-            } catch(e) { showToast('Error adding fee', 'error'); }
-        }
-
-        function verifyAndMarkAttendance() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const status = document.getElementById('location-status');
-                    status.style.color = 'var(--success)';
-                    status.innerText = `Verified Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
-                    showToast('Location verified and attendance recorded!');
-                }, err => {
-                    showToast('GPS Permission Denied', 'error');
-                });
-            }
-        }
-
-        function filterTable(tableId, inputElem) {
-            const filter = inputElem.value.toLowerCase();
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            rows.forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
-            });
-        }
-
-        function exportTableToExcel(tableID, filename = ''){
-            const downloadLink = document.createElement("a");
-            const tableSelect = document.getElementById(tableID);
-            const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+    async function fetchDashboardStats() {
+        try {
+            const res = await fetch(`${API_URL}/dashboard-stats`);
+            const data = await res.json();
+            document.getElementById('stat_students').innerText = data.totalStudents;
+            document.getElementById('stat_teachers').innerText = data.totalTeachers;
+            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
+            document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
             
-            filename = filename ? filename + '.xls' : 'excel_data.xls';
-            downloadLink.href = 'data:application/vnd.ms-excel,' + tableHTML;
+            const netBalance = data.totalFees - data.totalExpenses;
+            const balanceElement = document.getElementById('stat_balance');
+            balanceElement.innerText = `PKR ${netBalance}`;
+            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+        } catch(e) { console.error(e); }
+    }
+
+    async function fetchStudents() {
+        try {
+            const selectedClass = document.getElementById('filter_class').value;
+            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            data.forEach(s => {
+                let displayName = s.name;
+                if(s.is_cr) {
+                    displayName += ` <span style="background:var(--accent); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;">(CR)</span>`;
+                }
+                const crBtnText = s.is_cr ? 'Remove CR' : 'Make CR';
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                    <td>
+                        <button class="btn-action btn-cr" onclick="toggleCR(${s.id}, ${s.is_cr ? 0 : 1})">${crBtnText}</button>
+                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function toggleCR(id, makeCR) {
+        showToast(makeCR ? "Assigning CR status..." : "Removing CR status...");
+        try {
+            await fetch(`${API_URL}/update-student-cr/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ is_cr: makeCR })
+            });
+            fetchStudents();
+            showToast("Updated CR status successfully!");
+        } catch(err) {
+            console.error(err);
+            showToast("Failed to update CR status.");
+        }
+    }
+
+    async function saveStudent() {
+        const id = document.getElementById('edit_student_id').value;
+        const name = document.getElementById('name').value;
+        const roll_no = document.getElementById('roll_no').value;
+        const class_name = document.getElementById('class_name').value;
+        const parent_name = document.getElementById('parent_name').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+
+        if(!name || !roll_no) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating student..." : "Adding student instantly...");
+        resetStudentForm();
+        fetchStudents();
+
+        const endpoint = id ? `${API_URL}/update-student/${id}` : `${API_URL}/add-student`;
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
+        }).then(() => { loadData(); showToast("Saved successfully!"); });
+    }
+
+    function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
+        document.getElementById('edit_student_id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('roll_no').value = roll_no;
+        document.getElementById('class_name').value = class_name;
+        document.getElementById('parent_name').value = parent_name;
+        document.getElementById('phone').value = phone;
+        document.getElementById('address').value = address;
+        document.getElementById('studentFormTitle').innerText = "Edit Student Record";
+        document.getElementById('studentSubmitBtn').innerText = "Update Student";
+    }
+
+    function resetStudentForm() {
+        document.getElementById('edit_student_id').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('roll_no').value = '';
+        document.getElementById('parent_name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('studentFormTitle').innerText = "Register New Student";
+        document.getElementById('studentSubmitBtn').innerText = "Save Student Record";
+    }
+
+    async function fetchTeachers() {
+        try {
+            const res = await fetch(`${API_URL}/teachers`);
+            const data = await res.json();
+            const tbody = document.getElementById('teacherTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            const portalSelect = document.getElementById('teacherPortalSelect');
+            portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
+
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
+                    </td>
+                </tr>`;
+                let opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = `${t.name} (${t.subject})`;
+                portalSelect.appendChild(opt);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function saveTeacher() {
+        const id = document.getElementById('edit_teacher_id').value;
+        const name = document.getElementById('t_name').value;
+        const subject = document.getElementById('t_subject').value;
+        const phone = document.getElementById('t_phone').value;
+
+        if(!name || !subject) { alert('Fill out required fields!'); return; }
+        document.getElementById('edit_teacher_id').value = '';
+        document.getElementById('t_name').value = '';
+        document.getElementById('t_subject').value = '';
+        document.getElementById('t_phone').value = '';
+
+        showToast("Saving teacher...");
+        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, subject, phone})
+        }).then(() => { loadData(); showToast("Teacher saved successfully!"); });
+    }
+
+    function editTeacher(id, name, subject, phone) {
+        document.getElementById('edit_teacher_id').value = id;
+        document.getElementById('t_name').value = name;
+        document.getElementById('t_subject').value = subject;
+        document.getElementById('t_phone').value = phone;
+        document.getElementById('teacherFormTitle').innerText = "Edit Teacher Record";
+        document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
+    }
+
+    function initCameraStream() {
+        const video = document.getElementById('webcam');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { console.error("Camera access error:", err); });
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2-lat1) * Math.PI/180;
+        const Δλ = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function verifyAndMarkAttendance() {
+        const teacherId = document.getElementById('teacherPortalSelect').value;
+        const actionType = document.getElementById('attendance_action_type').value;
+        const statusMsg = document.getElementById('location-status');
+
+        if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
+        
+        statusMsg.style.color = "orange";
+        statusMsg.textContent = "🔍 GPS location verify ki ja rahi hai...";
+
+        if (!navigator.geolocation) { alert("Geolocation is not supported by your browser"); return; }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+            const distance = calculateDistance(userLat, userLon, COLLEGE_LAT, COLLEGE_LON);
+
+            if (distance <= ALLOWED_RADIUS_METERS) {
+                statusMsg.style.color = "green";
+                statusMsg.textContent = `📍 Location Verified! (Approx. ${Math.round(distance)}m away). Capturing photo...`;
+                capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
+            } else {
+                statusMsg.style.color = "red";
+                statusMsg.textContent = `❌ Access Denied! Aap college ke premises se bahar hain (${Math.round(distance)}m door).`;
+            }
+        }, (error) => {
+            statusMsg.style.color = "red";
+            statusMsg.textContent = "⚠️ Location error: GPS permission allow karein. " + error.message;
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    }
+
+    function capturePhotoAndSubmitStaff(teacherId, lat, lon, actionType) {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('snapshot');
+        const statusMsg = document.getElementById('location-status');
+
+        if (!video.srcObject) {
+            statusMsg.style.color = "red";
+            statusMsg.textContent = "⚠️ Camera not initialized. Click 'Start Camera' button first.";
+            return;
+        }
+
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/png');
+
+        statusMsg.textContent = "📤 Submitting attendance & photo to server...";
+        sendStaffAttendanceToServer(teacherId, lat, lon, imageData, actionType);
+    }
+
+    function sendStaffAttendanceToServer(teacherId, lat, lon, photoData, actionType) {
+        fetch(`${API_URL}/mark-teacher-attendance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacher_id: teacherId, latitude: lat, longitude: lon, photo: photoData, status_type: actionType })
+        }).then(res => res.json()).then(data => {
+            document.getElementById('location-status').style.color = "green";
+            document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
+            showToast(`Staff Status: ${actionType} recorded successfully!`);
+            fetchStaffAttendanceLogs();
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('location-status').style.color = "red";
+            document.getElementById('location-status').textContent = "Server connection error!";
+        });
+    }
+
+    async function fetchStaffAttendanceLogs() {
+        try {
+            let res = await fetch(`${API_URL}/staff-attendance-logs`);
+            if (!res.ok) { res = await fetch(`${API_URL}/staff-attendance`); }
+            if(!res.ok) return;
+            const data = await res.json();
+            const tbody = document.getElementById('staffAttTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
+            data.forEach(s => {
+                const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
+                const timeVal = s.timestamp || s.date || '-';
+                const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
+                const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                tbody.innerHTML += `<tr>
+                    <td>${s.id}</td>
+                    <td>${s.name || s.teacher_name || 'Staff Member'}</td>
+                    <td>${badge}</td>
+                    <td>${timeVal}</td>
+                    <td>${latVal}, ${lonVal}</td>
+                </tr>`;
+            });
+        } catch(e) { console.error("Error fetching staff logs:", e); }
+    }
+
+    // STUDENT ATTENDANCE & EDIT (Updated to use selected class from dropdown)
+    async function markAttendance() {
+        const id = document.getElementById('edit_att_id').value;
+        const student_id = document.getElementById('att_student_id').value;
+        const className = document.getElementById('att_class_select').value;
+        const date = document.getElementById('att_date').value;
+        const status = document.getElementById('att_status').value;
+
+        if(!student_id || !date) { alert('Please enter Student ID and Date!'); return; }
+        showToast(id ? "Updating attendance..." : "Submitting attendance...");
+
+        try {
+            const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
+            const method = id ? 'PUT' : 'POST';
+            const payload = { student_id, date, status, class_name: className };
+
+            document.getElementById('edit_att_id').value = '';
+            document.getElementById('attFormTitle').innerText = "Mark Daily Student Attendance";
+            document.getElementById('attSubmitBtn').innerText = "Submit Attendance";
+
+            const res = await fetch(endpoint, { 
+                method: method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+
+            if(res.ok) {
+                loadData(); 
+                showToast("Attendance saved successfully!");
+            } else {
+                showToast("Failed to save attendance.");
+            }
+        } catch(err) {
+            console.error(err);
+            showToast("Error connecting to server.");
+        }
+    }
+
+    function editAttendance(id, student_id, className, date, status) {
+        document.getElementById('edit_att_id').value = id;
+        document.getElementById('att_student_id').value = student_id;
+        if(className) document.getElementById('att_class_select').value = className;
+        document.getElementById('att_date').value = date.split('T')[0];
+        document.getElementById('att_status').value = status;
+        document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
+        document.getElementById('attSubmitBtn').innerText = "Update Attendance";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchAttendance() {
+        try {
+            const selectedClass = document.getElementById('filter_att_class').value;
+            const url = selectedClass ? `${API_URL}/all-attendance?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/all-attendance`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
+            data.forEach(rec => {
+                const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
+                const attendanceClass = rec.class_name || rec.class || '-';
+                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
+                tbody.innerHTML += `<tr>
+                    <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
+                    <td><span class="${statusClass}">${rec.status}</span></td>
+                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editAttendance(${rec.id}, ${rec.student_id}, '${attendanceClass}', '${rec.date}', '${rec.status}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // FEES & EDIT + VOUCHER PRINT
+    async function addFee() {
+        const id = document.getElementById('edit_fee_id').value;
+        const student_id = document.getElementById('fee_student_id').value;
+        const amount = document.getElementById('fee_amount').value;
+        const status = document.getElementById('fee_status').value;
+        const date = document.getElementById('fee_date').value;
+
+        if(!student_id || !amount) { alert('Enter Student ID and Amount!'); return; }
+        showToast(id ? "Updating fee..." : "Saving fee record...");
+
+        const endpoint = id ? `${API_URL}/update-fee/${id}` : `${API_URL}/add-fee`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_fee_id').value = '';
+        document.getElementById('feeFormTitle').innerText = "Fee Ledger Entry";
+        document.getElementById('feeSubmitBtn').innerText = "Save Fee Record";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, amount, status, date}) })
+        .then(() => { loadData(); showToast("Fee saved!"); });
+    }
+
+    function editFee(id, student_id, amount, status, date) {
+        document.getElementById('edit_fee_id').value = id;
+        document.getElementById('fee_student_id').value = student_id;
+        document.getElementById('fee_amount').value = amount;
+        document.getElementById('fee_status').value = status;
+        document.getElementById('fee_date').value = date.split('T')[0];
+        document.getElementById('feeFormTitle').innerText = "Edit Fee Record";
+        document.getElementById('feeSubmitBtn').innerText = "Update Fee";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchFees() {
+        try {
+            const selectedClass = document.getElementById('filter_fee_class').value;
+            const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('feeTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
+            data.forEach(f => {
+                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                tbody.innerHTML += `<tr>
+                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${f.class || '-'}</td><td>PKR ${f.amount}</td>
+                    <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
+                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${f.class || '-'}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
+                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    function printFeeVoucher(name, roll, className, amount, status, date) {
+        const area = document.getElementById('printableArea');
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Fee Voucher & Payment Receipt</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div><strong>Student Name:</strong> ${name}</div>
+                <div><strong>Roll No:</strong> ${roll}</div>
+                <div><strong>Class:</strong> ${className}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <tr>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Fee Description / Particulars</th>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: right;">Amount (PKR)</th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px;">Tuition Dues & College Funds (${date})</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; text-align: right;">PKR ${amount}</td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">Payment Status</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; text-align: right; color:${status==='Paid'?'#008037':'#d90429'};">${status}</td>
+                </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Cashier Signature</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
+    // MARKS / RESULTS & EDIT
+    async function addMarks() {
+        const id = document.getElementById('edit_marks_id').value;
+        const student_id = document.getElementById('marks_student_id').value;
+        const subject = document.getElementById('marks_subject').value;
+        const marks_obtained = document.getElementById('marks_obtained').value;
+        const total_marks = document.getElementById('total_marks').value;
+
+        if(!student_id || !subject) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating marks..." : "Saving marks...");
+
+        const endpoint = id ? `${API_URL}/update-marks/${id}` : `${API_URL}/add-marks`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_marks_id').value = '';
+        document.getElementById('marksFormTitle').innerText = "Exam Marks Entry";
+        document.getElementById('marksSubmitBtn').innerText = "Save Marks";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, subject, marks_obtained, total_marks}) })
+        .then(() => { loadData(); showToast("Marks saved!"); });
+    }
+
+    function editMarks(id, student_id, subject, obtained, total) {
+        document.getElementById('edit_marks_id').value = id;
+        document.getElementById('marks_student_id').value = student_id;
+        document.getElementById('marks_subject').value = subject;
+        document.getElementById('marks_obtained').value = obtained;
+        document.getElementById('total_marks').value = total;
+        document.getElementById('marksFormTitle').innerText = "Edit Exam Marks";
+        document.getElementById('marksSubmitBtn').innerText = "Update Marks";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchMarks() {
+        try {
+            const selectedClass = document.getElementById('filter_marks_class').value;
+            const url = selectedClass ? `${API_URL}/marks?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/marks`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const tbody = document.getElementById('marksTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
+            data.forEach(m => {
+                tbody.innerHTML += `<tr>
+                    <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td>${m.class || '-'}</td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // TIMETABLE & EDIT
+    async function addTimetable() {
+        const id = document.getElementById('edit_tt_id').value;
+        const class_name = document.getElementById('tt_class').value;
+        const subject = document.getElementById('tt_subject').value;
+        const teacher_name = document.getElementById('tt_teacher').value;
+        const time_slot = document.getElementById('tt_time').value;
+
+        if(!class_name || !subject) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating timetable..." : "Saving timetable...");
+
+        const endpoint = id ? `${API_URL}/update-timetable/${id}` : `${API_URL}/add-timetable`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_tt_id').value = '';
+        document.getElementById('ttFormTitle').innerText = "Add Class Timetable";
+        document.getElementById('ttSubmitBtn').innerText = "Save Timetable";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) })
+        .then(() => { loadData(); showToast("Timetable saved!"); });
+    }
+
+    function editTimetable(id, className, subject, teacher, time) {
+        document.getElementById('edit_tt_id').value = id;
+        document.getElementById('tt_class').value = className;
+        document.getElementById('tt_subject').value = subject;
+        document.getElementById('tt_teacher').value = teacher;
+        document.getElementById('tt_time').value = time;
+        document.getElementById('ttFormTitle').innerText = "Edit Timetable Entry";
+        document.getElementById('ttSubmitBtn').innerText = "Update Timetable";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchTimetable() {
+        try {
+            const res = await fetch(`${API_URL}/timetable`);
+            const data = await res.json();
+            const tbody = document.getElementById('timetableTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
+            data.forEach(t => {
+                tbody.innerHTML += `<tr>
+                    <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editTimetable(${t.id}, '${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // EXPENSES & EDIT
+    async function addExpense() {
+        const id = document.getElementById('edit_exp_id').value;
+        const title = document.getElementById('exp_title').value;
+        const category = document.getElementById('exp_category').value;
+        const amount = document.getElementById('exp_amount').value;
+        const date = document.getElementById('exp_date').value;
+
+        if(!title || !amount) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating expense..." : "Saving expense...");
+
+        const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_exp_id').value = '';
+        document.getElementById('expFormTitle').innerText = "College Expense / Salary Entry";
+        document.getElementById('expSubmitBtn').innerText = "Save Expense";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
+        .then(() => { loadData(); showToast("Expense saved!"); });
+    }
+
+    function editExpense(id, title, category, amount, date) {
+        document.getElementById('edit_exp_id').value = id;
+        document.getElementById('exp_title').value = title;
+        document.getElementById('exp_category').value = category;
+        document.getElementById('exp_amount').value = amount;
+        document.getElementById('exp_date').value = date.split('T')[0];
+        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
+        document.getElementById('expSubmitBtn').innerText = "Update Expense";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchExpenses() {
+        try {
+            const res = await fetch(`${API_URL}/expenses`);
+            const data = await res.json();
+            const tbody = document.getElementById('expenseTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
+            data.forEach(e => {
+                tbody.innerHTML += `<tr>
+                    <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // NOTICES / ANNOUNCEMENTS & EDIT
+    async function addAnnouncement() {
+        const id = document.getElementById('edit_ann_id').value;
+        const title = document.getElementById('ann_title').value;
+        const message = document.getElementById('ann_message').value;
+        const date = document.getElementById('ann_date').value;
+
+        if(!title || !message) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating notice..." : "Publishing notice...");
+
+        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/announcements`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_ann_id').value = '';
+        document.getElementById('annFormTitle').innerText = "Publish College Notice";
+        document.getElementById('annSubmitBtn').innerText = "Publish Notice";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) })
+        .then(() => { loadData(); showToast("Notice published!"); });
+    }
+
+    function editAnnouncement(id, title, message, date) {
+        document.getElementById('edit_ann_id').value = id;
+        document.getElementById('ann_title').value = title;
+        document.getElementById('ann_message').value = message;
+        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annSubmitBtn').innerText = "Update Notice";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchAnnouncements() {
+        try {
+            const res = await fetch(`${API_URL}/announcements`);
+            const data = await res.json();
+            const tbody = document.getElementById('announcementTableBody');
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
+            data.forEach(a => {
+                tbody.innerHTML += `<tr>
+                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function deleteRecord(category, id) {
+        if(!confirm(`Are you sure you want to delete this ${category} record?`)) return;
+        showToast("Deleting record...");
+        let endpoint = '';
+        switch(category) {
+            case 'student': endpoint = `delete-student/${id}`; break;
+            case 'teacher': endpoint = `delete-teacher/${id}`; break;
+            case 'fee': endpoint = `delete-fee/${id}`; break;
+            case 'marks': endpoint = `delete-marks/${id}`; break;
+            case 'attendance': endpoint = `delete-attendance/${id}`; break;
+            case 'timetable': endpoint = `delete-timetable/${id}`; break;
+            case 'expense': endpoint = `delete-expense/${id}`; break;
+            case 'announcement': endpoint = `delete-announcement/${id}`; break;
+        }
+        const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
+        if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
+    }
+
+    function exportTableToExcel(tableID, filename = ''){
+        var downloadLink;
+        var dataType = 'application/vnd.ms-excel';
+        var tableSelect = document.getElementById(tableID);
+        var tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/g, '');
+
+        filename = filename ? filename+'_data.xls' : 'excel_data.xls';
+        downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+
+        if(navigator.msSaveOrOpenBlob){
+            var blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+            navigator.msSaveOrOpenBlob(blob, filename);
+        } else{
+            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
             downloadLink.download = filename;
             downloadLink.click();
         }
-    </script>
+    }
+
+    async function fetchReportCard() {
+        const studentId = document.getElementById('rc_student_id').value;
+        if(!studentId) { alert('Please enter Student ID!'); return; }
+        showToast("Generating report card...");
+        const res = await fetch(`${API_URL}/report-card/${studentId}`);
+        if(!res.ok) { alert('Student not found!'); return; }
+        const data = await res.json();
+        document.getElementById('rc_name').innerText = data.student.name;
+        document.getElementById('rc_roll').innerText = data.student.roll_no;
+        document.getElementById('rc_class').innerText = data.student.class;
+        const tbody = document.getElementById('rcTableBody');
+        tbody.innerHTML = '';
+        data.marks.forEach(m => {
+            const percentage = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
+            tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${percentage}%</td></tr>`;
+        });
+        document.getElementById('reportCardResult').style.display = 'block';
+    }
+</script>
+
 </body>
 </html>
