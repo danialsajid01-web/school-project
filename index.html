@@ -400,6 +400,7 @@
                     <h3>
                         <span>Staff Geofenced Logs</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button class="btn-action" style="background:var(--secondary); color:white; padding:6px 12px; font-size:12px;" onclick="fetchStaffAttendanceLogs()">🔄 Refresh Records</button>
                             <input type="text" id="search_staff_att" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('staffAttTable', this)">
                             <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
                         </div>
@@ -671,7 +672,6 @@
         teacher: { user: 'teacher', pass: 'teacher123' }
     };
 
-    // Helper function to get current Pakistani Date String (PKR / Asia/Karachi)
     function getPakistaniDateString() {
         return new Intl.DateTimeFormat('en-CA', {
             timeZone: 'Asia/Karachi',
@@ -681,7 +681,6 @@
         }).format(new Date());
     }
 
-    // Helper function to format timestamp in Pakistani Time (Asia/Karachi)
     function formatPakistaniDateTime(dateInput) {
         if (!dateInput) return '-';
         try {
@@ -814,6 +813,7 @@
 
         if (tabId === 'faculty-portal') {
             initCameraStream();
+            fetchStaffAttendanceLogs();
         }
     }
 
@@ -1115,15 +1115,16 @@
                 
                 const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
                 const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
+                const recordId = s._id || s.id;
                 
                 tbody.innerHTML += `<tr>
-                    <td>${s.id}</td>
+                    <td>${recordId}</td>
                     <td>${s.name || s.teacher_name || 'Staff Member'}</td>
                     <td>${badge}</td>
                     <td>${timeVal}</td>
                     <td>${latVal}, ${lonVal}</td>
                     <td>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', '${recordId}')">Delete</button>
                     </td>
                 </tr>`;
             });
@@ -1520,10 +1521,21 @@
             case 'timetable': endpoint = `delete-timetable/${id}`; break;
             case 'expense': endpoint = `delete-expense/${id}`; break;
             case 'announcement': endpoint = `delete-announcement/${id}`; break;
-            case 'staff-attendance': endpoint = `delete-staff-attendance/${id}`; break;
+            case 'staff-attendance': endpoint = `staff-attendance/${id}`; break;
         }
-        const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
-        if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
+        
+        try {
+            const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
+            if (res.ok) { 
+                loadData(); 
+                showToast("Record deleted successfully!"); 
+            } else {
+                showToast("Failed to delete record.");
+            }
+        } catch(err) {
+            console.error(err);
+            showToast("Server error during deletion.");
+        }
     }
 
     function exportTableToExcel(tableID, filename = ''){
