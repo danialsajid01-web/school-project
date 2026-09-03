@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date</th><th>Location Coordinates</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKR Time)</th><th>Location Coordinates</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -771,6 +771,7 @@
 
         if (tabId === 'faculty-portal') {
             initCameraStream();
+            fetchStaffAttendanceLogs(); // Refresh logs when opening staff attendance tab
         }
     }
 
@@ -1055,6 +1056,7 @@
         });
     }
 
+    // UPDATED STAFF ATTENDANCE FETCH WITH PAKISTANI TIMEZONE FORMATTING
     async function fetchStaffAttendanceLogs() {
         try {
             let res = await fetch(`${API_URL}/staff-attendance-logs`);
@@ -1063,23 +1065,35 @@
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
+            
             data.forEach(s => {
                 const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = s.timestamp || s.date || '-';
+                
+                // Convert timestamp to Pakistani Standard Time (PST) format
+                let rawTime = s.timestamp || s.date || new Date();
+                let pkrTimeString = rawTime;
+                try {
+                    let d = new Date(rawTime);
+                    if(!isNaN(d.getTime())) {
+                        pkrTimeString = d.toLocaleString('en-PK', { timeZone: 'Asia/Karachi', hour12: true, dateStyle: 'medium', timeStyle: 'medium' });
+                    }
+                } catch(ex) { console.error("Time parse error:", ex); }
+
                 const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
                 const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td>
                     <td>${s.name || s.teacher_name || 'Staff Member'}</td>
                     <td>${badge}</td>
-                    <td>${timeVal}</td>
+                    <td>${pkrTimeString}</td>
                     <td>${latVal}, ${lonVal}</td>
                 </tr>`;
             });
         } catch(e) { console.error("Error fetching staff logs:", e); }
     }
 
-    // STUDENT ATTENDANCE & EDIT (Updated to use selected class from dropdown)
+    // STUDENT ATTENDANCE & EDIT
     async function markAttendance() {
         const id = document.getElementById('edit_att_id').value;
         const student_id = document.getElementById('att_student_id').value;
