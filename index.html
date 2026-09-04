@@ -867,12 +867,14 @@
         try {
             const res = await fetch(`${API_URL}/dashboard-stats`);
             const data = await res.json();
-            document.getElementById('stat_students').innerText = data.totalStudents;
-            document.getElementById('stat_teachers').innerText = data.totalTeachers;
-            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees}`;
-            document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses}`;
+            document.getElementById('stat_students').innerText = data.totalStudents || 0;
+            document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
+            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees || 0}`;
+            document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses || 0}`;
             
-            const netBalance = data.totalFees - data.totalExpenses;
+            const totalFeesVal = data.totalFees || 0;
+            const totalExpVal = data.totalExpenses || 0;
+            const netBalance = totalFeesVal - totalExpVal;
             const balanceElement = document.getElementById('stat_balance');
             balanceElement.innerText = `PKR ${netBalance}`;
             balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
@@ -886,13 +888,20 @@
             const res = await fetch(url);
             const data = await res.json();
             
-            // Populate global cache for fallback lookup
-            data.forEach(s => {
-                studentsGlobalCache[s.id] = s;
-            });
+            studentsGlobalCache = {};
+            if(Array.isArray(data)) {
+                data.forEach(s => {
+                    studentsGlobalCache[s.id] = s;
+                });
+            }
 
             const tbody = document.getElementById('studentTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
             data.forEach(s => {
                 let displayName = s.name;
                 if(s.is_cr) {
@@ -979,10 +988,15 @@
             const res = await fetch(`${API_URL}/teachers`);
             const data = await res.json();
             const tbody = document.getElementById('teacherTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
             const portalSelect = document.getElementById('teacherPortalSelect');
             portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
 
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
             data.forEach(t => {
                 tbody.innerHTML += `<tr>
                     <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
@@ -1139,7 +1153,7 @@
         }
 
         const tbody = document.getElementById('staffAttTableBody');
-        if (!success || !data || data.length === 0) {
+        if (!success || !Array.isArray(data) || data.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>`;
             return;
         }
@@ -1221,8 +1235,13 @@
             const res = await fetch(url);
             const data = await res.json();
             const tbody = document.getElementById('attendanceTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>` : '';
             
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = '';
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
                 const attendanceClass = rec.class_name || rec.class || (studentsGlobalCache[rec.student_id] ? studentsGlobalCache[rec.student_id].class : '-');
@@ -1241,7 +1260,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // FIXED: FEES TAB CLASS NAME RESOLUTION
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
@@ -1285,11 +1303,15 @@
             const res = await fetch(url);
             const data = await res.json();
             const tbody = document.getElementById('feeTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
             
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = '';
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                // Fallback check: agar API response mein class property missing ho to global cache ya student_id se utha lo
                 const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
                 
@@ -1341,7 +1363,6 @@
         window.print();
     }
 
-    // FIXED: MARKS / RESULTS TAB CLASS NAME RESOLUTION
     async function addMarks() {
         const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
@@ -1385,10 +1406,14 @@
             const res = await fetch(url);
             const data = await res.json();
             const tbody = document.getElementById('marksTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
             
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = '';
             data.forEach(m => {
-                // Fallback check for marks table class name
                 const marksClass = m.class_name || m.student_class || m.className || m.class || (studentsGlobalCache[m.student_id] ? studentsGlobalCache[m.student_id].class : '-');
                 
                 tbody.innerHTML += `<tr>
@@ -1402,7 +1427,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // TIMETABLE & EDIT
     async function addTimetable() {
         const id = document.getElementById('edit_tt_id').value;
         const class_name = document.getElementById('tt_class').value;
@@ -1440,7 +1464,13 @@
             const res = await fetch(`${API_URL}/timetable`);
             const data = await res.json();
             const tbody = document.getElementById('timetableTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>` : '';
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
             data.forEach(t => {
                 tbody.innerHTML += `<tr>
                     <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
@@ -1453,7 +1483,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // EXPENSES & EDIT
     async function addExpense() {
         const id = document.getElementById('edit_exp_id').value;
         const title = document.getElementById('exp_title').value;
@@ -1491,7 +1520,13 @@
             const res = await fetch(`${API_URL}/expenses`);
             const data = await res.json();
             const tbody = document.getElementById('expenseTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>` : '';
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
             data.forEach(e => {
                 tbody.innerHTML += `<tr>
                     <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
@@ -1504,7 +1539,6 @@
         } catch(err) { console.error(err); }
     }
 
-    // ANNOUNCEMENTS & EDIT
     async function addAnnouncement() {
         const id = document.getElementById('edit_ann_id').value;
         const title = document.getElementById('ann_title').value;
@@ -1540,7 +1574,13 @@
             const res = await fetch(`${API_URL}/announcements`);
             const data = await res.json();
             const tbody = document.getElementById('announcementTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>` : '';
+            
+            if (!data || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
             data.data.forEach(a => {
                 tbody.innerHTML += `<tr>
                     <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
@@ -1553,7 +1593,6 @@
         } catch(err) { console.error(err); }
     }
 
-    // REPORT CARD
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert("Please enter a valid Student ID!"); return; }
@@ -1585,7 +1624,6 @@
         }
     }
 
-    // GENERAL DELETE FUNCTION
     async function deleteRecord(type, id) {
         if(!confirm("Aap waqai is record ko delete karna chahtay hain?")) return;
         showToast("Deleting record...");
@@ -1616,9 +1654,9 @@
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, ''); // Remove action buttons from export
+        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '');
 
-        filename = filename ?filename + '.xls' : 'excel_data.xls';
+        filename = filename ? filename + '.xls' : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
 
