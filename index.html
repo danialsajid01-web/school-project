@@ -1111,20 +1111,27 @@
 
     async function fetchStaffAttendanceLogs() {
         try {
+            // Try fetching from all possible backend endpoints to ensure logs show properly
             let res = await fetch(`${API_URL}/staff-attendance-logs`);
             if (!res.ok) { res = await fetch(`${API_URL}/staff-attendance`); }
-            if(!res.ok) return;
+            if (!res.ok) { res = await fetch(`${API_URL}/teacher-attendance`); }
+            if (!res.ok) return;
+            
             const data = await res.json();
             const tbody = document.getElementById('staffAttTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
+            
             data.forEach(s => {
-                const badge = (s.status_type === 'Check-Out' || s.status === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = formatPakistaniDateTime(s.timestamp || s.date);
-                const latVal = s.latitude ? s.latitude.toFixed(4) : '0.0000';
-                const lonVal = s.longitude ? s.longitude.toFixed(4) : '0.0000';
+                const statusTypeVal = s.status_type || s.status || 'Check-In';
+                const badge = (statusTypeVal === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
+                const timeVal = formatPakistaniDateTime(s.timestamp || s.date || s.created_at);
+                const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
+                const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
+                const teacherName = s.name || s.teacher_name || s.teacher || 'Staff Member';
+                
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td>
-                    <td>${s.name || s.teacher_name || 'Staff Member'}</td>
+                    <td>${teacherName}</td>
                     <td>${badge}</td>
                     <td>${timeVal}</td>
                     <td>${latVal}, ${lonVal}</td>
