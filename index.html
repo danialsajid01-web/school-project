@@ -1241,7 +1241,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // FIXED: FEES TAB CLASS NAME RESOLUTION
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
@@ -1289,7 +1288,6 @@
             
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                // Fallback check: agar API response mein class property missing ho to global cache ya student_id se utha lo
                 const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
                 
@@ -1341,7 +1339,6 @@
         window.print();
     }
 
-    // FIXED: MARKS / RESULTS TAB CLASS NAME RESOLUTION
     async function addMarks() {
         const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
@@ -1388,7 +1385,6 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
             
             data.forEach(m => {
-                // Fallback check for marks table class name
                 const marksClass = m.class_name || m.student_class || m.className || m.class || (studentsGlobalCache[m.student_id] ? studentsGlobalCache[m.student_id].class : '-');
                 
                 tbody.innerHTML += `<tr>
@@ -1402,7 +1398,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // TIMETABLE & EDIT
     async function addTimetable() {
         const id = document.getElementById('edit_tt_id').value;
         const class_name = document.getElementById('tt_class').value;
@@ -1453,7 +1448,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // EXPENSES & EDIT
     async function addExpense() {
         const id = document.getElementById('edit_exp_id').value;
         const title = document.getElementById('exp_title').value;
@@ -1504,7 +1498,6 @@
         } catch(err) { console.error(err); }
     }
 
-    // ANNOUNCEMENTS & EDIT
     async function addAnnouncement() {
         const id = document.getElementById('edit_ann_id').value;
         const title = document.getElementById('ann_title').value;
@@ -1553,7 +1546,6 @@
         } catch(err) { console.error(err); }
     }
 
-    // REPORT CARD
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert("Please enter a valid Student ID!"); return; }
@@ -1585,7 +1577,6 @@
         }
     }
 
-    // GENERAL DELETE FUNCTION
     async function deleteRecord(type, id) {
         if(!confirm("Aap waqai is record ko delete karna chahtay hain?")) return;
         showToast("Deleting record...");
@@ -1616,7 +1607,7 @@
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, ''); // Remove action buttons from export
+        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '');
 
         filename = filename ?filename + '.xls' : 'excel_data.xls';
         downloadLink = document.createElement("a");
