@@ -1101,7 +1101,7 @@
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
             showToast(`Staff Status: ${actionType} recorded successfully!`);
-            fetchStaffAttendanceLogs();
+            setTimeout(fetchStaffAttendanceLogs, 500); // Thori delay ke baad logs fetch honge
         }).catch(err => {
             console.error(err);
             document.getElementById('location-status').style.color = "red";
@@ -1110,37 +1110,55 @@
     }
 
     async function fetchStaffAttendanceLogs() {
-        try {
-            // Try fetching from all possible backend endpoints to ensure logs show properly
-            let res = await fetch(`${API_URL}/staff-attendance-logs`);
-            if (!res.ok) { res = await fetch(`${API_URL}/staff-attendance`); }
-            if (!res.ok) { res = await fetch(`${API_URL}/teacher-attendance`); }
-            if (!res.ok) return;
+        const endpoints = [
+            `${API_URL}/staff-attendance-logs`,
+            `${API_URL}/staff-attendance`,
+            `${API_URL}/teacher-attendance`,
+            `${API_URL}/get-staff-attendance`
+        ];
+
+        let data = [];
+        let success = false;
+
+        for (const url of endpoints) {
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    data = await res.json();
+                    success = true;
+                    break;
+                }
+            } catch (e) {
+                // Ignore and try next endpoint
+            }
+        }
+
+        const tbody = document.getElementById('staffAttTableBody');
+        if (!success || !data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach(s => {
+            const statusTypeVal = s.status_type || s.status || 'Check-In';
+            const badge = (statusTypeVal === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
+            const timeVal = formatPakistaniDateTime(s.timestamp || s.date || s.created_at);
+            const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
+            const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
+            const teacherName = s.name || s.teacher_name || s.teacher || 'Staff Member';
             
-            const data = await res.json();
-            const tbody = document.getElementById('staffAttTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>` : '';
-            
-            data.forEach(s => {
-                const statusTypeVal = s.status_type || s.status || 'Check-In';
-                const badge = (statusTypeVal === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-                const timeVal = formatPakistaniDateTime(s.timestamp || s.date || s.created_at);
-                const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
-                const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
-                const teacherName = s.name || s.teacher_name || s.teacher || 'Staff Member';
-                
-                tbody.innerHTML += `<tr>
-                    <td>${s.id}</td>
-                    <td>${teacherName}</td>
-                    <td>${badge}</td>
-                    <td>${timeVal}</td>
-                    <td>${latVal}, ${lonVal}</td>
-                    <td>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
-                    </td>
-                </tr>`;
-            });
-        } catch(e) { console.error("Error fetching staff logs:", e); }
+            tbody.innerHTML += `<tr>
+                <td>${s.id}</td>
+                <td>${teacherName}</td>
+                <td>${badge}</td>
+                <td>${timeVal}</td>
+                <td>${latVal}, ${lonVal}</td>
+                <td>
+                    <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
+                </td>
+            </tr>`;
+        });
     }
 
     // STUDENT ATTENDANCE & EDIT
