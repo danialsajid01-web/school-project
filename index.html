@@ -271,17 +271,9 @@
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Faculty</h4>
                     <h2 id="stat_teachers" style="margin: 0; font-size: 24px;">0</h2>
                 </div>
-                <div class="card" style="margin: 0; background: linear-gradient(135deg, #008037, #028090); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Fee Collected</h4>
-                    <h2 id="stat_fees" style="margin: 0; font-size: 20px;">PKR 0</h2>
-                </div>
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #d90429, #ef233c); color: white; border: none;">
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Expenses</h4>
                     <h2 id="stat_expenses" style="margin: 0; font-size: 20px;">PKR 0</h2>
-                </div>
-                <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
-                    <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
-                    <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
                 </div>
             </div>
 
@@ -869,15 +861,7 @@
             const data = await res.json();
             document.getElementById('stat_students').innerText = data.totalStudents || 0;
             document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
-            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees || 0}`;
             document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses || 0}`;
-            
-            const totalFeesVal = data.totalFees || 0;
-            const totalExpVal = data.totalExpenses || 0;
-            const netBalance = totalFeesVal - totalExpVal;
-            const balanceElement = document.getElementById('stat_balance');
-            balanceElement.innerText = `PKR ${netBalance}`;
-            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
         } catch(e) { console.error(e); }
     }
 
