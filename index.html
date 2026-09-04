@@ -1247,7 +1247,7 @@
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                const feeClass = f.class_name || f.class || '-';
+               const feeClass = f.class_name || f.student_class || f.className || f.class || '-';
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
                 tbody.innerHTML += `<tr>
                     <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td>${feeClass}</td><td>PKR ${f.amount}</td>
