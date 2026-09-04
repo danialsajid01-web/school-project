@@ -673,6 +673,7 @@
 <script>
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
+    let studentsGlobalCache = {}; // Global cache for students mapping (ID -> student object)
 
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
@@ -850,8 +851,8 @@
     }
 
     async function loadData() {
+        await fetchStudents(); // Load students first so cache is ready for fees and marks
         if(currentUserRole !== 'teacher') fetchDashboardStats();
-        fetchStudents();
         fetchTeachers();
         fetchStaffAttendanceLogs();
         if(currentUserRole !== 'teacher') fetchFees();
@@ -884,6 +885,12 @@
             const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
             const res = await fetch(url);
             const data = await res.json();
+            
+            // Populate global cache for fallback lookup
+            data.forEach(s => {
+                studentsGlobalCache[s.id] = s;
+            });
+
             const tbody = document.getElementById('studentTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>` : '';
             data.forEach(s => {
@@ -1101,7 +1108,7 @@
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
             showToast(`Staff Status: ${actionType} recorded successfully!`);
-            setTimeout(fetchStaffAttendanceLogs, 500); // Thori delay ke baad logs fetch honge
+            setTimeout(fetchStaffAttendanceLogs, 500);
         }).catch(err => {
             console.error(err);
             document.getElementById('location-status').style.color = "red";
@@ -1128,9 +1135,7 @@
                     success = true;
                     break;
                 }
-            } catch (e) {
-                // Ignore and try next endpoint
-            }
+            } catch (e) {}
         }
 
         const tbody = document.getElementById('staffAttTableBody');
@@ -1161,7 +1166,6 @@
         });
     }
 
-    // STUDENT ATTENDANCE & EDIT
     async function markAttendance() {
         const id = document.getElementById('edit_att_id').value;
         const student_id = document.getElementById('att_student_id').value;
@@ -1221,7 +1225,7 @@
             
             data.forEach(rec => {
                 const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const attendanceClass = rec.class_name || rec.class || document.getElementById('att_class_select').value || '-';
+                const attendanceClass = rec.class_name || rec.class || (studentsGlobalCache[rec.student_id] ? studentsGlobalCache[rec.student_id].class : '-');
                 const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
                 
                 tbody.innerHTML += `<tr>
@@ -1237,7 +1241,7 @@
         } catch(e) { console.error(e); }
     }
 
-    // FEES & EDIT + VOUCHER PRINT
+    // FIXED: FEES TAB CLASS NAME RESOLUTION
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
@@ -1282,10 +1286,13 @@
             const data = await res.json();
             const tbody = document.getElementById('feeTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>` : '';
+            
             data.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                const feeClass = f.class_name || f.student_class || f.className || f.class || '-';
+                // Fallback check: agar API response mein class property missing ho to global cache ya student_id se utha lo
+                const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                
                 tbody.innerHTML += `<tr>
                     <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
                     <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
@@ -1334,7 +1341,7 @@
         window.print();
     }
 
-    // MARKS / RESULTS & EDIT
+    // FIXED: MARKS / RESULTS TAB CLASS NAME RESOLUTION
     async function addMarks() {
         const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
@@ -1379,8 +1386,11 @@
             const data = await res.json();
             const tbody = document.getElementById('marksTableBody');
             tbody.innerHTML = data.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>` : '';
+            
             data.forEach(m => {
-                const marksClass = m.class_name || m.student_class || m.className || m.class || '-';
+                // Fallback check for marks table class name
+                const marksClass = m.class_name || m.student_class || m.className || m.class || (studentsGlobalCache[m.student_id] ? studentsGlobalCache[m.student_id].class : '-');
+                
                 tbody.innerHTML += `<tr>
                     <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${marksClass}</span></td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
                     <td>
@@ -1471,7 +1481,7 @@
         document.getElementById('exp_category').value = category;
         document.getElementById('exp_amount').value = amount;
         document.getElementById('exp_date').value = date.split('T')[0];
-        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
+        document.getElementById('expFormTitle').innerText = "Edit Expense Entry";
         document.getElementById('expSubmitBtn').innerText = "Update Expense";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1491,10 +1501,10 @@
                     </td>
                 </tr>`;
             });
-        } catch(e) { console.error(e); }
+        } catch(err) { console.error(err); }
     }
 
-    // NOTICES / ANNOUNCEMENTS & EDIT
+    // ANNOUNCEMENTS & EDIT
     async function addAnnouncement() {
         const id = document.getElementById('edit_ann_id').value;
         const title = document.getElementById('ann_title').value;
@@ -1504,7 +1514,7 @@
         if(!title || !message) { alert('Fill out required fields!'); return; }
         showToast(id ? "Updating notice..." : "Publishing notice...");
 
-        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/announcements`;
+        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
         const method = id ? 'PUT' : 'POST';
 
         document.getElementById('edit_ann_id').value = '';
@@ -1520,7 +1530,7 @@
         document.getElementById('ann_title').value = title;
         document.getElementById('ann_message').value = message;
         document.getElementById('ann_date').value = date.split('T')[0];
-        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annFormTitle').innerText = "Edit College Notice";
         document.getElementById('annSubmitBtn').innerText = "Update Notice";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1530,8 +1540,8 @@
             const res = await fetch(`${API_URL}/announcements`);
             const data = await res.json();
             const tbody = document.getElementById('announcementTableBody');
-            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No announcements found.</td></tr>` : '';
-            data.forEach(a => {
+            tbody.innerHTML = data.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>` : '';
+            data.data.forEach(a => {
                 tbody.innerHTML += `<tr>
                     <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
                     <td>
@@ -1540,67 +1550,87 @@
                     </td>
                 </tr>`;
             });
-        } catch(e) { console.error(e); }
+        } catch(err) { console.error(err); }
     }
 
-    async function deleteRecord(category, id) {
-        if(!confirm(`Are you sure you want to delete this ${category} record?`)) return;
-        showToast("Deleting record...");
-        let endpoint = '';
-        switch(category) {
-            case 'student': endpoint = `delete-student/${id}`; break;
-            case 'teacher': endpoint = `delete-teacher/${id}`; break;
-            case 'fee': endpoint = `delete-fee/${id}`; break;
-            case 'marks': endpoint = `delete-marks/${id}`; break;
-            case 'attendance': endpoint = `delete-attendance/${id}`; break;
-            case 'timetable': endpoint = `delete-timetable/${id}`; break;
-            case 'expense': endpoint = `delete-expense/${id}`; break;
-            case 'announcement': endpoint = `delete-announcement/${id}`; break;
-            case 'staff-attendance': endpoint = `delete-staff-attendance/${id}`; break;
+    // REPORT CARD
+    async function fetchReportCard() {
+        const studentId = document.getElementById('rc_student_id').value;
+        if(!studentId) { alert("Please enter a valid Student ID!"); return; }
+
+        try {
+            const res = await fetch(`${API_URL}/student-report/${studentId}`);
+            if(!res.ok) { alert("Student report not found!"); return; }
+            const data = await res.json();
+
+            document.getElementById('rc_name').innerText = data.student.name;
+            document.getElementById('rc_roll').innerText = data.student.roll_no;
+            document.getElementById('rc_class').innerText = data.student.class;
+
+            const tbody = document.getElementById('rcTableBody');
+            tbody.innerHTML = '';
+            if(data.marks && data.marks.length > 0) {
+                data.marks.forEach(m => {
+                    const perc = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
+                    tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${perc}%</td></tr>`;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
+            }
+
+            document.getElementById('reportCardResult').style.display = 'block';
+        } catch(e) {
+            console.error(e);
+            alert("Error generating report card.");
         }
-        const res = await fetch(`${API_URL}/${endpoint}`, { method: 'DELETE' });
-        if (res.ok) { loadData(); showToast("Record deleted successfully!"); }
     }
 
-    function exportTableToExcel(tableID, filename = ''){
-        var downloadLink;
-        var dataType = 'application/vnd.ms-excel';
-        var tableSelect = document.getElementById(tableID);
-        var tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/g, '');
+    // GENERAL DELETE FUNCTION
+    async function deleteRecord(type, id) {
+        if(!confirm("Aap waqai is record ko delete karna chahtay hain?")) return;
+        showToast("Deleting record...");
 
-        filename = filename ? filename+'_data.xls' : 'excel_data.xls';
+        let endpointMap = {
+            'student': 'delete-student',
+            'teacher': 'delete-teacher',
+            'attendance': 'delete-attendance',
+            'staff-attendance': 'delete-staff-attendance',
+            'fee': 'delete-fee',
+            'marks': 'delete-marks',
+            'timetable': 'delete-timetable',
+            'expense': 'delete-expense',
+            'announcement': 'delete-announcement'
+        };
+
+        try {
+            await fetch(`${API_URL}/${endpointMap[type]}/${id}`, { method: 'DELETE' });
+            loadData();
+            showToast("Deleted successfully!");
+        } catch(err) {
+            console.error(err);
+            showToast("Failed to delete record.");
+        }
+    }
+
+    function exportTableToExcel(tableID, filename = '') {
+        let downloadLink;
+        let dataType = 'application/vnd.ms-excel';
+        let tableSelect = document.getElementById(tableID);
+        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, ''); // Remove action buttons from export
+
+        filename = filename ?filename + '.xls' : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
 
-        if(navigator.msSaveOrOpenBlob){
-            var blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+        if(navigator.msSaveOrOpenBlob) {
+            let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
             navigator.msSaveOrOpenBlob(blob, filename);
-        } else{
+        } else {
             downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
             downloadLink.download = filename;
             downloadLink.click();
         }
     }
-
-    async function fetchReportCard() {
-        const studentId = document.getElementById('rc_student_id').value;
-        if(!studentId) { alert('Please enter Student ID!'); return; }
-        showToast("Generating report card...");
-        const res = await fetch(`${API_URL}/report-card/${studentId}`);
-        if(!res.ok) { alert('Student not found!'); return; }
-        const data = await res.json();
-        document.getElementById('rc_name').innerText = data.student.name;
-        document.getElementById('rc_roll').innerText = data.student.roll_no;
-        document.getElementById('rc_class').innerText = data.student.class;
-        const tbody = document.getElementById('rcTableBody');
-        tbody.innerHTML = '';
-        data.marks.forEach(m => {
-            const percentage = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
-            tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${percentage}%</td></tr>`;
-        });
-        document.getElementById('reportCardResult').style.display = 'block';
-    }
 </script>
-
 </body>
 </html>
