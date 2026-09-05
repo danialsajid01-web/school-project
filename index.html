@@ -851,7 +851,7 @@
     }
 
     async function loadData() {
-        await fetchStudents(); // Load students first so cache is ready for fees and marks
+        await fetchStudents();
         if(currentUserRole !== 'teacher') fetchDashboardStats();
         fetchTeachers();
         fetchStaffAttendanceLogs();
@@ -868,27 +868,12 @@
             const res = await fetch(`${API_URL}/dashboard-stats`);
             const data = await res.json();
             
-            let totalFeesVal = Number(data.totalFees) || 0;
             const totalExpVal = Number(data.totalExpenses) || 0;
-            
-            // Fix: If fee table records are empty, force fee collection to 0 immediately
-            try {
-                const feeRes = await fetch(`${API_URL}/fees`);
-                const feeData = await feeRes.json();
-                if (!Array.isArray(feeData) || feeData.length === 0) {
-                    totalFeesVal = 0;
-                }
-            } catch(err) {}
-
             document.getElementById('stat_students').innerText = data.totalStudents || 0;
             document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
-            document.getElementById('stat_fees').innerText = `PKR ${totalFeesVal}`;
             document.getElementById('stat_expenses').innerText = `PKR ${totalExpVal}`;
             
-            const netBalance = totalFeesVal - totalExpVal;
-            const balanceElement = document.getElementById('stat_balance');
-            balanceElement.innerText = `PKR ${netBalance}`;
-            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+            // Note: Fee collection and net balance are handled directly inside fetchFees() for absolute accuracy.
         } catch(e) { console.error(e); }
     }
 
@@ -1315,9 +1300,25 @@
             const data = await res.json();
             const tbody = document.getElementById('feeTableBody');
             
+            // DYNAMIC CALCULATION: Calculate total sum of fees directly from current list for accurate dashboard updating
+            let calculatedTotalFees = 0;
+            if (Array.isArray(data)) {
+                data.forEach(f => {
+                    calculatedTotalFees += Number(f.amount) || 0;
+                });
+            }
+
+            // Update Fee Collected & Net Balance stats dynamically
+            document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
+            const totalExpText = document.getElementById('stat_expenses').innerText.replace('PKR ', '');
+            const totalExpVal = Number(totalExpText) || 0;
+            const netBalance = calculatedTotalFees - totalExpVal;
+            const balanceElement = document.getElementById('stat_balance');
+            balanceElement.innerText = `PKR ${netBalance}`;
+            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
-                fetchDashboardStats(); // Refresh stats immediately to reflect 0 when empty
                 return;
             }
             
@@ -1539,7 +1540,6 @@
             }
 
             tbody.innerHTML = '';
-            data.decode = '';
             data.forEach(e => {
                 tbody.innerHTML += `<tr>
                     <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
