@@ -867,13 +867,24 @@
         try {
             const res = await fetch(`${API_URL}/dashboard-stats`);
             const data = await res.json();
+            
+            let totalFeesVal = Number(data.totalFees) || 0;
+            const totalExpVal = Number(data.totalExpenses) || 0;
+            
+            // Fix: If fee table records are empty, force fee collection to 0 immediately
+            try {
+                const feeRes = await fetch(`${API_URL}/fees`);
+                const feeData = await feeRes.json();
+                if (!Array.isArray(feeData) || feeData.length === 0) {
+                    totalFeesVal = 0;
+                }
+            } catch(err) {}
+
             document.getElementById('stat_students').innerText = data.totalStudents || 0;
             document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
-            document.getElementById('stat_fees').innerText = `PKR ${data.totalFees || 0}`;
-            document.getElementById('stat_expenses').innerText = `PKR ${data.totalExpenses || 0}`;
+            document.getElementById('stat_fees').innerText = `PKR ${totalFeesVal}`;
+            document.getElementById('stat_expenses').innerText = `PKR ${totalExpVal}`;
             
-            const totalFeesVal = data.totalFees || 0;
-            const totalExpVal = data.totalExpenses || 0;
             const netBalance = totalFeesVal - totalExpVal;
             const balanceElement = document.getElementById('stat_balance');
             balanceElement.innerText = `PKR ${netBalance}`;
@@ -1306,6 +1317,7 @@
             
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
+                fetchDashboardStats(); // Refresh stats immediately to reflect 0 when empty
                 return;
             }
             
@@ -1527,6 +1539,7 @@
             }
 
             tbody.innerHTML = '';
+            data.decode = '';
             data.forEach(e => {
                 tbody.innerHTML += `<tr>
                     <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
