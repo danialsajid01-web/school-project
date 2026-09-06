@@ -1168,10 +1168,40 @@
                 <td>${timeVal}</td>
                 <td>${latVal}, ${lonVal}</td>
                 <td>
-                    <button class="btn-action btn-delete" onclick="deleteRecord('staff-attendance', ${s.id})">Delete</button>
+                    <button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button>
                 </td>
             </tr>`;
         });
+    }
+
+    async function deleteStaffAttendance(id) {
+        if(!confirm("Aap waqai is staff attendance record ko delete karna chahtay hain?")) return;
+        showToast("Deleting staff record...");
+        
+        const possibleEndpoints = [
+            `${API_URL}/delete-staff-attendance/${id}`,
+            `${API_URL}/delete-teacher-attendance/${id}`,
+            `${API_URL}/staff-attendance/${id}`,
+            `${API_URL}/delete-attendance/${id}`
+        ];
+
+        let deleted = false;
+        for (const endpoint of possibleEndpoints) {
+            try {
+                const res = await fetch(endpoint, { method: 'DELETE' });
+                if (res.ok) {
+                    deleted = true;
+                    break;
+                }
+            } catch (e) {}
+        }
+
+        if (deleted) {
+            loadData();
+            showToast("Staff attendance deleted successfully!");
+        } else {
+            showToast("Failed to delete staff record.");
+        }
     }
 
     async function markAttendance() {
@@ -1641,7 +1671,6 @@
             'student': 'delete-student',
             'teacher': 'delete-teacher',
             'attendance': 'delete-attendance',
-            'staff-attendance': 'delete-staff-attendance',
             'fee': 'delete-fee',
             'marks': 'delete-marks',
             'timetable': 'delete-timetable',
