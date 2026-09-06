@@ -673,7 +673,7 @@
 <script>
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
-    let studentsGlobalCache = {}; // Global cache for students mapping (ID -> student object)
+    let studentsGlobalCache = {}; 
 
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
@@ -898,14 +898,14 @@
             tbody.innerHTML = '';
             data.forEach(s => {
                 let displayName = s.name;
-                if(s.is_cr) {
+                if(s.is_cr == 1 || s.is_cr === true) {
                     displayName += ` <span style="background:var(--accent); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;">(CR)</span>`;
                 }
-                const crBtnText = s.is_cr ? 'Remove CR' : 'Make CR';
+                const crBtnText = (s.is_cr == 1 || s.is_cr === true) ? 'Remove CR' : 'Make CR';
                 tbody.innerHTML += `<tr>
                     <td>${s.id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
                     <td>
-                        <button class="btn-action btn-cr" onclick="toggleCR(${s.id}, ${s.is_cr ? 0 : 1})">${crBtnText}</button>
+                        <button class="btn-action btn-cr" onclick="toggleCR(${s.id}, ${(s.is_cr == 1 || s.is_cr === true) ? 0 : 1})">${crBtnText}</button>
                         <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
                     </td>
@@ -922,11 +922,22 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ is_cr: makeCR })
             });
-            fetchStudents();
+            await fetchStudents();
             showToast("Updated CR status successfully!");
         } catch(err) {
             console.error(err);
-            showToast("Failed to update CR status.");
+            // Fallback request method mapping if API expects standard update
+            try {
+                await fetch(`${API_URL}/update-student/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ is_cr: makeCR })
+                });
+                await fetchStudents();
+                showToast("Updated CR status successfully!");
+            } catch(e2) {
+                showToast("Failed to update CR status.");
+            }
         }
     }
 
@@ -1200,7 +1211,6 @@
             loadData();
             showToast("Staff attendance deleted successfully!");
         } else {
-            // Force fallback delete hitting direct common routes if above failed
             try {
                 await fetch(`${API_URL}/delete-staff-attendance/${id}`, { method: 'DELETE' });
                 loadData();
@@ -1621,15 +1631,19 @@
             const data = await res.json();
             const tbody = document.getElementById('announcementTableBody');
             
-            if (!data || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+            let listData = [];
+            if (Array.isArray(data)) listData = data;
+            else if (data && Array.isArray(data.data)) listData = data.data;
+
+            if (listData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.data.forEach(a => {
+            listData.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date ? a.date.split('T')[0] : '-'}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
@@ -1648,15 +1662,20 @@
             if(!res.ok) { alert("Student report not found!"); return; }
             const data = await res.json();
 
-            document.getElementById('rc_name').innerText = data.student.name;
-            document.getElementById('rc_roll').innerText = data.student.roll_no;
-            document.getElementById('rc_class').innerText = data.student.class;
+            if (!data.student) {
+                alert("Student details not found.");
+                return;
+            }
+
+            document.getElementById('rc_name').innerText = data.student.name || '-';
+            document.getElementById('rc_roll').innerText = data.student.roll_no || '-';
+            document.getElementById('rc_class').innerText = data.student.class || '-';
 
             const tbody = document.getElementById('rcTableBody');
             tbody.innerHTML = '';
             if(data.marks && data.marks.length > 0) {
                 data.marks.forEach(m => {
-                    const perc = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
+                    const perc = m.total_marks > 0 ? ((m.marks_obtained / m.total_marks) * 100).toFixed(1) : '0.0';
                     tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${perc}%</td></tr>`;
                 });
             } else {
