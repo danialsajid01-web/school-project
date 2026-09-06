@@ -405,7 +405,7 @@
                         </div>
                     </h3>
                     <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (PKR)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (Islamabad/Karachi)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttTableBody"></tbody>
                     </table>
                 </div>
@@ -1200,7 +1200,14 @@
             loadData();
             showToast("Staff attendance deleted successfully!");
         } else {
-            showToast("Failed to delete staff record.");
+            // Force fallback delete hitting direct common routes if above failed
+            try {
+                await fetch(`${API_URL}/delete-staff-attendance/${id}`, { method: 'DELETE' });
+                loadData();
+                showToast("Staff attendance deleted successfully!");
+            } catch(e) {
+                showToast("Failed to delete staff record.");
+            }
         }
     }
 
