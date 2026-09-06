@@ -926,7 +926,6 @@
             showToast("Updated CR status successfully!");
         } catch(err) {
             console.error(err);
-            // Fallback request method mapping if API expects standard update
             try {
                 await fetch(`${API_URL}/update-student/${id}`, {
                     method: 'PUT',
@@ -1659,9 +1658,27 @@
 
         try {
             const res = await fetch(`${API_URL}/student-report/${studentId}`);
-            if(!res.ok) { alert("Student report not found!"); return; }
-            const data = await res.json();
+            
+            // Fallback agar backend se route mismatch ya 404 ho, toh students cache se utha lo
+            if(!res.ok) {
+                const fallbackStudent = studentsGlobalCache[studentId];
+                if(fallbackStudent) {
+                    document.getElementById('rc_name').innerText = fallbackStudent.name || '-';
+                    document.getElementById('rc_roll').innerText = fallbackStudent.roll_no || '-';
+                    document.getElementById('rc_class').innerText = fallbackStudent.class || '-';
+                    
+                    const tbody = document.getElementById('rcTableBody');
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
+                    document.getElementById('reportCardResult').style.display = 'block';
+                    showToast("Student details loaded (No marks entries found)");
+                    return;
+                } else {
+                    alert("Student not found!");
+                    return;
+                }
+            }
 
+            const data = await res.json();
             if (!data.student) {
                 alert("Student details not found.");
                 return;
@@ -1685,7 +1702,18 @@
             document.getElementById('reportCardResult').style.display = 'block';
         } catch(e) {
             console.error(e);
-            alert("Error generating report card.");
+            // Fallback agar network ya api error bhi aaye
+            const fallbackStudent = studentsGlobalCache[studentId];
+            if(fallbackStudent) {
+                document.getElementById('rc_name').innerText = fallbackStudent.name || '-';
+                document.getElementById('rc_roll').innerText = fallbackStudent.roll_no || '-';
+                document.getElementById('rc_class').innerText = fallbackStudent.class || '-';
+                const tbody = document.getElementById('rcTableBody');
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
+                document.getElementById('reportCardResult').style.display = 'block';
+            } else {
+                alert("Error generating report card.");
+            }
         }
     }
 
