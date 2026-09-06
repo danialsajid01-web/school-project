@@ -170,29 +170,15 @@
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
 
-        /* FEE VOUCHER PRINT STYLING */
         #printableArea {
-            display: none;
-            background: #ffffff;
-            color: #333333;
-            padding: 40px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: none; background: #ffffff; color: #333333; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea * { visibility: visible; }
             #printableArea {
-                display: block !important;
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 100% !important;
-                height: 100% !important;
-                background: #ffffff !important;
-                z-index: 99999;
-                padding: 30px;
-                box-sizing: border-box;
+                display: block !important; position: fixed; left: 0; top: 0; width: 100% !important; height: 100% !important; background: #ffffff !important; z-index: 99999; padding: 30px; box-sizing: border-box;
             }
             button { display: none !important; }
             @page { size: A4 portrait; margin: 0; }
@@ -203,7 +189,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- ================= LOGIN SCREEN ================= -->
     <div id="login-screen">
         <div class="light-beam"></div>
         <div class="college-logo-preview">
@@ -235,7 +220,6 @@
         </div>
     </div>
 
-    <!-- ================= DASHBOARD SCREEN ================= -->
     <div id="dashboard-screen" style="display: none;">
         <header>
             <div class="header-left">
@@ -667,13 +651,13 @@
         </div>
     </div>
 
-    <!-- CLEAN FEE VOUCHER PRINTABLE AREA -->
     <div id="printableArea"></div>
 
 <script>
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
     let studentsGlobalCache = {}; 
+    let marksGlobalCache = []; // ✅ Added global cache for marks entries
 
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
@@ -856,7 +840,7 @@
         fetchTeachers();
         fetchStaffAttendanceLogs();
         if(currentUserRole !== 'teacher') fetchFees();
-        fetchMarks();
+        await fetchMarks(); // ✅ Ensure marks load and cache properly
         fetchAttendance();
         fetchTimetable();
         if(currentUserRole !== 'teacher') fetchExpenses();
@@ -1460,6 +1444,11 @@
             const url = selectedClass ? `${API_URL}/marks?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/marks`;
             const res = await fetch(url);
             const data = await res.json();
+            
+            if(Array.isArray(data)) {
+                marksGlobalCache = data; // ✅ Cache all marks locally for report cards
+            }
+
             const tbody = document.getElementById('marksTableBody');
             
             if (!Array.isArray(data) || data.length === 0) {
@@ -1652,69 +1641,38 @@
         } catch(err) { console.error(err); }
     }
 
+    // ✅ FIXED REPORT CARD GENERATION WITH LOCAL MARKS CACHE FALLBACK
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert("Please enter a valid Student ID!"); return; }
 
-        try {
-            const res = await fetch(`${API_URL}/student-report/${studentId}`);
-            
-            // Fallback agar backend se route mismatch ya 404 ho, toh students cache se utha lo
-            if(!res.ok) {
-                const fallbackStudent = studentsGlobalCache[studentId];
-                if(fallbackStudent) {
-                    document.getElementById('rc_name').innerText = fallbackStudent.name || '-';
-                    document.getElementById('rc_roll').innerText = fallbackStudent.roll_no || '-';
-                    document.getElementById('rc_class').innerText = fallbackStudent.class || '-';
-                    
-                    const tbody = document.getElementById('rcTableBody');
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
-                    document.getElementById('reportCardResult').style.display = 'block';
-                    showToast("Student details loaded (No marks entries found)");
-                    return;
-                } else {
-                    alert("Student not found!");
-                    return;
-                }
-            }
-
-            const data = await res.json();
-            if (!data.student) {
-                alert("Student details not found.");
-                return;
-            }
-
-            document.getElementById('rc_name').innerText = data.student.name || '-';
-            document.getElementById('rc_roll').innerText = data.student.roll_no || '-';
-            document.getElementById('rc_class').innerText = data.student.class || '-';
-
-            const tbody = document.getElementById('rcTableBody');
-            tbody.innerHTML = '';
-            if(data.marks && data.marks.length > 0) {
-                data.marks.forEach(m => {
-                    const perc = m.total_marks > 0 ? ((m.marks_obtained / m.total_marks) * 100).toFixed(1) : '0.0';
-                    tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${perc}%</td></tr>`;
-                });
-            } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
-            }
-
-            document.getElementById('reportCardResult').style.display = 'block';
-        } catch(e) {
-            console.error(e);
-            // Fallback agar network ya api error bhi aaye
-            const fallbackStudent = studentsGlobalCache[studentId];
-            if(fallbackStudent) {
-                document.getElementById('rc_name').innerText = fallbackStudent.name || '-';
-                document.getElementById('rc_roll').innerText = fallbackStudent.roll_no || '-';
-                document.getElementById('rc_class').innerText = fallbackStudent.class || '-';
-                const tbody = document.getElementById('rcTableBody');
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
-                document.getElementById('reportCardResult').style.display = 'block';
-            } else {
-                alert("Error generating report card.");
-            }
+        const student = studentsGlobalCache[studentId];
+        if(!student) {
+            alert("Student not found with this ID!");
+            return;
         }
+
+        document.getElementById('rc_name').innerText = student.name || '-';
+        document.getElementById('rc_roll').innerText = student.roll_no || '-';
+        document.getElementById('rc_class').innerText = student.class || '-';
+
+        const tbody = document.getElementById('rcTableBody');
+        tbody.innerHTML = '';
+
+        // Filter marks from cache matching this student id
+        const studentMarks = marksGlobalCache.filter(m => String(m.student_id) === String(studentId));
+
+        if(studentMarks.length > 0) {
+            studentMarks.forEach(m => {
+                const perc = m.total_marks > 0 ? ((m.marks_obtained / m.total_marks) * 100).toFixed(1) : '0.0';
+                tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${perc}%</td></tr>`;
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
+        }
+
+        document.getElementById('reportCardResult').style.display = 'block';
+        showToast("Report card generated successfully!");
     }
 
     async function deleteRecord(type, id) {
