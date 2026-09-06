@@ -657,7 +657,7 @@
     let currentUserRole = 'admin';
     let currentActiveTab = 'students';
     let studentsGlobalCache = {}; 
-    let marksGlobalCache = []; // ✅ Added global cache for marks entries
+    let marksGlobalCache = []; 
 
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
@@ -840,7 +840,7 @@
         fetchTeachers();
         fetchStaffAttendanceLogs();
         if(currentUserRole !== 'teacher') fetchFees();
-        await fetchMarks(); // ✅ Ensure marks load and cache properly
+        await fetchMarks(); 
         fetchAttendance();
         fetchTimetable();
         if(currentUserRole !== 'teacher') fetchExpenses();
@@ -1446,7 +1446,7 @@
             const data = await res.json();
             
             if(Array.isArray(data)) {
-                marksGlobalCache = data; // ✅ Cache all marks locally for report cards
+                marksGlobalCache = data; 
             }
 
             const tbody = document.getElementById('marksTableBody');
@@ -1641,7 +1641,7 @@
         } catch(err) { console.error(err); }
     }
 
-    // ✅ FIXED REPORT CARD GENERATION WITH LOCAL MARKS CACHE FALLBACK
+    // ✅ UPDATED: REPORT CARD WITH TOTAL OBTAINED MARKS & GRAND TOTAL SUMMARY ROW
     async function fetchReportCard() {
         const studentId = document.getElementById('rc_student_id').value;
         if(!studentId) { alert("Please enter a valid Student ID!"); return; }
@@ -1659,14 +1659,33 @@
         const tbody = document.getElementById('rcTableBody');
         tbody.innerHTML = '';
 
-        // Filter marks from cache matching this student id
         const studentMarks = marksGlobalCache.filter(m => String(m.student_id) === String(studentId));
 
         if(studentMarks.length > 0) {
+            let totalObtainedSum = 0;
+            let grandTotalSum = 0;
+
             studentMarks.forEach(m => {
-                const perc = m.total_marks > 0 ? ((m.marks_obtained / m.total_marks) * 100).toFixed(1) : '0.0';
-                tbody.innerHTML += `<tr><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${perc}%</td></tr>`;
+                const obtained = Number(m.marks_obtained) || 0;
+                const total = Number(m.total_marks) || 0;
+                totalObtainedSum += obtained;
+                grandTotalSum += total;
+
+                const perc = total > 0 ? ((obtained / total) * 100).toFixed(1) : '0.0';
+                tbody.innerHTML += `<tr><td>${m.subject}</td><td>${obtained}</td><td>${total}</td><td>${perc}%</td></tr>`;
             });
+
+            // Summary Total Row Added Below
+            const overallPerc = grandTotalSum > 0 ? ((totalObtainedSum / grandTotalSum) * 100).toFixed(1) : '0.0';
+            tbody.innerHTML += `
+                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid var(--primary);">
+                    <td style="text-align: right;">Total / Overall:</td>
+                    <td style="color: var(--success);">${totalObtainedSum}</td>
+                    <td style="color: var(--primary);">${grandTotalSum}</td>
+                    <td style="color: #560bad;">${overallPerc}%</td>
+                </tr>
+            `;
+
         } else {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
         }
