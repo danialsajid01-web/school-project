@@ -349,13 +349,17 @@
             <!-- STAFF GPS ATTENDANCE TAB -->
             <div id="faculty-portal" class="tab-section">
                 <div class="card">
-                    <h3>Staff Geofenced Attendance & Live Photo Capture</h3>
+                    <h3>Staff Geofenced Attendance & PIN Verification</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="teacherPortalSelect">Select Teacher:</label>
                             <select id="teacherPortalSelect" class="login-select" style="background:#fff; color:#333;">
                                 <option value="">-- Select Teacher --</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Secret PIN Code:</label>
+                            <input type="password" id="staff_pin_code" placeholder="Enter Staff PIN (e.g. 1234)" style="background:#fff; color:#333;">
                         </div>
                         <div class="form-group">
                             <label>Action Mode:</label>
@@ -375,7 +379,7 @@
                         <button type="button" class="btn-action" style="background:var(--primary); color:white; padding: 6px 14px; margin-top: 8px; font-size:12px;" onclick="initCameraStream()">🔄 Start/Reset Camera</button>
                     </div>
 
-                    <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify College Location & Submit Attendance</button>
+                    <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify PIN, Location & Submit Attendance</button>
                     
                     <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
                 </div>
@@ -662,6 +666,7 @@
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
     const ALLOWED_RADIUS_METERS = 200;
+    const VALID_STAFF_PIN = "1234"; // Aap yahan apna required secret PIN set kar sakte hain
 
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
@@ -681,7 +686,6 @@
     function formatPakistaniDateTime(dateInput) {
         if (!dateInput) return '-';
         try {
-            // Append 'Z' if it's an ISO string without timezone info so JS parses it as UTC safely before converting
             let cleanInput = dateInput;
             if (typeof dateInput === 'string' && !dateInput.endsWith('Z') && !dateInput.includes('+') && dateInput.includes('T')) {
                 cleanInput += 'Z';
@@ -1058,13 +1062,22 @@
 
     function verifyAndMarkAttendance() {
         const teacherId = document.getElementById('teacherPortalSelect').value;
+        const pinInput = document.getElementById('staff_pin_code').value.trim();
         const actionType = document.getElementById('attendance_action_type').value;
         const statusMsg = document.getElementById('location-status');
 
         if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
+        if (!pinInput) { alert("Pehle apna secret PIN code enter karein!"); return; }
+
+        if (pinInput !== VALID_STAFF_PIN) {
+            statusMsg.style.color = "red";
+            statusMsg.textContent = "❌ Ghalat PIN code! Baraye meharbani saheeh PIN enter karein.";
+            showToast("Invalid Staff PIN Code!");
+            return;
+        }
         
         statusMsg.style.color = "orange";
-        statusMsg.textContent = "🔍 GPS location verify ki ja rahi hai...";
+        statusMsg.textContent = "🔍 PIN verified! GPS location check ki ja rahi hai...";
 
         if (!navigator.geolocation) { alert("Geolocation is not supported by your browser"); return; }
 
@@ -1075,7 +1088,7 @@
 
             if (distance <= ALLOWED_RADIUS_METERS) {
                 statusMsg.style.color = "green";
-                statusMsg.textContent = `📍 Location Verified! (Approx. ${Math.round(distance)}m away). Capturing photo...`;
+                statusMsg.textContent = `📍 PIN & Location Verified! (Approx. ${Math.round(distance)}m away). Capturing photo...`;
                 capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
             } else {
                 statusMsg.style.color = "red";
@@ -1114,6 +1127,7 @@
         }).then(res => res.json()).then(data => {
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
+            document.getElementById('staff_pin_code').value = ''; // clear pin
             showToast(`Staff Status: ${actionType} recorded successfully!`);
             setTimeout(fetchStaffAttendanceLogs, 500);
         }).catch(err => {
@@ -1177,7 +1191,6 @@
         if(!confirm("Aap waqai is staff attendance record ko delete karna chahtay hain?")) return;
         showToast("Deleting staff record...");
         
-        // Comprehensive list of common route patterns for staff/teacher attendance deletion
         const possibleEndpoints = [
             `${API_URL}/delete-staff-attendance/${id}`,
             `${API_URL}/delete-teacher-attendance/${id}`,
@@ -1202,7 +1215,6 @@
             loadData();
             showToast("Staff attendance deleted successfully!");
         } else {
-            // Fallback attempt with POST/PUT method override just in case backend expects POST for deletion
             try {
                 const res = await fetch(`${API_URL}/delete-staff-attendance/${id}`, { method: 'POST' });
                 if(res.ok) {
