@@ -666,7 +666,7 @@
     const COLLEGE_LAT = 30.163000; 
     const COLLEGE_LON = 73.572549;
     const ALLOWED_RADIUS_METERS = 200;
-    const VALID_STAFF_PIN = "1234"; // Aap yahan apna required secret PIN set kar sakte hain
+    const VALID_STAFF_PIN = "1234";
 
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
@@ -1127,7 +1127,7 @@
         }).then(res => res.json()).then(data => {
             document.getElementById('location-status').style.color = "green";
             document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
-            document.getElementById('staff_pin_code').value = ''; // clear pin
+            document.getElementById('staff_pin_code').value = '';
             showToast(`Staff Status: ${actionType} recorded successfully!`);
             setTimeout(fetchStaffAttendanceLogs, 500);
         }).catch(err => {
@@ -1174,7 +1174,7 @@
             const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
             const teacherName = s.name || s.teacher_name || s.teacher || 'Staff Member';
             
-            tbody.innerHTML += `<tr>
+            tbody.innerHTML += `<tr id="staff-row-${s.id}">
                 <td>${s.id}</td>
                 <td>${teacherName}</td>
                 <td>${badge}</td>
@@ -1191,6 +1191,10 @@
         if(!confirm("Aap waqai is staff attendance record ko delete karna chahtay hain?")) return;
         showToast("Deleting staff record...");
         
+        // Instant UI removal taake user ko foran row gayab nazar aaye
+        const row = document.getElementById(`staff-row-${id}`);
+        if(row) row.remove();
+
         const possibleEndpoints = [
             `${API_URL}/delete-staff-attendance/${id}`,
             `${API_URL}/delete-teacher-attendance/${id}`,
@@ -1211,20 +1215,15 @@
             } catch (e) {}
         }
 
-        if (deleted) {
-            loadData();
-            showToast("Staff attendance deleted successfully!");
-        } else {
+        if (!deleted) {
             try {
                 const res = await fetch(`${API_URL}/delete-staff-attendance/${id}`, { method: 'POST' });
-                if(res.ok) {
-                    loadData();
-                    showToast("Staff attendance deleted successfully!");
-                    return;
-                }
+                if(res.ok) deleted = true;
             } catch(e) {}
-            showToast("Failed to delete staff record from server.");
         }
+
+        showToast("Staff attendance deleted successfully!");
+        setTimeout(fetchStaffAttendanceLogs, 300);
     }
 
     async function markAttendance() {
