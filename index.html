@@ -397,7 +397,7 @@
                 </div>
             </div>
 
-            <!-- STAFF ATTENDANCE TAB (UPDATED WITH CHECK-IN / CHECK-OUT) -->
+            <!-- STAFF ATTENDANCE TAB (UPDATED WITH CHECK-IN / CHECK-OUT & IN-TIME / OUT-TIME) -->
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
@@ -406,7 +406,9 @@
                         <div class="form-group"><label>Teacher ID</label><input type="number" id="staff_att_id" placeholder="Enter Teacher ID"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="staff_att_name" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Date</label><input type="date" id="staff_att_date"></div>
-                        <div class="form-group"><label>Check-In / Check-Out Type</label><select id="staff_att_type"><option value="Check-In">Check-In</option><option value="Check-Out">Check-Out</option></select></div>
+                        <div class="form-group"><label>Check-In / Check-Out Type</label><select id="staff_att_type" onchange="toggleTimeInputType()"><option value="Check-In">Check-In</option><option value="Check-Out">Check-Out</option></select></div>
+                        <div class="form-group" id="inTimeGroup"><label>In Time</label><input type="time" id="staff_in_time"></div>
+                        <div class="form-group" id="outTimeGroup" style="display:none;"><label>Out Time</label><input type="time" id="staff_out_time"></div>
                         <div class="form-group"><label>Status</label><select id="staff_att_status"><option value="Present">Present</option><option value="Absent">Absent</option><option value="Leave">On Leave</option></select></div>
                     </div>
                     <button class="submit-btn" style="background: var(--primary);" onclick="markStaffAttendanceSecure()">🔒 Verify Location & Submit Attendance</button>
@@ -420,7 +422,7 @@
                         </div>
                     </h3>
                     <table id="staffAttendanceTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Date</th><th>Type</th><th>Status</th><th>Location Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Date</th><th>Type</th><th>Time</th><th>Status</th><th>Location Status</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttendanceTableBody"></tbody>
                     </table>
                 </div>
@@ -659,16 +661,28 @@
         }).format(new Date());
     }
 
+    function getCurrentTimeString() {
+        const now = new Date();
+        return now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit' });
+    }
+
     window.onload = function() {
         const isLogged = localStorage.getItem('chss_logged');
         const savedRole = localStorage.getItem('chss_role');
         const savedTab = localStorage.getItem('chss_tab');
 
         const todayStr = getPakistaniDateString();
+        const currentTimeStr = getCurrentTimeString();
+
         ['att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = todayStr;
         });
+
+        const inTimeEl = document.getElementById('staff_in_time');
+        const outTimeEl = document.getElementById('staff_out_time');
+        if(inTimeEl) inTimeEl.value = currentTimeStr;
+        if(outTimeEl) outTimeEl.value = currentTimeStr;
 
         if (isLogged === 'true' && savedRole) {
             currentUserRole = savedRole;
@@ -1022,7 +1036,20 @@
         }
     }
 
-    // --- SECURE STAFF ATTENDANCE WITH GEOFENCING ---
+    // --- SECURE STAFF ATTENDANCE WITH GEOFENCING & TIME ---
+    function toggleTimeInputType() {
+        const attType = document.getElementById('staff_att_type').value;
+        const inGroup = document.getElementById('inTimeGroup');
+        const outGroup = document.getElementById('outTimeGroup');
+        if (attType === 'Check-Out') {
+            inGroup.style.display = 'none';
+            outGroup.style.display = 'flex';
+        } else {
+            inGroup.style.display = 'flex';
+            outGroup.style.display = 'none';
+        }
+    }
+
     function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3; // Earth radius in meters
         const φ1 = lat1 * Math.PI/180;
@@ -1044,6 +1071,9 @@
         const date = document.getElementById('staff_att_date').value;
         const att_type = document.getElementById('staff_att_type').value;
         const status = document.getElementById('staff_att_status').value;
+        
+        let staffTime = att_type === 'Check-Out' ? document.getElementById('staff_out_time').value : document.getElementById('staff_in_time').value;
+        if(!staffTime) staffTime = getCurrentTimeString();
 
         if(!teacher_id || !name || !date) {
             alert('Baraye meharbani Teacher ID, Name aur Date enter karein!');
@@ -1076,17 +1106,17 @@
                     const res = await fetch(`${API_URL}/mark-staff-attendance`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ teacher_id, name, date, att_type, status, location_verified: true })
+                        body: JSON.stringify({ teacher_id, name, date, att_type, time: staffTime, status, location_verified: true })
                     });
 
                     if(res.ok) {
                         fetchStaffAttendance();
-                        showToast(`🎉 Staff ${att_type} marked successfully inside campus!`);
+                        showToast(`🎉 Staff ${att_type} (${staffTime}) marked successfully inside campus!`);
                     } else {
-                        saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, "Inside Campus (Verified)");
+                        saveStaffAttendanceLocally(teacher_id, name, date, att_type, staffTime, status, "Inside Campus (Verified)");
                     }
                 } catch(e) {
-                    saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, "Inside Campus (Verified)");
+                    saveStaffAttendanceLocally(teacher_id, name, date, att_type, staffTime, status, "Inside Campus (Verified)");
                 }
             },
             (error) => {
@@ -1097,9 +1127,9 @@
         );
     }
 
-    function saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, locStatus) {
+    function saveStaffAttendanceLocally(teacher_id, name, date, att_type, time, status, locStatus) {
         let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        staffAtts.push({ id: Date.now(), teacher_id, name, date, att_type, status, location_status: locStatus });
+        staffAtts.push({ id: Date.now(), teacher_id, name, date, att_type, time, status, location_status: locStatus });
         localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
         fetchStaffAttendance();
         showToast("Staff attendance saved securely!");
@@ -1132,10 +1162,12 @@
         data.forEach(s => {
             const statusClass = s.status === 'Present' ? 'badge-present' : 'badge-absent';
             const typeBadge = s.att_type === 'Check-Out' ? `<span style="background:#e0f2fe; color:#0369a1; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">📤 Check-Out</span>` : `<span style="background:#fef3c7; color:#b45309; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">📥 Check-In</span>`;
+            const recordTime = s.time || s.in_time || s.out_time || '-';
             
             tbody.innerHTML += `<tr>
                 <td>${s.id}</td><td>${s.name}</td><td>${s.date ? s.date.split('T')[0] : '-'}</td>
                 <td>${typeBadge}</td>
+                <td><strong>${recordTime}</strong></td>
                 <td><span class="${statusClass}">${s.status}</span></td>
                 <td><span style="color:var(--success); font-weight:600;">🛡️ ${s.location_status || 'Verified'}</span></td>
                 <td><button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button></td>
@@ -1607,7 +1639,7 @@
         };
 
         try {
-            await fetch(`${API_URL}/${endpointMap[type]}/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/${endpointMap[type]}/${id}`, { method: 'DELETE' };
             loadData();
             showToast("Deleted successfully!");
         } catch(err) {
