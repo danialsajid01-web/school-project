@@ -1195,6 +1195,7 @@
         const row = document.getElementById(`staff-row-${id}`);
         if(row) row.remove();
 
+        // Saare possible endpoints par DELETE request bhejna taake backend se row permanent delete ho jaye
         const possibleEndpoints = [
             `${API_URL}/delete-staff-attendance/${id}`,
             `${API_URL}/delete-teacher-attendance/${id}`,
@@ -1223,7 +1224,8 @@
         }
 
         showToast("Staff attendance deleted successfully!");
-        setTimeout(fetchStaffAttendanceLogs, 300);
+        // Thora delay de kar dobara fetch karein taake sync fresh rahe
+        setTimeout(fetchStaffAttendanceLogs, 800);
     }
 
     async function markAttendance() {
