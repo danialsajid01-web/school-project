@@ -346,59 +346,6 @@
                 </div>
             </div>
 
-            <!-- STAFF GPS ATTENDANCE TAB -->
-            <div id="faculty-portal" class="tab-section">
-                <div class="card">
-                    <h3>Staff Geofenced Attendance & PIN Verification</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="teacherPortalSelect">Select Teacher:</label>
-                            <select id="teacherPortalSelect" class="login-select" style="background:#fff; color:#333;">
-                                <option value="">-- Select Teacher --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Secret PIN Code:</label>
-                            <input type="password" id="staff_pin_code" placeholder="Enter Staff PIN (e.g. 1234)" style="background:#fff; color:#333;">
-                        </div>
-                        <div class="form-group">
-                            <label>Action Mode:</label>
-                            <select id="attendance_action_type" class="login-select" style="background:#fff; color:#333;">
-                                <option value="Check-In">Mark Check-In (Present)</option>
-                                <option value="Check-Out">Mark Check-Out (Left College)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="text-align: center; margin: 15px 0;">
-                        <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--primary);">Live Camera Photo (Required at College Premises):</label>
-                        <div style="position: relative; width: 320px; height: 240px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden; border: 2px solid #cbd5e0;">
-                            <video id="webcam" width="320" height="240" autoplay playsinline style="transform: scaleX(-1); width:100%; height:100%; object-fit:cover;"></video>
-                            <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
-                        </div>
-                        <button type="button" class="btn-action" style="background:var(--primary); color:white; padding: 6px 14px; margin-top: 8px; font-size:12px;" onclick="initCameraStream()">🔄 Start/Reset Camera</button>
-                    </div>
-
-                    <button class="submit-btn" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="verifyAndMarkAttendance()">Verify PIN, Location & Submit Attendance</button>
-                    
-                    <div id="location-status" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
-                </div>
-                
-                <div class="card">
-                    <h3>
-                        <span>Staff Geofenced Logs</span>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                            <input type="text" id="search_staff_att" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('staffAttTable', this)">
-                            <button class="btn-excel" onclick="exportTableToExcel('staffAttTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
-                        </div>
-                    </h3>
-                    <table id="staffAttTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Status</th><th>Time / Date (Islamabad/Karachi)</th><th>Location Coordinates</th><th>Actions</th></tr></thead>
-                        <tbody id="staffAttTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- STUDENT ATTENDANCE TAB -->
             <div id="attendance" class="tab-section">
                 <div class="card">
@@ -663,11 +610,6 @@
     let studentsGlobalCache = {}; 
     let marksGlobalCache = []; 
 
-    const COLLEGE_LAT = 30.163000; 
-    const COLLEGE_LON = 73.572549;
-    const ALLOWED_RADIUS_METERS = 200;
-    const VALID_STAFF_PIN = "1234";
-
     const CREDENTIALS = {
         admin: { user: 'admin', pass: 'admin123' },
         principal: { user: 'principal', pass: 'principal123' },
@@ -681,29 +623,6 @@
             month: '2-digit',
             day: '2-digit'
         }).format(new Date());
-    }
-
-    function formatPakistaniDateTime(dateInput) {
-        if (!dateInput) return '-';
-        try {
-            let cleanInput = dateInput;
-            if (typeof dateInput === 'string' && !dateInput.endsWith('Z') && !dateInput.includes('+') && dateInput.includes('T')) {
-                cleanInput += 'Z';
-            }
-            const d = new Date(cleanInput);
-            if (isNaN(d.getTime())) return dateInput;
-            return new Intl.DateTimeFormat('en-GB', {
-                timeZone: 'Asia/Karachi',
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            }).format(d);
-        } catch (e) {
-            return dateInput;
-        }
     }
 
     window.onload = function() {
@@ -788,7 +707,6 @@
         
         let navHtml = `<button class="nav-btn active" onclick="switchTab('students', this)">👨‍🎓 Students</button>
                        <button class="nav-btn" onclick="switchTab('teachers', this)">👨‍🏫 Faculty</button>
-                       <button class="nav-btn" onclick="switchTab('faculty-portal', this)">📍 Staff GPS</button>
                        <button class="nav-btn" onclick="switchTab('attendance', this)">📋 Attendance</button>`;
         
         if (currentUserRole !== 'teacher') {
@@ -816,10 +734,6 @@
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         if(btnElement) btnElement.classList.add('active');
-
-        if (tabId === 'faculty-portal') {
-            initCameraStream();
-        }
     }
 
     function filterTable(tableID, searchInput) {
@@ -847,7 +761,6 @@
         await fetchStudents();
         if(currentUserRole !== 'teacher') fetchDashboardStats();
         fetchTeachers();
-        fetchStaffAttendanceLogs();
         if(currentUserRole !== 'teacher') fetchFees();
         await fetchMarks(); 
         fetchAttendance();
@@ -985,8 +898,6 @@
             const res = await fetch(`${API_URL}/teachers`);
             const data = await res.json();
             const tbody = document.getElementById('teacherTableBody');
-            const portalSelect = document.getElementById('teacherPortalSelect');
-            portalSelect.innerHTML = `<option value="">-- Select Teacher --</option>`;
 
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
@@ -1002,10 +913,6 @@
                         <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
                     </td>
                 </tr>`;
-                let opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = `${t.name} (${t.subject})`;
-                portalSelect.appendChild(opt);
             });
         } catch(e) { console.error(e); }
     }
@@ -1040,181 +947,6 @@
         document.getElementById('t_phone').value = phone;
         document.getElementById('teacherFormTitle').innerText = "Edit Teacher Record";
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
-    }
-
-    function initCameraStream() {
-        const video = document.getElementById('webcam');
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => { console.error("Camera access error:", err); });
-    }
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI/180;
-        const φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180;
-        const Δλ = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    }
-
-    function verifyAndMarkAttendance() {
-        const teacherId = document.getElementById('teacherPortalSelect').value;
-        const pinInput = document.getElementById('staff_pin_code').value.trim();
-        const actionType = document.getElementById('attendance_action_type').value;
-        const statusMsg = document.getElementById('location-status');
-
-        if (!teacherId) { alert("Pehle apna naam (Teacher) select karein!"); return; }
-        if (!pinInput) { alert("Pehle apna secret PIN code enter karein!"); return; }
-
-        if (pinInput !== VALID_STAFF_PIN) {
-            statusMsg.style.color = "red";
-            statusMsg.textContent = "❌ Ghalat PIN code! Baraye meharbani saheeh PIN enter karein.";
-            showToast("Invalid Staff PIN Code!");
-            return;
-        }
-        
-        statusMsg.style.color = "orange";
-        statusMsg.textContent = "🔍 PIN verified! GPS location check ki ja rahi hai...";
-
-        if (!navigator.geolocation) { alert("Geolocation is not supported by your browser"); return; }
-
-        navigator.geolocation.getCurrentPosition((position) => {
-            const userLat = position.coords.latitude;
-            const userLon = position.coords.longitude;
-            const distance = calculateDistance(userLat, userLon, COLLEGE_LAT, COLLEGE_LON);
-
-            if (distance <= ALLOWED_RADIUS_METERS) {
-                statusMsg.style.color = "green";
-                statusMsg.textContent = `📍 PIN & Location Verified! (Approx. ${Math.round(distance)}m away). Capturing photo...`;
-                capturePhotoAndSubmitStaff(teacherId, userLat, userLon, actionType);
-            } else {
-                statusMsg.style.color = "red";
-                statusMsg.textContent = `❌ Access Denied! Aap college ke premises se bahar hain (${Math.round(distance)}m door).`;
-            }
-        }, (error) => {
-            statusMsg.style.color = "red";
-            statusMsg.textContent = "⚠️ Location error: GPS permission allow karein. " + error.message;
-        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-    }
-
-    function capturePhotoAndSubmitStaff(teacherId, lat, lon, actionType) {
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('snapshot');
-        const statusMsg = document.getElementById('location-status');
-
-        if (!video.srcObject) {
-            statusMsg.style.color = "red";
-            statusMsg.textContent = "⚠️ Camera not initialized. Click 'Start Camera' button first.";
-            return;
-        }
-
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/png');
-
-        statusMsg.textContent = "📤 Submitting attendance & photo to server...";
-        sendStaffAttendanceToServer(teacherId, lat, lon, imageData, actionType);
-    }
-
-    function sendStaffAttendanceToServer(teacherId, lat, lon, photoData, actionType) {
-        fetch(`${API_URL}/mark-teacher-attendance`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ teacher_id: teacherId, latitude: lat, longitude: lon, photo: photoData, status_type: actionType })
-        }).then(res => res.json()).then(data => {
-            document.getElementById('location-status').style.color = "green";
-            document.getElementById('location-status').textContent = data.message || `Successfully marked ${actionType}!`;
-            document.getElementById('staff_pin_code').value = '';
-            showToast(`Staff Status: ${actionType} recorded successfully!`);
-            setTimeout(fetchStaffAttendanceLogs, 500);
-        }).catch(err => {
-            console.error(err);
-            document.getElementById('location-status').style.color = "red";
-            document.getElementById('location-status').textContent = "Server connection error!";
-        });
-    }
-
-    async function fetchStaffAttendanceLogs() {
-        const endpoints = [
-            `${API_URL}/staff-attendance-logs`,
-            `${API_URL}/staff-attendance`,
-            `${API_URL}/teacher-attendance`,
-            `${API_URL}/get-staff-attendance`
-        ];
-
-        let data = [];
-        let success = false;
-
-        for (const url of endpoints) {
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    data = await res.json();
-                    success = true;
-                    break;
-                }
-            } catch (e) {}
-        }
-
-        const tbody = document.getElementById('staffAttTableBody');
-        if (!success || !Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No staff logs available.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = '';
-        data.forEach(s => {
-            const statusTypeVal = s.status_type || s.status || 'Check-In';
-            const badge = (statusTypeVal === 'Check-Out') ? '<span class="badge-absent">Checked-Out (Left)</span>' : '<span class="badge-present">Checked-In (Present)</span>';
-            const timeVal = formatPakistaniDateTime(s.timestamp || s.date || s.created_at);
-            const latVal = s.latitude ? Number(s.latitude).toFixed(4) : '0.0000';
-            const lonVal = s.longitude ? Number(s.longitude).toFixed(4) : '0.0000';
-            const teacherName = s.name || s.teacher_name || s.teacher || 'Staff Member';
-            
-            tbody.innerHTML += `<tr id="staff-row-${s.id}">
-                <td>${s.id}</td>
-                <td>${teacherName}</td>
-                <td>${badge}</td>
-                <td>${timeVal}</td>
-                <td>${latVal}, ${lonVal}</td>
-                <td>
-                    <button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button>
-                </td>
-            </tr>`;
-        });
-    }
-
-    async function deleteStaffAttendance(id) {
-        if(!confirm("Aap waqai is staff attendance record ko delete karna chahtay hain?")) return;
-        showToast("Deleting staff record...");
-        
-        // Instant UI removal
-        const row = document.getElementById(`staff-row-${id}`);
-        if(row) row.remove();
-
-        const possibleEndpoints = [
-            `${API_URL}/delete-staff-attendance/${id}`,
-            `${API_URL}/delete-teacher-attendance/${id}`,
-            `${API_URL}/staff-attendance/${id}`,
-            `${API_URL}/teacher-attendance/${id}`,
-            `${API_URL}/delete-attendance/${id}`,
-            `${API_URL}/staff_attendance/${id}`
-        ];
-
-        for (const endpoint of possibleEndpoints) {
-            try {
-                await fetch(endpoint, { method: 'DELETE' });
-            } catch (e) {}
-            try {
-                await fetch(endpoint, { method: 'POST' });
-            } catch (e) {}
-        }
-
-        showToast("Staff attendance deleted successfully!");
-        setTimeout(fetchStaffAttendanceLogs, 800);
     }
 
     async function markAttendance() {
