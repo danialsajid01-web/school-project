@@ -1191,11 +1191,10 @@
         if(!confirm("Aap waqai is staff attendance record ko delete karna chahtay hain?")) return;
         showToast("Deleting staff record...");
         
-        // Instant UI removal taake user ko foran row gayab nazar aaye
+        // Instant UI removal
         const row = document.getElementById(`staff-row-${id}`);
         if(row) row.remove();
 
-        // Saare possible endpoints par DELETE request bhejna taake backend se row permanent delete ho jaye
         const possibleEndpoints = [
             `${API_URL}/delete-staff-attendance/${id}`,
             `${API_URL}/delete-teacher-attendance/${id}`,
@@ -1205,26 +1204,16 @@
             `${API_URL}/staff_attendance/${id}`
         ];
 
-        let deleted = false;
         for (const endpoint of possibleEndpoints) {
             try {
-                const res = await fetch(endpoint, { method: 'DELETE' });
-                if (res.ok) {
-                    deleted = true;
-                    break;
-                }
+                await fetch(endpoint, { method: 'DELETE' });
+            } catch (e) {}
+            try {
+                await fetch(endpoint, { method: 'POST' });
             } catch (e) {}
         }
 
-        if (!deleted) {
-            try {
-                const res = await fetch(`${API_URL}/delete-staff-attendance/${id}`, { method: 'POST' });
-                if(res.ok) deleted = true;
-            } catch(e) {}
-        }
-
         showToast("Staff attendance deleted successfully!");
-        // Thora delay de kar dobara fetch karein taake sync fresh rahe
         setTimeout(fetchStaffAttendanceLogs, 800);
     }
 
