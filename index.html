@@ -397,7 +397,7 @@
                 </div>
             </div>
 
-            <!-- STAFF ATTENDANCE TAB -->
+            <!-- STAFF ATTENDANCE TAB (UPDATED WITH IN-TIME & OUT-TIME) -->
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
@@ -406,7 +406,8 @@
                         <div class="form-group"><label>Teacher ID</label><input type="number" id="staff_att_id" placeholder="Enter Teacher ID"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="staff_att_name" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Date</label><input type="date" id="staff_att_date"></div>
-                        <div class="form-group"><label>Check-In / Check-Out Type</label><select id="staff_att_type"><option value="Check-In">Check-In</option><option value="Check-Out">Check-Out</option></select></div>
+                        <div class="form-group"><label>In-Time</label><input type="time" id="staff_in_time" value="08:00"></div>
+                        <div class="form-group"><label>Out-Time</label><input type="time" id="staff_out_time" value="14:00"></div>
                         <div class="form-group"><label>Status</label><select id="staff_att_status"><option value="Present">Present</option><option value="Absent">Absent</option><option value="Leave">On Leave</option></select></div>
                     </div>
                     <button class="submit-btn" style="background: var(--primary);" onclick="markStaffAttendanceSecure()">🔒 Verify Location & Submit Attendance</button>
@@ -420,7 +421,7 @@
                         </div>
                     </h3>
                     <table id="staffAttendanceTable">
-                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Date</th><th>Type</th><th>Status</th><th>Location Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Teacher Name</th><th>Date</th><th>In-Time</th><th>Out-Time</th><th>Status</th><th>Location Status</th><th>Actions</th></tr></thead>
                         <tbody id="staffAttendanceTableBody"></tbody>
                     </table>
                 </div>
@@ -1041,7 +1042,8 @@
         const teacher_id = document.getElementById('staff_att_id').value;
         const name = document.getElementById('staff_att_name').value;
         const date = document.getElementById('staff_att_date').value;
-        const att_type = document.getElementById('staff_att_type').value;
+        const in_time = document.getElementById('staff_in_time').value;
+        const out_time = document.getElementById('staff_out_time').value;
         const status = document.getElementById('staff_att_status').value;
 
         if(!teacher_id || !name || !date) {
@@ -1074,17 +1076,17 @@
                     const res = await fetch(`${API_URL}/mark-staff-attendance`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ teacher_id, name, date, att_type, status, location_verified: true })
+                        body: JSON.stringify({ teacher_id, name, date, in_time, out_time, status, location_verified: true })
                     });
 
                     if(res.ok) {
                         fetchStaffAttendance();
-                        showToast(`🎉 Staff ${att_type} marked successfully inside campus!`);
+                        showToast("🎉 Staff In-Time & Out-Time marked successfully inside campus!");
                     } else {
-                        saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, "Inside Campus (Verified)");
+                        saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
                     }
                 } catch(e) {
-                    saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, "Inside Campus (Verified)");
+                    saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
                 }
             },
             (error) => {
@@ -1095,9 +1097,9 @@
         );
     }
 
-    function saveStaffAttendanceLocally(teacher_id, name, date, att_type, status, locStatus) {
+    function saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, locStatus) {
         let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        staffAtts.push({ id: Date.now(), teacher_id, name, date, att_type, status, location_status: locStatus });
+        staffAtts.push({ id: Date.now(), teacher_id, name, date, in_time, out_time, status, location_status: locStatus });
         localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
         fetchStaffAttendance();
         showToast("Staff attendance saved securely!");
@@ -1121,18 +1123,20 @@
     function renderStaffTable(data) {
         const tbody = document.getElementById('staffAttendanceTableBody');
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No staff attendance records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No staff attendance records found.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = '';
         data.forEach(s => {
             const statusClass = s.status === 'Present' ? 'badge-present' : 'badge-absent';
-            const typeBadge = s.att_type === 'Check-Out' ? `<span style="background:#e0f2fe; color:#0369a1; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">📤 Check-Out</span>` : `<span style="background:#fef3c7; color:#b45309; padding:3px 6px; border-radius:4px; font-weight:bold; font-size:11px;">📥 Check-In</span>`;
+            const inTimeStr = s.in_time || s.att_type || '08:00';
+            const outTimeStr = s.out_time || '-';
             
             tbody.innerHTML += `<tr>
                 <td>${s.id}</td><td>${s.name}</td><td>${s.date ? s.date.split('T')[0] : '-'}</td>
-                <td>${typeBadge}</td>
+                <td><span style="color:#0284c7; font-weight:bold;">📥 ${inTimeStr}</span></td>
+                <td><span style="color:#7c3aed; font-weight:bold;">📤 ${outTimeStr}</span></td>
                 <td><span class="${statusClass}">${s.status}</span></td>
                 <td><span style="color:var(--success); font-weight:600;">🛡️ ${s.location_status || 'Verified'}</span></td>
                 <td><button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button></td>
@@ -1639,27 +1643,6 @@
             showToast("Deleted successfully!");
         } catch(err) {
             console.error(err);
-            showToast("Failed to delete record.");
-        }
-    }
-
-    function exportTableToExcel(tableID, filename = '') {
-        let downloadLink;
-        let dataType = 'application/vnd.ms-excel';
-        let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/gi, '');
-
-        filename = filename ? filename + '.xls' : 'excel_data.xls';
-        downloadLink = document.createElement("a");
-        document.body.appendChild(downloadLink);
-
-        if(navigator.msSaveOrOpenBlob) {
-            let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
-            navigator.msSaveOrOpenBlob(blob, filename);
-        } else {
-            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
-            downloadLink.download = filename;
-            downloadLink.click();
         }
     }
 </script>
