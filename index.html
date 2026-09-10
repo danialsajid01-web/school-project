@@ -397,7 +397,7 @@
                 </div>
             </div>
 
-            <!-- STAFF ATTENDANCE TAB (UPDATED WITH IN-TIME & OUT-TIME) -->
+            <!-- STAFF ATTENDANCE TAB -->
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
@@ -642,9 +642,8 @@
     let currentActiveTab = 'students';
     let studentsGlobalCache = {}; 
     let marksGlobalCache = []; 
-    let timetableGlobalCache = []; // Global cache for master timetable
+    let timetableGlobalCache = []; 
 
-    // College GPS Coordinates & Max Allowed Radius
     const COLLEGE_LAT = 30.1631; 
     const COLLEGE_LNG = 73.5726;
     const ALLOWED_RADIUS_METERS = 300; 
@@ -1646,81 +1645,66 @@
 
         const studentMarks = marksGlobalCache.filter(m => String(m.student_id) === String(studentId));
 
-        if(studentMarks.length > 0) {
-            let totalObtainedSum = 0;
-            let grandTotalSum = 0;
-
+        if(studentMarks.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No marks records found for this student.</td></tr>`;
+        } else {
             studentMarks.forEach(m => {
                 const obtained = Number(m.marks_obtained) || 0;
-                const total = Number(m.total_marks) || 0;
-                totalObtainedSum += obtained;
-                grandTotalSum += total;
-
-                const perc = total > 0 ? ((obtained / total) * 100).toFixed(1) : '0.0';
-                tbody.innerHTML += `<tr><td>${m.subject}</td><td>${obtained}</td><td>${total}</td><td>${perc}%</td></tr>`;
+                const total = Number(m.total_marks) || 100;
+                const percentage = ((obtained / total) * 100).toFixed(1);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${m.subject}</td>
+                        <td>${obtained}</td>
+                        <td>${total}</td>
+                        <td><span style="font-weight:bold; color:var(--success);">${percentage}%</span></td>
+                    </tr>
+                `;
             });
-
-            const overallPerc = grandTotalSum > 0 ? ((totalObtainedSum / grandTotalSum) * 100).toFixed(1) : '0.0';
-            tbody.innerHTML += `
-                <tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid var(--primary);">
-                    <td style="text-align: right;">Total / Overall:</td>
-                    <td style="color: var(--success);">${totalObtainedSum}</td>
-                    <td style="color: var(--primary);">${grandTotalSum}</td>
-                    <td style="color: #560bad;">${overallPerc}%</td>
-                </tr>
-            `;
-
-        } else {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam records found for this student.</td></tr>`;
         }
 
         document.getElementById('reportCardResult').style.display = 'block';
-        showToast("Report card generated successfully!");
     }
 
     async function deleteRecord(type, id) {
-        if(!confirm("Aap waqai is record ko delete karna chahtay hain?")) return;
+        if(!confirm("Kya aap waqai is record ko delete karna chahtay hain?")) return;
         showToast("Deleting record...");
 
-        let endpointMap = {
-            'student': 'delete-student',
-            'teacher': 'delete-teacher',
-            'attendance': 'delete-attendance',
-            'fee': 'delete-fee',
-            'marks': 'delete-marks',
-            'timetable': 'delete-timetable',
-            'expense': 'delete-expense',
-            'announcement': 'delete-announcement'
-        };
+        let endpoint = '';
+        if(type === 'student') endpoint = `${API_URL}/delete-student/${id}`;
+        else if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
+        else if(type === 'attendance') endpoint = `${API_URL}/delete-attendance/${id}`;
+        else if(type === 'fee') endpoint = `${API_URL}/delete-fee/${id}`;
+        else if(type === 'marks') endpoint = `${API_URL}/delete-marks/${id}`;
+        else if(type === 'timetable') endpoint = `${API_URL}/delete-timetable/${id}`;
+        else if(type === 'expense') endpoint = `${API_URL}/delete-expense/${id}`;
+        else if(type === 'announcement') endpoint = `${API_URL}/delete-announcement/${id}`;
 
         try {
-            await fetch(`${API_URL}/${endpointMap[type]}/${id}`, { method: 'DELETE' });
+            await fetch(endpoint, { method: 'DELETE' });
             loadData();
-            showToast("Record deleted successfully!");
-        } catch(e) { console.error(e); }
+            showToast("Deleted successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Failed to delete record.");
+        }
     }
 
     function exportTableToExcel(tableID, filename = '') {
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        
-        let cloneTable = tableSelect.cloneNode(true);
-        for(let row of cloneTable.rows) {
-            row.deleteCell(-1); 
-        }
-        
-        let tableHTML = cloneTable.outerHTML.replace(/ /g, '%20');
-        filename = filename ?filename : 'excel_data.xls';
-        
+        let tableHTML = tableSelect.outerHTML;
+
+        filename = filename ? filename.toLowerCase() : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
-        
-        if(navigator.msSaveOrOpenBlob){
+
+        if(navigator.msSaveOrOpenBlob) {
             let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
             navigator.msSaveOrOpenBlob(blob, filename);
-        } else{
-            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+        } else {
+            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
             downloadLink.download = filename;
             downloadLink.click();
         }
