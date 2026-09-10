@@ -547,10 +547,13 @@
                 <div class="card">
                     <h3>
                         <span>Master Timetable</span>
-                        <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search timetable..." onkeyup="filterTable('timetableTable', this)">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search timetable..." onkeyup="filterTable('timetableTable', this)">
+                            <button class="btn-excel" style="background: var(--primary);" onclick="printMasterTimetable()">🖨️ Print Master Timetable</button>
+                        </div>
                     </h3>
                     <table id="timetableTable">
-                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Print</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Print Slip</th><th>Actions</th></tr></thead>
                         <tbody id="timetableTableBody"></tbody>
                     </table>
                 </div>
@@ -639,6 +642,7 @@
     let currentActiveTab = 'students';
     let studentsGlobalCache = {}; 
     let marksGlobalCache = []; 
+    let timetableGlobalCache = []; // Global cache for master timetable
 
     // College GPS Coordinates & Max Allowed Radius
     const COLLEGE_LAT = 30.1631; 
@@ -1407,6 +1411,11 @@
         try {
             const res = await fetch(`${API_URL}/timetable`);
             const data = await res.json();
+            
+            if (Array.isArray(data)) {
+                timetableGlobalCache = data;
+            }
+
             const tbody = document.getElementById('timetableTableBody');
             
             if (!Array.isArray(data) || data.length === 0) {
@@ -1418,7 +1427,7 @@
             data.forEach(t => {
                 tbody.innerHTML += `<tr>
                     <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
-                    <td><button class="btn-print" onclick="printTimetableSlip('${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">🖨️ Print</button></td>
+                    <td><button class="btn-print" onclick="printTimetableSlip('${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">🖨️ Slip</button></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editTimetable(${t.id}, '${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button>
@@ -1448,6 +1457,53 @@
                     <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; color:#0077b6;">${subject}</td>
                     <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">${teacher}</td>
                 </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
+    function printMasterTimetable() {
+        const area = document.getElementById('printableArea');
+        let rowsHtml = '';
+
+        if(timetableGlobalCache.length === 0) {
+            rowsHtml = `<tr><td colspan="5" style="text-align:center; padding:15px;">No timetable records found.</td></tr>`;
+        } else {
+            timetableGlobalCache.forEach((t, index) => {
+                rowsHtml += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${index + 1}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px; font-weight:600;">${t.class_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master College Lecture Timetable (All Classes & Faculty)</p>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center; width:50px;">#</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Class Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Subject</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Teacher Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Time Slot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
             </table>
             <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
                 <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
@@ -1640,9 +1696,33 @@
         try {
             await fetch(`${API_URL}/${endpointMap[type]}/${id}`, { method: 'DELETE' });
             loadData();
-            showToast("Deleted successfully!");
-        } catch(err) {
-            console.error(err);
+            showToast("Record deleted successfully!");
+        } catch(e) { console.error(e); }
+    }
+
+    function exportTableToExcel(tableID, filename = '') {
+        let downloadLink;
+        let dataType = 'application/vnd.ms-excel';
+        let tableSelect = document.getElementById(tableID);
+        
+        let cloneTable = tableSelect.cloneNode(true);
+        for(let row of cloneTable.rows) {
+            row.deleteCell(-1); 
+        }
+        
+        let tableHTML = cloneTable.outerHTML.replace(/ /g, '%20');
+        filename = filename ?filename : 'excel_data.xls';
+        
+        downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+        
+        if(navigator.msSaveOrOpenBlob){
+            let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+            navigator.msSaveOrOpenBlob(blob, filename);
+        } else{
+            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+            downloadLink.download = filename;
+            downloadLink.click();
         }
     }
 </script>
