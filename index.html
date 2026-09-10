@@ -397,7 +397,7 @@
                 </div>
             </div>
 
-            <!-- STAFF ATTENDANCE TAB (UPDATED WITH CHECK-IN / CHECK-OUT) -->
+            <!-- STAFF ATTENDANCE TAB -->
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
@@ -549,7 +549,7 @@
                         <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search timetable..." onkeyup="filterTable('timetableTable', this)">
                     </h3>
                     <table id="timetableTable">
-                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Time Slot</th><th>Print</th><th>Actions</th></tr></thead>
                         <tbody id="timetableTableBody"></tbody>
                     </table>
                 </div>
@@ -639,7 +639,7 @@
     let studentsGlobalCache = {}; 
     let marksGlobalCache = []; 
 
-    // College GPS Coordinates (City College Minchinabad approximate location) & Max Allowed Radius in Meters (e.g., 300 meters)
+    // College GPS Coordinates & Max Allowed Radius
     const COLLEGE_LAT = 30.1631; 
     const COLLEGE_LNG = 73.5726;
     const ALLOWED_RADIUS_METERS = 300; 
@@ -1022,9 +1022,8 @@
         }
     }
 
-    // --- SECURE STAFF ATTENDANCE WITH GEOFENCING ---
     function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Earth radius in meters
+        const R = 6371e3; 
         const φ1 = lat1 * Math.PI/180;
         const φ2 = lat2 * Math.PI/180;
         const Δφ = (lat2-lat1) * Math.PI/180;
@@ -1035,7 +1034,7 @@
                   Math.sin(Δλ/2) * Math.sin(Δλ/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return R * c; // Distance in meters
+        return R * c; 
     }
 
     function markStaffAttendanceSecure() {
@@ -1070,7 +1069,6 @@
                     return;
                 }
 
-                // Within College Campus -> Proceed to save staff attendance
                 showToast("✅ Location verified inside college! Saving attendance...");
                 try {
                     const res = await fetch(`${API_URL}/mark-staff-attendance`, {
@@ -1116,7 +1114,6 @@
             }
         } catch(e) {}
 
-        // Fallback local render
         let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
         renderStaffTable(staffAtts);
     }
@@ -1409,7 +1406,7 @@
             const tbody = document.getElementById('timetableTableBody');
             
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>`;
                 return;
             }
 
@@ -1417,6 +1414,7 @@
             data.forEach(t => {
                 tbody.innerHTML += `<tr>
                     <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
+                    <td><button class="btn-print" onclick="printTimetableSlip('${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">🖨️ Print</button></td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editTimetable(${t.id}, '${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button>
@@ -1424,6 +1422,35 @@
                 </tr>`;
             });
         } catch(e) { console.error(e); }
+    }
+
+    function printTimetableSlip(className, subject, teacher, timeSlot) {
+        const area = document.getElementById('printableArea');
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Class Lecture Timetable Slip</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div><strong>Class Name:</strong> ${className}</div>
+                <div><strong>Time Slot:</strong> ${timeSlot}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <tr>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Subject / Course</th>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Assigned Teacher</th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; color:#0077b6;">${subject}</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">${teacher}</td>
+                </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
     }
 
     async function addExpense() {
