@@ -246,6 +246,25 @@
         </div>
 
         <div class="container">
+            <div class="card" style="margin-bottom: 15px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: white; border: none;">
+                <span style="font-weight: 600; font-size: 13px;">📅 Global Month-Wise Filter (Applies to Stats & Financials):</span>
+                <select id="global_month_filter" onchange="applyGlobalMonthFilter()" style="padding: 6px 12px; border-radius: 6px; font-weight: 600; background: #fff; color: #333; border: none;">
+                    <option value="">All Months (Overall)</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+
             <div id="statsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #0077b6, #0096c7); color: white; border: none;">
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Total Students</h4>
@@ -376,6 +395,13 @@
                         <span>Student Attendance Logs</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_attendance" class="search-box" placeholder="🔍 Search logs..." onkeyup="filterTable('attendanceTable', this)">
+                            <select id="filter_att_month" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Months</option>
+                                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
                             <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
@@ -417,6 +443,13 @@
                         <span>Faculty Attendance History</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_staff_att" class="search-box" placeholder="🔍 Search staff logs..." onkeyup="filterTable('staffAttendanceTable', this)">
+                            <select id="filter_staff_month" onchange="fetchStaffAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Months</option>
+                                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('staffAttendanceTable', 'Staff_Attendance.xls')">📥 Export Excel</button>
                         </div>
                     </h3>
@@ -458,6 +491,13 @@
                         <span>Fee Collection Records</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search fee..." onkeyup="filterTable('feeTable', this)">
+                            <select id="filter_fee_month" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Months</option>
+                                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
                             <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
                                 <option value="9th Class">9th Class</option>
@@ -575,7 +615,16 @@
                 <div class="card">
                     <h3>
                         <span>Financial Expense Ledger</span>
-                        <input type="text" id="search_expense" class="search-box" placeholder="🔍 Search expenses..." onkeyup="filterTable('expenseTable', this)">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="search_expense" class="search-box" placeholder="🔍 Search expenses..." onkeyup="filterTable('expenseTable', this)">
+                            <select id="filter_exp_month" onchange="fetchExpenses()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Months</option>
+                                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                            </select>
+                        </div>
                     </h3>
                     <table id="expenseTable">
                         <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
@@ -643,6 +692,8 @@
     let studentsGlobalCache = {}; 
     let marksGlobalCache = []; 
     let timetableGlobalCache = []; 
+    let allFeesCache = [];
+    let allExpensesCache = [];
 
     const COLLEGE_LAT = 30.1631; 
     const COLLEGE_LNG = 73.5726;
@@ -796,6 +847,20 @@
         }
     }
 
+    function applyGlobalMonthFilter() {
+        const selectedMonth = document.getElementById('global_month_filter').value;
+        // Sync individual month filters if needed
+        document.getElementById('filter_fee_month').value = selectedMonth;
+        document.getElementById('filter_exp_month').value = selectedMonth;
+        document.getElementById('filter_att_month').value = selectedMonth;
+        document.getElementById('filter_staff_month').value = selectedMonth;
+
+        fetchFees();
+        fetchExpenses();
+        fetchAttendance();
+        fetchStaffAttendance();
+    }
+
     async function loadData() {
         await fetchStudents();
         if(currentUserRole !== 'teacher') fetchDashboardStats();
@@ -813,11 +878,8 @@
         try {
             const res = await fetch(`${API_URL}/dashboard-stats`);
             const data = await res.json();
-            
-            const totalExpVal = Number(data.totalExpenses) || 0;
             document.getElementById('stat_students').innerText = data.totalStudents || 0;
             document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
-            document.getElementById('stat_expenses').innerText = `PKR ${totalExpVal}`;
         } catch(e) { console.error(e); }
     }
 
@@ -1059,7 +1121,7 @@
             return;
         }
 
-        showToast("📍 GPS location verify ho rahi hai... Baraye meharbani intezaar karein.");
+        showToast("📍 GPS location verify ho rahi hai... Baraye meharbani intezaار karein.");
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
@@ -1109,24 +1171,33 @@
     }
 
     async function fetchStaffAttendance() {
-        const tbody = document.getElementById('staffAttendanceTableBody');
+        const monthFilter = document.getElementById('filter_staff_month').value;
+        let data = [];
         try {
             const res = await fetch(`${API_URL}/staff-attendance`);
-            const data = await res.json();
-            if(Array.isArray(data) && data.length > 0) {
-                renderStaffTable(data);
-                return;
+            data = await res.json();
+            if(!Array.isArray(data) || data.length === 0) {
+                data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
             }
-        } catch(e) {}
+        } catch(e) {
+            data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
+        }
 
-        let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        renderStaffTable(staffAtts);
+        if(monthFilter) {
+            data = data.filter(s => {
+                const recordDate = s.date ? s.date.split('T')[0] : '';
+                const recordMonth = recordDate.split('-')[1];
+                return recordMonth === monthFilter;
+            });
+        }
+
+        renderStaffTable(data);
     }
 
     function renderStaffTable(data) {
         const tbody = document.getElementById('staffAttendanceTableBody');
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No staff attendance records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No staff attendance records found for selected month.</td></tr>`;
             return;
         }
 
@@ -1158,11 +1229,19 @@
     async function fetchAttendance() {
         try {
             const selectedClass = document.getElementById('filter_att_class').value;
+            const monthFilter = document.getElementById('filter_att_month').value;
             const url = selectedClass ? `${API_URL}/all-attendance?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/all-attendance`;
             const res = await fetch(url);
-            const data = await res.json();
+            let data = await res.json();
             const tbody = document.getElementById('attendanceTableBody');
             
+            if(Array.isArray(data) && monthFilter) {
+                data = data.filter(rec => {
+                    const recDate = rec.date ? rec.date.split('T')[0] : '';
+                    return recDate.split('-')[1] === monthFilter;
+                });
+            }
+
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>`;
                 return;
@@ -1226,33 +1305,37 @@
     async function fetchFees() {
         try {
             const selectedClass = document.getElementById('filter_fee_class').value;
+            const monthFilter = document.getElementById('filter_fee_month').value;
             const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
             const res = await fetch(url);
-            const data = await res.json();
-            const tbody = document.getElementById('feeTableBody');
+            let data = await res.json();
             
-            let calculatedTotalFees = 0;
-            if (Array.isArray(data)) {
-                data.forEach(f => {
-                    calculatedTotalFees += Number(f.amount) || 0;
+            allFeesCache = Array.isArray(data) ? data : [];
+            let filteredFees = [...allFeesCache];
+
+            if(monthFilter) {
+                filteredFees = filteredFees.filter(f => {
+                    const fDate = f.date ? f.date.split('T')[0] : '';
+                    return fDate.split('-')[1] === monthFilter;
                 });
             }
 
-            document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
-            const totalExpText = document.getElementById('stat_expenses').innerText.replace('PKR ', '');
-            const totalExpVal = Number(totalExpText) || 0;
-            const netBalance = calculatedTotalFees - totalExpVal;
-            const balanceElement = document.getElementById('stat_balance');
-            balanceElement.innerText = `PKR ${netBalance}`;
-            balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
+            let calculatedTotalFees = 0;
+            filteredFees.forEach(f => {
+                calculatedTotalFees += Number(f.amount) || 0;
+            });
 
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
+            document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
+            updateNetBalance();
+
+            const tbody = document.getElementById('feeTableBody');
+            if (filteredFees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found for selected month.</td></tr>`;
                 return;
             }
             
             tbody.innerHTML = '';
-            data.forEach(f => {
+            filteredFees.forEach(f => {
                 const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
                 const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
                 const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
@@ -1548,15 +1631,34 @@
         try {
             const res = await fetch(`${API_URL}/expenses`);
             const data = await res.json();
-            const tbody = document.getElementById('expenseTableBody');
+            const monthFilter = document.getElementById('filter_exp_month').value;
             
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found.</td></tr>`;
+            allExpensesCache = Array.isArray(data) ? data : [];
+            let filteredExpenses = [...allExpensesCache];
+
+            if(monthFilter) {
+                filteredExpenses = filteredExpenses.filter(e => {
+                    const eDate = e.date ? e.date.split('T')[0] : '';
+                    return eDate.split('-')[1] === monthFilter;
+                });
+            }
+
+            let calculatedTotalExpenses = 0;
+            filteredExpenses.forEach(e => {
+                calculatedTotalExpenses += Number(e.amount) || 0;
+            });
+
+            document.getElementById('stat_expenses').innerText = `PKR ${calculatedTotalExpenses}`;
+            updateNetBalance();
+
+            const tbody = document.getElementById('expenseTableBody');
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found for selected month.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.forEach(e => {
+            filteredExpenses.forEach(e => {
                 tbody.innerHTML += `<tr>
                     <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
                     <td>
@@ -1565,37 +1667,19 @@
                     </td>
                 </tr>`;
             });
-        } catch(err) { console.error(err); }
+        } catch(e) { console.error(e); }
     }
 
-    async function addAnnouncement() {
-        const id = document.getElementById('edit_ann_id').value;
-        const title = document.getElementById('ann_title').value;
-        const message = document.getElementById('ann_message').value;
-        const date = document.getElementById('ann_date').value;
+    function updateNetBalance() {
+        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').replace(/,/g, '');
+        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').replace(/,/g, '');
+        const totalFees = Number(feesText) || 0;
+        const totalExp = Number(expText) || 0;
+        const netBalance = totalFees - totalExp;
 
-        if(!title || !message) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating notice..." : "Publishing notice...");
-
-        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
-        const method = id ? 'PUT' : 'POST';
-
-        document.getElementById('edit_ann_id').value = '';
-        document.getElementById('annFormTitle').innerText = "Publish College Notice";
-        document.getElementById('annSubmitBtn').innerText = "Publish Notice";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) })
-        .then(() => { loadData(); showToast("Notice published!"); });
-    }
-
-    function editAnnouncement(id, title, message, date) {
-        document.getElementById('edit_ann_id').value = id;
-        document.getElementById('ann_title').value = title;
-        document.getElementById('ann_message').value = message;
-        document.getElementById('ann_date').value = date.split('T')[0];
-        document.getElementById('annFormTitle').innerText = "Edit College Notice";
-        document.getElementById('annSubmitBtn').innerText = "Update Notice";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const balanceElement = document.getElementById('stat_balance');
+        balanceElement.innerText = `PKR ${netBalance}`;
+        balanceElement.style.color = netBalance < 0 ? "#ffdddd" : "#ffffff";
     }
 
     async function fetchAnnouncements() {
@@ -1604,72 +1688,93 @@
             const data = await res.json();
             const tbody = document.getElementById('announcementTableBody');
             
-            let listData = [];
-            if (Array.isArray(data)) listData = data;
-            else if (data && Array.isArray(data.data)) listData = data.data;
-
-            if (listData.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            listData.forEach(a => {
+            data.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date ? a.date.split('T')[0] : '-'}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
-                    </td>
+                    <td>${a.id}</td><td>${a.title}</td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button></td>
                 </tr>`;
             });
-        } catch(err) { console.error(err); }
+        } catch(e) { console.error(e); }
+    }
+
+    async function addAnnouncement() {
+        const title = document.getElementById('ann_title').value;
+        const message = document.getElementById('ann_message').value;
+        const date = document.getElementById('ann_date').value;
+
+        if(!title || !message) { alert('Fill out required fields!'); return; }
+        showToast("Publishing notice...");
+
+        fetch(`${API_URL}/add-announcement`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title, message, date})
+        }).then(() => { loadData(); showToast("Notice published!"); });
     }
 
     async function fetchReportCard() {
-        const studentId = document.getElementById('rc_student_id').value;
-        if(!studentId) { alert("Please enter a valid Student ID!"); return; }
+        const student_id = document.getElementById('rc_student_id').value;
+        if(!student_id) { alert('Enter Student ID!'); return; }
 
-        const student = studentsGlobalCache[studentId];
-        if(!student) {
-            alert("Student not found with this ID!");
-            return;
-        }
+        try {
+            const resStudent = await fetch(`${API_URL}/students`);
+            const students = await resStudent.json();
+            const student = students.find(s => s.id == student_id);
 
-        document.getElementById('rc_name').innerText = student.name || '-';
-        document.getElementById('rc_roll').innerText = student.roll_no || '-';
-        document.getElementById('rc_class').innerText = student.class || '-';
+            if(!student) { alert('Student not found!'); return; }
 
-        const tbody = document.getElementById('rcTableBody');
-        tbody.innerHTML = '';
+            document.getElementById('rc_name').innerText = student.name;
+            document.getElementById('rc_roll').innerText = student.roll_no;
+            document.getElementById('rc_class').innerText = student.class;
 
-        const studentMarks = marksGlobalCache.filter(m => String(m.student_id) === String(studentId));
+            const studentMarks = marksGlobalCache.filter(m => m.student_id == student_id);
+            const tbody = document.getElementById('rcTableBody');
+            tbody.innerHTML = '';
 
-        if(studentMarks.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No marks records found for this student.</td></tr>`;
+            if(studentMarks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No marks records found for this student.</td></tr>`;
+            } else {
+                studentMarks.forEach(m => {
+                    const percentage = Math.round((m.marks_obtained / m.total_marks) * 100);
+                    tbody.innerHTML += `<tr>
+                        <td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${percentage}%</td>
+                    </tr>`;
+                });
+            }
+
+            document.getElementById('reportCardResult').style.display = 'block';
+        } catch(e) { console.error(e); }
+    }
+
+    function exportTableToExcel(tableID, filename = '') {
+        let downloadLink;
+        let dataType = 'application/vnd.ms-excel';
+        let tableSelect = document.getElementById(tableID);
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/i, ""); 
+
+        filename = filename ? filename.toLowerCase() : 'excel_data.xls';
+        downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+
+        if(navigator.msSaveOrOpenBlob){
+            let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+            navigator.msSaveOrOpenBlob(blob, filename);
         } else {
-            studentMarks.forEach(m => {
-                const obtained = Number(m.marks_obtained) || 0;
-                const total = Number(m.total_marks) || 100;
-                const percentage = ((obtained / total) * 100).toFixed(1);
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${m.subject}</td>
-                        <td>${obtained}</td>
-                        <td>${total}</td>
-                        <td><span style="font-weight:bold; color:var(--success);">${percentage}%</span></td>
-                    </tr>
-                `;
-            });
+            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
+            downloadLink.download = filename;
+            downloadLink.click();
         }
-
-        document.getElementById('reportCardResult').style.display = 'block';
     }
 
     async function deleteRecord(type, id) {
-        if(!confirm("Kya aap waqai is record ko delete karna chahtay hain?")) return;
-        showToast("Deleting record...");
-
+        if(!confirm('Are you sure you want to delete this record?')) return;
+        
         let endpoint = '';
         if(type === 'student') endpoint = `${API_URL}/delete-student/${id}`;
         else if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
@@ -1683,31 +1788,8 @@
         try {
             await fetch(endpoint, { method: 'DELETE' });
             loadData();
-            showToast("Deleted successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Failed to delete record.");
-        }
-    }
-
-    function exportTableToExcel(tableID, filename = '') {
-        let downloadLink;
-        let dataType = 'application/vnd.ms-excel';
-        let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML;
-
-        filename = filename ? filename.toLowerCase() : 'excel_data.xls';
-        downloadLink = document.createElement("a");
-        document.body.appendChild(downloadLink);
-
-        if(navigator.msSaveOrOpenBlob) {
-            let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
-            navigator.msSaveOrOpenBlob(blob, filename);
-        } else {
-            downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
-            downloadLink.download = filename;
-            downloadLink.click();
-        }
+            showToast("Record deleted successfully!");
+        } catch(e) { console.error(e); }
     }
 </script>
 </body>
