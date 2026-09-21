@@ -1051,7 +1051,7 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
-    // UPDATED FUNCTION: Mark Whole Class Attendance at Once
+    // NEW FUNCTION: Mark Whole Class Attendance at Once
     async function markClassAttendanceBulk() {
         const className = document.getElementById('att_class_select').value;
         const date = document.getElementById('att_date').value;
@@ -1061,7 +1061,6 @@
         showToast("Marking attendance for all students in class...");
 
         try {
-            // Fetch students belonging to the selected class
             const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(className)}`);
             const students = await res.json();
 
@@ -1070,7 +1069,6 @@
                 return;
             }
 
-            // Loop through each student and mark attendance
             for(let s of students) {
                 await fetch(`${API_URL}/mark-attendance`, {
                     method: 'POST',
@@ -1092,7 +1090,6 @@
         }
     }
 
-    // Individual edit attendance handler kept for adjustments
     async function markAttendanceManual(id, student_id, className, date, status) {
         try {
             const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
@@ -1574,7 +1571,7 @@
                 </tr>
             </table>
             <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Teacher</div>
                 <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
             </div>
         `;
@@ -1584,46 +1581,31 @@
     function printMasterTimetable() {
         const area = document.getElementById('printableArea');
         let rowsHtml = '';
-
-        if(timetableGlobalCache.length === 0) {
-            rowsHtml = `<tr><td colspan="5" style="text-align:center; padding:15px;">No timetable records found.</td></tr>`;
-        } else {
-            timetableGlobalCache.forEach((t, index) => {
-                rowsHtml += `
-                    <tr>
-                        <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${index + 1}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px; font-weight:600;">${t.class_name}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
-                    </tr>
-                `;
-            });
-        }
+        timetableGlobalCache.forEach(t => {
+            rowsHtml += `<tr>
+                <td style="border:1px solid #cbd5e0; padding:10px;">${t.class_name}</td>
+                <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
+                <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
+                <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
+            </tr>`;
+        });
 
         area.innerHTML = `
             <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
                 <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master College Lecture Timetable (All Classes & Faculty)</p>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master College Lecture Timetable</p>
             </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
                 <thead>
                     <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center; width:50px;">#</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Class Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Class</th>
                         <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Subject</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Teacher Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Teacher</th>
                         <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Time Slot</th>
                     </tr>
                 </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
+                <tbody>${rowsHtml}</tbody>
             </table>
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
-            </div>
         `;
         window.print();
     }
@@ -1662,9 +1644,9 @@
 
     async function fetchExpenses() {
         try {
-            const res = await fetch(`${API_URL}/expenses`);
-            const data = await res.json();
             const monthFilter = document.getElementById('filter_exp_month').value;
+            const res = await fetch(`${API_URL}/expenses`);
+            let data = await res.json();
             
             allExpensesCache = Array.isArray(data) ? data : [];
             let filteredExpenses = [...allExpensesCache];
@@ -1686,14 +1668,14 @@
 
             const tbody = document.getElementById('expenseTableBody');
             if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found for selected month.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expense records found for selected month.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
             filteredExpenses.forEach(e => {
                 tbody.innerHTML += `<tr>
-                    <td>${e.id}</td><td>${e.title}</td><td><span class="badge-expense">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
+                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${e.date.split('T')[0]}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
@@ -1704,14 +1686,15 @@
     }
 
     function updateNetBalance() {
-        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '');
-        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '');
+        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').trim();
+        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').trim();
         const totalFees = Number(feesText) || 0;
         const totalExp = Number(expText) || 0;
         const net = totalFees - totalExp;
+
         const netEl = document.getElementById('stat_balance');
         netEl.innerText = `PKR ${net}`;
-        netEl.style.color = net >= 0 ? '#ffffff' : '#ffdddd';
+        netEl.style.color = net >= 0 ? '#ffffff' : '#ffccd5';
     }
 
     async function addAnnouncement() {
@@ -1734,6 +1717,16 @@
         .then(() => { loadData(); showToast("Notice published!"); });
     }
 
+    function editAnnouncement(id, title, message, date) {
+        document.getElementById('edit_ann_id').value = id;
+        document.getElementById('ann_title').value = title;
+        document.getElementById('ann_message').value = message;
+        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annSubmitBtn').innerText = "Update Notice";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     async function fetchAnnouncements() {
         try {
             const res = await fetch(`${API_URL}/announcements`);
@@ -1741,15 +1734,16 @@
             const tbody = document.getElementById('announcementTableBody');
 
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices published.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
             data.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td>${a.title}</td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
                     <td>
+                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
                     </td>
                 </tr>`;
@@ -1758,44 +1752,44 @@
     }
 
     async function fetchReportCard() {
-        const student_id = document.getElementById('rc_student_id').value;
-        if(!student_id) { alert('Enter Student ID!'); return; }
+        const studentId = document.getElementById('rc_student_id').value;
+        if(!studentId) { alert('Enter Student ID!'); return; }
 
+        showToast("Generating report card...");
         try {
             const sRes = await fetch(`${API_URL}/students`);
             const students = await sRes.json();
-            const student = students.find(s => s.id == student_id);
+            const student = students.find(s => s.id == studentId);
 
-            if(!student) { alert('Student nahi mila!'); return; }
+            if(!student) {
+                alert('Student nahi mila is ID par!');
+                return;
+            }
 
             document.getElementById('rc_name').innerText = student.name;
             document.getElementById('rc_roll').innerText = student.roll_no;
             document.getElementById('rc_class').innerText = student.class;
 
-            const mRes = await fetch(`${API_URL}/marks`);
-            const marks = await mRes.json();
-            const studentMarks = marks.filter(m => m.student_id == student_id);
-
+            const marksFiltered = marksGlobalCache.filter(m => m.student_id == studentId);
             const tbody = document.getElementById('rcTableBody');
-            if(studentMarks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0;">No marks records found for this student.</td></tr>`;
+            tbody.innerHTML = '';
+
+            if(marksFiltered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0;">No exam marks recorded for this student yet.</td></tr>`;
             } else {
-                tbody.innerHTML = '';
-                studentMarks.forEach(m => {
+                marksFiltered.forEach(m => {
                     const pct = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${m.subject}</td>
-                            <td>${m.marks_obtained}</td>
-                            <td>${m.total_marks}</td>
-                            <td>${pct}%</td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr>
+                        <td>${m.subject}</td>
+                        <td>${m.marks_obtained}</td>
+                        <td>${m.total_marks}</td>
+                        <td><span style="font-weight:bold; color:var(--primary);">${pct}%</span></td>
+                    </tr>`;
                 });
             }
 
             document.getElementById('reportCardResult').style.display = 'block';
-            showToast("Report card generated!");
+            showToast("Report card generated successfully!");
         } catch(e) {
             console.error(e);
             alert('Error generating report card.');
@@ -1803,37 +1797,46 @@
     }
 
     async function deleteRecord(type, id) {
-        if(!confirm('Kya aap waqai is record ko delete karna chahtay hain?')) return;
-        showToast("Deleting record...");
-
+        if(!confirm('Kya aap waqai is record ko delete karna chahte hain?')) return;
+        
         let endpoint = '';
         if(type === 'student') endpoint = `${API_URL}/delete-student/${id}`;
-        if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
-        if(type === 'attendance') endpoint = `${API_URL}/delete-attendance/${id}`;
-        if(type === 'fee') endpoint = `${API_URL}/delete-fee/${id}`;
-        if(type === 'marks') endpoint = `${API_URL}/delete-marks/${id}`;
-        if(type === 'timetable') endpoint = `${API_URL}/delete-timetable/${id}`;
-        if(type === 'expense') endpoint = `${API_URL}/delete-expense/${id}`;
-        if(type === 'announcement') endpoint = `${API_URL}/delete-announcement/${id}`;
+        else if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
+        else if(type === 'attendance') endpoint = `${API_URL}/delete-attendance/${id}`;
+        else if(type === 'fee') endpoint = `${API_URL}/delete-fee/${id}`;
+        else if(type === 'marks') endpoint = `${API_URL}/delete-marks/${id}`;
+        else if(type === 'timetable') endpoint = `${API_URL}/delete-timetable/${id}`;
+        else if(type === 'expense') endpoint = `${API_URL}/delete-expense/${id}`;
+        else if(type === 'announcement') endpoint = `${API_URL}/delete-announcement/${id}`;
 
-        fetch(endpoint, { method: 'DELETE' })
-        .then(() => { loadData(); showToast("Deleted successfully!"); });
+        try {
+            const res = await fetch(endpoint, { method: 'DELETE' });
+            if(res.ok) {
+                loadData();
+                showToast("Deleted successfully!");
+            } else {
+                showToast("Failed to delete record.");
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("Error deleting record.");
+        }
     }
 
     function exportTableToExcel(tableID, filename = '') {
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<a[^>]*>.*?<\/a>/g, ''); // Remove links/buttons column if any
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, ""); 
 
-        filename = filename ?filename+'_excel_data.xls' : 'excel_data.xls';
+        filename = filename ? filename.toLowerCase().includes('.xls') ? filename : filename + '.xls' : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
 
-        if(navigator.msSaveOrOpenBlob){
+        if(navigator.msSaveOrOpenBlob) {
             let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
             navigator.msSaveOrOpenBlob(blob, filename);
-        } else{
+        } else {
             downloadLink.href = 'data:' + dataType + ', ' + encodeURIComponent(tableHTML);
             downloadLink.download = filename;
             downloadLink.click();
