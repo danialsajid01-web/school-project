@@ -365,15 +365,16 @@
                 </div>
             </div>
 
-            <!-- STUDENT ATTENDANCE TAB -->
+            <!-- STUDENT ATTENDANCE TAB (UPDATED FOR BATCH CLASS ATTENDANCE) -->
             <div id="attendance" class="tab-section">
-                <!-- Bulk / Whole Class Attendance Card -->
-                <div class="card" style="border: 2px solid var(--accent); background: #f8fafc;">
-                    <h3 style="color: var(--primary);">⚡ Mark Class Attendance (Bulk / Single)</h3>
+                <div class="card" style="border: 2px solid var(--accent);">
+                    <h3>📋 Class-Wise Bulk Attendance Management</h3>
+                    <p style="font-size: 13px; color: #666; margin-top: -6px;">Class select karein, students ki list load ho jayegi. Aap aik sath poori class ki attendance mark kar sakte hain ya individual change kar sakte hain.</p>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Select Class</label>
-                            <select id="bulk_att_class">
+                            <select id="bulk_att_class" onchange="loadClassStudentsForAttendance()">
+                                <option value="">-- Choose Class --</option>
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
                                 <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
@@ -384,42 +385,18 @@
                                 <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>Date</label><input type="date" id="bulk_att_date"></div>
-                        <div class="form-group">
-                            <label>Default Status for Class</label>
-                            <select id="bulk_att_status">
-                                <option value="Present">All Present</option>
-                                <option value="Absent">All Absent</option>
-                            </select>
-                        </div>
+                        <div class="form-group"><label>Attendance Date</label><input type="date" id="bulk_att_date"></div>
                     </div>
-                    <button class="submit-btn" style="background: var(--warning); color: #000; font-weight: 700;" onclick="markWholeClassAttendance()">⚡ Mark Whole Class Attendance</button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <button class="submit-btn" style="background: var(--success);" onclick="markAllAttendanceStatus('Present')">✅ Mark All Present</button>
+                        <button class="submit-btn" style="background: var(--danger);" onclick="markAllAttendanceStatus('Absent')">❌ Mark All Absent</button>
+                    </div>
+                    <div id="classStudentsAttendanceContainer" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+                        <p style="text-align: center; color: #a0aec0; padding: 20px;">Pehle koi class select karein taake students ka data load ho sakay.</p>
+                    </div>
+                    <button class="submit-btn" style="background: var(--primary); margin-top: 15px; width: 100%; padding: 12px;" onclick="submitBulkAttendance()">💾 Save Class Attendance</button>
                 </div>
 
-                <!-- Single Student Attendance Card -->
-                <div class="card">
-                    <h3 id="attFormTitle">Mark Single Student Attendance</h3>
-                    <input type="hidden" id="edit_att_id">
-                    <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
-                        <div class="form-group">
-                            <label>Class</label>
-                            <select id="att_class_select">
-                                <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
-                        <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
-                    </div>
-                    <button class="submit-btn" id="attSubmitBtn" onclick="markAttendance()">Submit Single Attendance</button>
-                </div>
                 <div class="card">
                     <h3>
                         <span>Student Attendance Logs</span>
@@ -750,7 +727,7 @@
         const savedTab = localStorage.getItem('chss_tab');
 
         const todayStr = getPakistaniDateString();
-        ['att_date', 'bulk_att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date'].forEach(id => {
+        ['att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date', 'bulk_att_date'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = todayStr;
         });
@@ -962,6 +939,7 @@
             await fetchStudents();
             showToast("Updated CR status successfully!");
         } catch(err) {
+            console.error(err);
             try {
                 await fetch(`${API_URL}/update-student/${id}`, {
                     method: 'PUT',
@@ -1079,88 +1057,122 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
-    // 1. Mark Single Student Attendance
-    async function markAttendance() {
-        const id = document.getElementById('edit_att_id').value;
-        const student_id = document.getElementById('att_student_id').value;
-        const className = document.getElementById('att_class_select').value;
-        const date = document.getElementById('att_date').value;
-        const status = document.getElementById('att_status').value;
+    // --- NEW FUNCTIONS FOR CLASS-WISE BULK ATTENDANCE ---
+    async function loadClassStudentsForAttendance() {
+        const selectedClass = document.getElementById('bulk_att_class').value;
+        const container = document.getElementById('classStudentsAttendanceContainer');
 
-        if(!student_id || !date) { alert('Please enter Student ID and Date!'); return; }
-        showToast(id ? "Updating attendance..." : "Submitting attendance...");
-
-        try {
-            const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
-            const method = id ? 'PUT' : 'POST';
-            const payload = { student_id, date, status, class_name: className };
-
-            document.getElementById('edit_att_id').value = '';
-            document.getElementById('attFormTitle').innerText = "Mark Single Student Attendance";
-            document.getElementById('attSubmitBtn').innerText = "Submit Single Attendance";
-
-            const res = await fetch(endpoint, { 
-                method: method, 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(payload) 
-            });
-
-            if(res.ok) {
-                loadData(); 
-                showToast("Attendance saved successfully!");
-            } else {
-                showToast("Failed to save attendance.");
-            }
-        } catch(err) {
-            showToast("Error connecting to server.");
-        }
-    }
-
-    // 2. Mark Whole Class Attendance (Bulk)
-    async function markWholeClassAttendance() {
-        const className = document.getElementById('bulk_att_class').value;
-        const date = document.getElementById('bulk_att_date').value;
-        const status = document.getElementById('bulk_att_status').value;
-
-        if (!date) {
-            alert('Baraye meharbani Date select karein!');
+        if (!selectedClass) {
+            container.innerHTML = `<p style="text-align: center; color: #a0aec0; padding: 20px;">Pehle koi class select karein taake students ka data load ho sakay.</p>`;
             return;
         }
 
-        showToast("⏳ Poori class ki attendance lag rahi hai...");
+        container.innerHTML = `<p style="text-align: center; color: var(--primary); padding: 20px;">⏳ Loading students for ${selectedClass}...</p>`;
 
         try {
-            // Get all students of selected class
-            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(className)}`);
+            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(selectedClass)}`);
             const students = await res.json();
 
             if (!Array.isArray(students) || students.length === 0) {
-                alert(`Is class (${className}) me koi student registered nahi hai! Pehle students add karein.`);
+                container.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">Is class mein koi student registered nahi hai.</p>`;
                 return;
             }
 
-            // Loop and mark attendance for each student
-            let promises = students.map(s => {
-                return fetch(`${API_URL}/mark-attendance`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        student_id: s.id,
-                        class_name: className,
-                        date: date,
-                        status: status
-                    })
-                });
+            let html = `
+                <table style="width:100%; border-collapse:collapse; background:white;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="padding:8px; border:1px solid #cbd5e0;">Roll No</th>
+                            <th style="padding:8px; border:1px solid #cbd5e0;">Student Name</th>
+                            <th style="padding:8px; border:1px solid #cbd5e0; text-align:center;">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            students.forEach(s => {
+                html += `
+                    <tr>
+                        <td style="padding:8px; border:1px solid #cbd5e0;">${s.roll_no}</td>
+                        <td style="padding:8px; border:1px solid #cbd5e0; font-weight:600;">${s.name}</td>
+                        <td style="padding:8px; border:1px solid #cbd5e0; text-align:center;">
+                            <select class="student-att-status-select" data-student-id="${s.id}" style="padding:5px 10px; border-radius:4px; font-weight:bold;">
+                                <option value="Present" selected>Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
             });
 
-            await Promise.all(promises);
-            loadData();
-            showToast(`🎉 ${className} ki poori attendance (${status}) kamyabi se lag gayi!`);
-        } catch (err) {
-            console.error(err);
-            showToast("Bulk attendance me masla aa gaya.");
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">Students load karne mein error aa gaya.</p>`;
         }
     }
+
+    function markAllAttendanceStatus(status) {
+        const selects = document.querySelectorAll('.student-att-status-select');
+        selects.forEach(sel => {
+            sel.value = status;
+        });
+        showToast(`All students marked as ${status}!`);
+    }
+
+    async function submitBulkAttendance() {
+        const selectedClass = document.getElementById('bulk_att_class').value;
+        const date = document.getElementById('bulk_att_date').value;
+        const selects = document.querySelectorAll('.student-att-status-select');
+
+        if (!selectedClass) {
+            alert('Baraye meharbani pehle class select karein!');
+            return;
+        }
+        if (!date) {
+            alert('Baraye meharbani date select karein!');
+            return;
+        }
+        if (selects.length === 0) {
+            alert('Koi student available nahi hai!');
+            return;
+        }
+
+        showToast("Submitting attendance for entire class...");
+
+        let promises = [];
+        selects.forEach(sel => {
+            const student_id = sel.getAttribute('data-student-id');
+            const status = sel.value;
+
+            const payload = {
+                student_id: student_id,
+                class_name: selectedClass,
+                date: date,
+                status: status
+            };
+
+            promises.push(
+                fetch(`${API_URL}/mark-attendance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+            );
+        });
+
+        try {
+            await Promise.all(promises);
+            showToast("🎉 Poori class ki attendance kamyabi se lag gayi!");
+            fetchAttendance();
+        } catch (err) {
+            console.error(err);
+            showToast("Kuch records save karne mein masla hua.");
+            fetchAttendance();
+        }
+    }
+    // ----------------------------------------------------
 
     function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3; 
@@ -1332,25 +1344,11 @@
                     <td><span class="${statusClass}">${rec.status}</span></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editAttendance(${rec.id}, ${rec.student_id}, '${attendanceClass}', '${rec.date}', '${rec.status}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
                     </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
-    }
-
-    function editAttendance(id, studentId, className, date, status) {
-        document.getElementById('edit_att_id').value = id;
-        document.getElementById('att_student_id').value = studentId;
-        if(className && className !== '-') {
-            document.getElementById('att_class_select').value = className;
-        }
-        document.getElementById('att_date').value = date.split('T')[0];
-        document.getElementById('att_status').value = status;
-        document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
-        document.getElementById('attSubmitBtn').innerText = "Update Attendance";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function addFee() {
@@ -1658,22 +1656,26 @@
         area.innerHTML = `
             <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
                 <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master College Lecture Timetable (All Classes & Faculty)</p>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master Lecture Timetable</p>
             </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
                 <thead>
                     <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center; width:50px;">#</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Class Name</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Subject</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Teacher Name</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Time Slot</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center;">#</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Class Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Subject</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Teacher</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Time Slot</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${rowsHtml}
                 </tbody>
             </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-linejoin; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
         `;
         window.print();
     }
@@ -1697,17 +1699,6 @@
 
         fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
         .then(() => { loadData(); showToast("Expense saved!"); });
-    }
-
-    function editExpense(id, title, category, amount, date) {
-        document.getElementById('edit_exp_id').value = id;
-        document.getElementById('exp_title').value = title;
-        document.getElementById('exp_category').value = category;
-        document.getElementById('exp_amount').value = amount;
-        document.getElementById('exp_date').value = date.split('T')[0];
-        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
-        document.getElementById('expSubmitBtn').innerText = "Update Expense";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchExpenses() {
@@ -1736,14 +1727,14 @@
 
             const tbody = document.getElementById('expenseTableBody');
             if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expenses found for selected month.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expense records found for selected month.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
             filteredExpenses.forEach(e => {
                 tbody.innerHTML += `<tr>
-                    <td>${e.id}</td><td>${e.title}</td><td><span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:4px; font-weight:600; font-size:11px;">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
+                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${e.date.split('T')[0]}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
@@ -1753,16 +1744,24 @@
         } catch(e) { console.error(e); }
     }
 
-    function updateNetBalance() {
-        const feeText = document.getElementById('stat_fees').innerText.replace('PKR ', '');
-        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '');
-        const totalFee = Number(feeText) || 0;
-        const totalExp = Number(expText) || 0;
-        const net = totalFee - totalExp;
+    function editExpense(id, title, category, amount, date) {
+        document.getElementById('edit_exp_id').value = id;
+        document.getElementById('exp_title').value = title;
+        document.getElementById('exp_category').value = category;
+        document.getElementById('exp_amount').value = amount;
+        document.getElementById('exp_date').value = date.split('T')[0];
+        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
+        document.getElementById('expSubmitBtn').innerText = "Update Expense";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        const netEl = document.getElementById('stat_balance');
-        netEl.innerText = `PKR ${net}`;
-        netEl.style.color = net >= 0 ? '#fff' : '#ffdddd';
+    function updateNetBalance() {
+        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').trim();
+        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').trim();
+        const totalFees = Number(feesText) || 0;
+        const totalExp = Number(expText) || 0;
+        const net = totalFees - totalExp;
+        document.getElementById('stat_balance').innerText = `PKR ${net}`;
     }
 
     async function addAnnouncement() {
@@ -1785,16 +1784,6 @@
         .then(() => { loadData(); showToast("Notice published!"); });
     }
 
-    function editAnnouncement(id, title, message, date) {
-        document.getElementById('edit_ann_id').value = id;
-        document.getElementById('ann_title').value = title;
-        document.getElementById('ann_message').value = message;
-        document.getElementById('ann_date').value = date.split('T')[0];
-        document.getElementById('annFormTitle').innerText = "Edit Notice";
-        document.getElementById('annSubmitBtn').innerText = "Update Notice";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     async function fetchAnnouncements() {
         try {
             const res = await fetch(`${API_URL}/announcements`);
@@ -1809,14 +1798,24 @@
             tbody.innerHTML = '';
             data.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>${a.id}</td><td><strong style="color:var(--primary);">${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message.replace(/'/g, "\\'")}', '${a.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
                     </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
+    }
+
+    function editAnnouncement(id, title, message, date) {
+        document.getElementById('edit_ann_id').value = id;
+        document.getElementById('ann_title').value = title;
+        document.getElementById('ann_message').value = message;
+        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annSubmitBtn').innerText = "Update Notice";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchReportCard() {
@@ -1825,71 +1824,83 @@
 
         showToast("Generating report card...");
         try {
-            const sRes = await fetch(`${API_URL}/students`);
-            const students = await sRes.json();
-            const student = students.find(s => s.id == student_id);
+            const res = await fetch(`${API_URL}/student-report/${student_id}`);
+            const data = await res.json();
 
-            if(!student) {
+            if(!data || !data.student) {
                 alert('Student nahi mila!');
                 return;
             }
 
-            document.getElementById('rc_name').innerText = student.name;
-            document.getElementById('rc_roll').innerText = student.roll_no;
-            document.getElementById('rc_class').innerText = student.class;
+            document.getElementById('rc_name').innerText = data.student.name;
+            document.getElementById('rc_roll').innerText = data.student.roll_no;
+            document.getElementById('rc_class').innerText = data.student.class;
 
-            const marks = marksGlobalCache.filter(m => m.student_id == student_id);
             const tbody = document.getElementById('rcTableBody');
             tbody.innerHTML = '';
 
-            if(marks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #666;">No exam results found for this student.</td></tr>`;
+            if(!Array.isArray(data.marks) || data.marks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam marks recorded for this student.</td></tr>`;
             } else {
-                marks.forEach(m => {
-                    const perc = ((Number(m.marks_obtained) / Number(m.total_marks)) * 100).toFixed(1);
+                data.marks.forEach(m => {
+                    const pct = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
                     tbody.innerHTML += `
                         <tr>
                             <td>${m.subject}</td>
                             <td>${m.marks_obtained}</td>
                             <td>${m.total_marks}</td>
-                            <td><span style="font-weight:bold; color:var(--primary);">${perc}%</span></td>
+                            <td><span style="font-weight:bold; color:var(--success);">${pct}%</span></td>
                         </tr>
                     `;
                 });
             }
 
             document.getElementById('reportCardResult').style.display = 'block';
-            showToast("Report card generated successfully!");
+            showToast("Report Card generated successfully!");
         } catch(e) {
-            showToast("Error generating report card.");
+            console.error(e);
+            alert('Error generating report card.');
         }
     }
 
-    function deleteRecord(type, id) {
-        if(!confirm('Kya aap waqai is record ko delete karna chahte hain?')) return;
-        showToast("Deleting...");
+    async function deleteRecord(type, id) {
+        if(!confirm("Kya aap waqai is record ko delete karna chahte hain?")) return;
+        
+        let endpointMap = {
+            'student': 'delete-student',
+            'teacher': 'delete-teacher',
+            'attendance': 'delete-attendance',
+            'fee': 'delete-fee',
+            'marks': 'delete-marks',
+            'timetable': 'delete-timetable',
+            'expense': 'delete-expense',
+            'announcement': 'delete-announcement'
+        };
 
-        let endpoint = '';
-        if(type === 'student') endpoint = `${API_URL}/delete-student/${id}`;
-        else if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
-        else if(type === 'attendance') endpoint = `${API_URL}/delete-attendance/${id}`;
-        else if(type === 'fee') endpoint = `${API_URL}/delete-fee/${id}`;
-        else if(type === 'marks') endpoint = `${API_URL}/delete-marks/${id}`;
-        else if(type === 'timetable') endpoint = `${API_URL}/delete-timetable/${id}`;
-        else if(type === 'expense') endpoint = `${API_URL}/delete-expense/${id}`;
-        else if(type === 'announcement') endpoint = `${API_URL}/delete-announcement/${id}`;
+        const endpoint = `${API_URL}/${endpointMap[type]}/${id}`;
+        showToast("Deleting record...");
 
-        fetch(endpoint, { method: 'DELETE' })
-        .then(() => { loadData(); showToast("Deleted successfully!"); });
+        try {
+            const res = await fetch(endpoint, { method: 'DELETE' });
+            if(res.ok) {
+                loadData();
+                showToast("Deleted successfully!");
+            } else {
+                showToast("Failed to delete record.");
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("Server connection error.");
+        }
     }
 
     function exportTableToExcel(tableID, filename = '') {
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>.*?<\/a>/g, ''); // Remove actions column buttons if needed
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, ""); // Remove links like WhatsApp/Voucher if any
 
-        filename = filename ?filename : 'excel_data.xls';
+        filename = filename ? filename.toLowerCase() : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
 
