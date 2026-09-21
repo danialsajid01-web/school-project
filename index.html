@@ -365,14 +365,45 @@
                 </div>
             </div>
 
-            <!-- STUDENT ATTENDANCE TAB (UPDATED FOR CLASS-WISE BULK ATTENDANCE) -->
+            <!-- STUDENT ATTENDANCE TAB -->
             <div id="attendance" class="tab-section">
-                <div class="card" style="border: 2px solid var(--primary);">
-                    <h3 id="attFormTitle">Mark Class Attendance (Bulk / Single)</h3>
-                    <input type="hidden" id="edit_att_id">
+                <!-- Bulk / Whole Class Attendance Card -->
+                <div class="card" style="border: 2px solid var(--accent); background: #f8fafc;">
+                    <h3 style="color: var(--primary);">⚡ Mark Class Attendance (Bulk / Single)</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Select Class</label>
+                            <select id="bulk_att_class">
+                                <option value="9th Class">9th Class</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Date</label><input type="date" id="bulk_att_date"></div>
+                        <div class="form-group">
+                            <label>Default Status for Class</label>
+                            <select id="bulk_att_status">
+                                <option value="Present">All Present</option>
+                                <option value="Absent">All Absent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="submit-btn" style="background: var(--warning); color: #000; font-weight: 700;" onclick="markWholeClassAttendance()">⚡ Mark Whole Class Attendance</button>
+                </div>
+
+                <!-- Single Student Attendance Card -->
+                <div class="card">
+                    <h3 id="attFormTitle">Mark Single Student Attendance</h3>
+                    <input type="hidden" id="edit_att_id">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Student ID</label><input type="number" id="att_student_id" placeholder="Student ID"></div>
+                        <div class="form-group">
+                            <label>Class</label>
                             <select id="att_class_select">
                                 <option value="9th Class">9th Class</option>
                                 <option value="10th Class">10th Class</option>
@@ -385,11 +416,9 @@
                             </select>
                         </div>
                         <div class="form-group"><label>Date</label><input type="date" id="att_date"></div>
-                        <div class="form-group"><label>Default Status for Class</label><select id="att_status"><option value="Present">All Present</option><option value="Absent">All Absent</option></select></div>
+                        <div class="form-group"><label>Status</label><select id="att_status"><option value="Present">Present</option><option value="Absent">Absent</option></select></div>
                     </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="submit-btn" id="attSubmitBtn" onclick="markClassAttendanceBulk()">⚡ Mark Whole Class Attendance</button>
-                    </div>
+                    <button class="submit-btn" id="attSubmitBtn" onclick="markAttendance()">Submit Single Attendance</button>
                 </div>
                 <div class="card">
                     <h3>
@@ -721,7 +750,7 @@
         const savedTab = localStorage.getItem('chss_tab');
 
         const todayStr = getPakistaniDateString();
-        ['att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date'].forEach(id => {
+        ['att_date', 'bulk_att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = todayStr;
         });
@@ -933,7 +962,6 @@
             await fetchStudents();
             showToast("Updated CR status successfully!");
         } catch(err) {
-            console.error(err);
             try {
                 await fetch(`${API_URL}/update-student/${id}`, {
                     method: 'PUT',
@@ -1051,50 +1079,25 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
-    // NEW FUNCTION: Mark Whole Class Attendance at Once
-    async function markClassAttendanceBulk() {
+    // 1. Mark Single Student Attendance
+    async function markAttendance() {
+        const id = document.getElementById('edit_att_id').value;
+        const student_id = document.getElementById('att_student_id').value;
         const className = document.getElementById('att_class_select').value;
         const date = document.getElementById('att_date').value;
         const status = document.getElementById('att_status').value;
 
-        if(!date) { alert('Baraye meharbani Date select karein!'); return; }
-        showToast("Marking attendance for all students in class...");
+        if(!student_id || !date) { alert('Please enter Student ID and Date!'); return; }
+        showToast(id ? "Updating attendance..." : "Submitting attendance...");
 
-        try {
-            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(className)}`);
-            const students = await res.json();
-
-            if(!Array.isArray(students) || students.length === 0) {
-                alert(`Selected class (${className}) mein koi students registered nahi hain! Pehle students add karein.`);
-                return;
-            }
-
-            for(let s of students) {
-                await fetch(`${API_URL}/mark-attendance`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        student_id: s.id, 
-                        date: date, 
-                        status: status, 
-                        class_name: className 
-                    })
-                });
-            }
-
-            fetchAttendance();
-            showToast(`🎉 Success! Poori class (${className}) ki attendance mark ho gayi hai.`);
-        } catch(err) {
-            console.error(err);
-            showToast("Error marking class attendance.");
-        }
-    }
-
-    async function markAttendanceManual(id, student_id, className, date, status) {
         try {
             const endpoint = id ? `${API_URL}/update-attendance/${id}` : `${API_URL}/mark-attendance`;
             const method = id ? 'PUT' : 'POST';
             const payload = { student_id, date, status, class_name: className };
+
+            document.getElementById('edit_att_id').value = '';
+            document.getElementById('attFormTitle').innerText = "Mark Single Student Attendance";
+            document.getElementById('attSubmitBtn').innerText = "Submit Single Attendance";
 
             const res = await fetch(endpoint, { 
                 method: method, 
@@ -1103,18 +1106,59 @@
             });
 
             if(res.ok) {
-                fetchAttendance(); 
-                showToast("Attendance updated!");
+                loadData(); 
+                showToast("Attendance saved successfully!");
+            } else {
+                showToast("Failed to save attendance.");
             }
         } catch(err) {
-            console.error(err);
+            showToast("Error connecting to server.");
         }
     }
 
-    function editAttendancePrompt(id, student_id, attendanceClass, date, currentStatus) {
-        const newStatus = prompt("Enter new status (Present / Absent):", currentStatus);
-        if(newStatus && (newStatus === 'Present' || newStatus === 'Absent')) {
-            markAttendanceManual(id, student_id, attendanceClass, date.split('T')[0], newStatus);
+    // 2. Mark Whole Class Attendance (Bulk)
+    async function markWholeClassAttendance() {
+        const className = document.getElementById('bulk_att_class').value;
+        const date = document.getElementById('bulk_att_date').value;
+        const status = document.getElementById('bulk_att_status').value;
+
+        if (!date) {
+            alert('Baraye meharbani Date select karein!');
+            return;
+        }
+
+        showToast("⏳ Poori class ki attendance lag rahi hai...");
+
+        try {
+            // Get all students of selected class
+            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(className)}`);
+            const students = await res.json();
+
+            if (!Array.isArray(students) || students.length === 0) {
+                alert(`Is class (${className}) me koi student registered nahi hai! Pehle students add karein.`);
+                return;
+            }
+
+            // Loop and mark attendance for each student
+            let promises = students.map(s => {
+                return fetch(`${API_URL}/mark-attendance`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        student_id: s.id,
+                        class_name: className,
+                        date: date,
+                        status: status
+                    })
+                });
+            });
+
+            await Promise.all(promises);
+            loadData();
+            showToast(`🎉 ${className} ki poori attendance (${status}) kamyabi se lag gayi!`);
+        } catch (err) {
+            console.error(err);
+            showToast("Bulk attendance me masla aa gaya.");
         }
     }
 
@@ -1288,12 +1332,25 @@
                     <td><span class="${statusClass}">${rec.status}</span></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editAttendancePrompt(${rec.id}, ${rec.student_id}, '${attendanceClass}', '${rec.date}', '${rec.status}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editAttendance(${rec.id}, ${rec.student_id}, '${attendanceClass}', '${rec.date}', '${rec.status}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
                     </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
+    }
+
+    function editAttendance(id, studentId, className, date, status) {
+        document.getElementById('edit_att_id').value = id;
+        document.getElementById('att_student_id').value = studentId;
+        if(className && className !== '-') {
+            document.getElementById('att_class_select').value = className;
+        }
+        document.getElementById('att_date').value = date.split('T')[0];
+        document.getElementById('att_status').value = status;
+        document.getElementById('attFormTitle').innerText = "Edit Student Attendance";
+        document.getElementById('attSubmitBtn').innerText = "Update Attendance";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function addFee() {
@@ -1549,17 +1606,76 @@
         } catch(e) { console.error(e); }
     }
 
-    async function deleteRecord(type, id) {
-        if(!confirm("Aap waqai is record ko delete karna chahtay hain?")) return;
-        showToast("Deleting record...");
-        try {
-            await fetch(`${API_URL}/delete-${type}/${id}`, { method: 'DELETE' });
-            loadData();
-            showToast("Deleted successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Failed to delete record.");
+    function printTimetableSlip(className, subject, teacher, timeSlot) {
+        const area = document.getElementById('printableArea');
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Class Lecture Timetable Slip</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div><strong>Class Name:</strong> ${className}</div>
+                <div><strong>Time Slot:</strong> ${timeSlot}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <tr>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Subject / Course</th>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Assigned Teacher</th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; color:#0077b6;">${subject}</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">${teacher}</td>
+                </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
+    function printMasterTimetable() {
+        const area = document.getElementById('printableArea');
+        let rowsHtml = '';
+
+        if(timetableGlobalCache.length === 0) {
+            rowsHtml = `<tr><td colspan="5" style="text-align:center; padding:15px;">No timetable records found.</td></tr>`;
+        } else {
+            timetableGlobalCache.forEach((t, index) => {
+                rowsHtml += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${index + 1}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px; font-weight:600;">${t.class_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
+                    </tr>
+                `;
+            });
         }
+
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master College Lecture Timetable (All Classes & Faculty)</p>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center; width:50px;">#</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Class Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Subject</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Teacher Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:left;">Time Slot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        `;
+        window.print();
     }
 
     async function addExpense() {
@@ -1569,7 +1685,7 @@
         const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
 
-        if(!title || !amount) { alert('Enter Title and Amount!'); return; }
+        if(!title || !amount) { alert('Fill out required fields!'); return; }
         showToast(id ? "Updating expense..." : "Saving expense...");
 
         const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
@@ -1581,6 +1697,17 @@
 
         fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
         .then(() => { loadData(); showToast("Expense saved!"); });
+    }
+
+    function editExpense(id, title, category, amount, date) {
+        document.getElementById('edit_exp_id').value = id;
+        document.getElementById('exp_title').value = title;
+        document.getElementById('exp_category').value = category;
+        document.getElementById('exp_amount').value = amount;
+        document.getElementById('exp_date').value = date.split('T')[0];
+        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
+        document.getElementById('expSubmitBtn').innerText = "Update Expense";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchExpenses() {
@@ -1599,12 +1726,12 @@
                 });
             }
 
-            let totalExp = 0;
+            let calculatedTotalExpenses = 0;
             filteredExpenses.forEach(e => {
-                totalExp += Number(e.amount) || 0;
+                calculatedTotalExpenses += Number(e.amount) || 0;
             });
 
-            document.getElementById('stat_expenses').innerText = `PKR ${totalExp}`;
+            document.getElementById('stat_expenses').innerText = `PKR ${calculatedTotalExpenses}`;
             updateNetBalance();
 
             const tbody = document.getElementById('expenseTableBody');
@@ -1616,7 +1743,7 @@
             tbody.innerHTML = '';
             filteredExpenses.forEach(e => {
                 tbody.innerHTML += `<tr>
-                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
+                    <td>${e.id}</td><td>${e.title}</td><td><span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:4px; font-weight:600; font-size:11px;">${e.category}</span></td><td>PKR ${e.amount}</td><td>${e.date.split('T')[0]}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
@@ -1626,24 +1753,16 @@
         } catch(e) { console.error(e); }
     }
 
-    function editExpense(id, title, category, amount, date) {
-        document.getElementById('edit_exp_id').value = id;
-        document.getElementById('exp_title').value = title;
-        document.getElementById('exp_category').value = category;
-        document.getElementById('exp_amount').value = amount;
-        document.getElementById('exp_date').value = date.split('T')[0];
-        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
-        document.getElementById('expSubmitBtn').innerText = "Update Expense";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     function updateNetBalance() {
-        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').trim();
-        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').trim();
-        const totalFees = Number(feesText) || 0;
+        const feeText = document.getElementById('stat_fees').innerText.replace('PKR ', '');
+        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '');
+        const totalFee = Number(feeText) || 0;
         const totalExp = Number(expText) || 0;
-        const net = totalFees - totalExp;
-        document.getElementById('stat_balance').innerText = `PKR ${net}`;
+        const net = totalFee - totalExp;
+
+        const netEl = document.getElementById('stat_balance');
+        netEl.innerText = `PKR ${net}`;
+        netEl.style.color = net >= 0 ? '#fff' : '#ffdddd';
     }
 
     async function addAnnouncement() {
@@ -1652,8 +1771,8 @@
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
 
-        if(!title || !message) { alert('Enter title and message!'); return; }
-        showToast("Publishing notice...");
+        if(!title || !message) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating notice..." : "Publishing notice...");
 
         const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
         const method = id ? 'PUT' : 'POST';
@@ -1666,6 +1785,16 @@
         .then(() => { loadData(); showToast("Notice published!"); });
     }
 
+    function editAnnouncement(id, title, message, date) {
+        document.getElementById('edit_ann_id').value = id;
+        document.getElementById('ann_title').value = title;
+        document.getElementById('ann_message').value = message;
+        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annSubmitBtn').innerText = "Update Notice";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     async function fetchAnnouncements() {
         try {
             const res = await fetch(`${API_URL}/announcements`);
@@ -1673,16 +1802,16 @@
             const tbody = document.getElementById('announcementTableBody');
 
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices published.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
             data.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td>${a.title}</td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>${a.id}</td><td><strong>${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message.replace(/'/g, "\\'")}', '${a.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
                     </td>
                 </tr>`;
@@ -1690,66 +1819,81 @@
         } catch(e) { console.error(e); }
     }
 
-    function editAnnouncement(id, title, message, date) {
-        document.getElementById('edit_ann_id').value = id;
-        document.getElementById('ann_title').value = title;
-        document.getElementById('ann_message').value = message;
-        document.getElementById('ann_date').value = date.split('T')[0];
-        document.getElementById('annFormTitle').innerText = "Edit College Notice";
-        document.getElementById('annSubmitBtn').innerText = "Update Notice";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     async function fetchReportCard() {
-        const studentId = document.getElementById('rc_student_id').value;
-        if(!studentId) { alert('Enter Student ID!'); return; }
+        const student_id = document.getElementById('rc_student_id').value;
+        if(!student_id) { alert('Enter Student ID!'); return; }
 
+        showToast("Generating report card...");
         try {
-            const studentRes = await fetch(`${API_URL}/students`);
-            const students = await studentRes.json();
-            const student = students.find(s => s.id == studentId);
+            const sRes = await fetch(`${API_URL}/students`);
+            const students = await sRes.json();
+            const student = students.find(s => s.id == student_id);
 
-            if(!student) { alert('Student nahi mila!'); return; }
+            if(!student) {
+                alert('Student nahi mila!');
+                return;
+            }
 
             document.getElementById('rc_name').innerText = student.name;
             document.getElementById('rc_roll').innerText = student.roll_no;
             document.getElementById('rc_class').innerText = student.class;
 
-            const marksRes = await fetch(`${API_URL}/marks?class=${encodeURIComponent(student.class)}`);
-            const marksData = await marksRes.json();
-            const studentMarks = marksData.filter(m => m.student_id == studentId);
-
+            const marks = marksGlobalCache.filter(m => m.student_id == student_id);
             const tbody = document.getElementById('rcTableBody');
-            if(studentMarks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0;">No marks found for this student.</td></tr>`;
+            tbody.innerHTML = '';
+
+            if(marks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #666;">No exam results found for this student.</td></tr>`;
             } else {
-                tbody.innerHTML = '';
-                studentMarks.forEach(m => {
-                    const percentage = Math.round((m.marks_obtained / m.total_marks) * 100);
-                    tbody.innerHTML += `<tr>
-                        <td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td><td>${percentage}%</td>
-                    </tr>`;
+                marks.forEach(m => {
+                    const perc = ((Number(m.marks_obtained) / Number(m.total_marks)) * 100).toFixed(1);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${m.subject}</td>
+                            <td>${m.marks_obtained}</td>
+                            <td>${m.total_marks}</td>
+                            <td><span style="font-weight:bold; color:var(--primary);">${perc}%</span></td>
+                        </tr>
+                    `;
                 });
             }
 
             document.getElementById('reportCardResult').style.display = 'block';
+            showToast("Report card generated successfully!");
         } catch(e) {
-            console.error(e);
-            alert('Error generating report card.');
+            showToast("Error generating report card.");
         }
+    }
+
+    function deleteRecord(type, id) {
+        if(!confirm('Kya aap waqai is record ko delete karna chahte hain?')) return;
+        showToast("Deleting...");
+
+        let endpoint = '';
+        if(type === 'student') endpoint = `${API_URL}/delete-student/${id}`;
+        else if(type === 'teacher') endpoint = `${API_URL}/delete-teacher/${id}`;
+        else if(type === 'attendance') endpoint = `${API_URL}/delete-attendance/${id}`;
+        else if(type === 'fee') endpoint = `${API_URL}/delete-fee/${id}`;
+        else if(type === 'marks') endpoint = `${API_URL}/delete-marks/${id}`;
+        else if(type === 'timetable') endpoint = `${API_URL}/delete-timetable/${id}`;
+        else if(type === 'expense') endpoint = `${API_URL}/delete-expense/${id}`;
+        else if(type === 'announcement') endpoint = `${API_URL}/delete-announcement/${id}`;
+
+        fetch(endpoint, { method: 'DELETE' })
+        .then(() => { loadData(); showToast("Deleted successfully!"); });
     }
 
     function exportTableToExcel(tableID, filename = '') {
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<button[^>]*>.*?<\/button>/g, ''); // remove buttons
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>.*?<\/a>/g, ''); // Remove actions column buttons if needed
 
-        filename = filename ? filename.toLowerCase() : 'excel_data.xls';
+        filename = filename ?filename : 'excel_data.xls';
         downloadLink = document.createElement("a");
         document.body.appendChild(downloadLink);
 
-        if(navigator.msSaveOrOpenBlob) {
+        if(navigator.msSaveOrOpenBlob){
             let blob = new Blob(['\ufeff', tableHTML], { type: dataType });
             navigator.msSaveOrOpenBlob(blob, filename);
         } else {
