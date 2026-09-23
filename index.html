@@ -5,7 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
     
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "chss-portal.firebaseapp.com",
+            projectId: "chss-portal",
+            storageBucket: "chss-portal.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const API_URL = 'https://school-project-production-3962.up.railway.app';
     </script>
 
@@ -310,7 +328,7 @@
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Address</label><input type="text" id="address" placeholder="Home Address / City"></div>
                     </div>
-                   <button type="submit" onclick="saveStudentToFirebase(event)">Save Student Record</button>
+                    <button class="submit-btn" id="studentSubmitBtn" onclick="saveStudent()">Save Student Record</button>
                 </div>
                 <div class="card">
                     <h3>
@@ -365,7 +383,7 @@
                 </div>
             </div>
 
-            <!-- STUDENT ATTENDANCE TAB (UPDATED FOR BATCH CLASS ATTENDANCE) -->
+            <!-- STUDENT ATTENDANCE TAB -->
             <div id="attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>📋 Class-Wise Bulk Attendance Management</h3>
@@ -436,7 +454,7 @@
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
                     <p style="font-size: 13px; color: #666; margin-top: -6px;">System GPS verification use karega taake koi bhi teacher college premises ke bahar (ghar se) attendance mark na kar sakay.</p>
                     <div class="form-grid">
-                        <div class="form-group"><label>Teacher ID</label><input type="number" id="staff_att_id" placeholder="Enter Teacher ID"></div>
+                        <div class="form-group"><label>Teacher ID</label><input type="text" id="staff_att_id" placeholder="Enter Teacher ID"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="staff_att_name" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Date</label><input type="date" id="staff_att_date"></div>
                         <div class="form-group"><label>In-Time</label><input type="time" id="staff_in_time" value="08:00"></div>
@@ -473,7 +491,7 @@
                     <h3 id="feeFormTitle">Fee Ledger Entry</h3>
                     <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Student ID</label><input type="text" id="fee_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
                             <label>Class / Faculty</label>
                             <select id="fee_class_name">
@@ -532,7 +550,7 @@
                     <h3 id="marksFormTitle">Exam Marks Entry</h3>
                     <input type="hidden" id="edit_marks_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="number" id="marks_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Student ID</label><input type="text" id="marks_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
                             <label>Class / Faculty</label>
                             <select id="marks_class_name">
@@ -668,7 +686,7 @@
             <div id="report-card" class="tab-section">
                 <div class="card">
                     <h3>Generate Student Report Card</h3>
-                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="number" id="rc_student_id" placeholder="Enter Student ID"></div></div>
+                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="text" id="rc_student_id" placeholder="Enter Student ID"></div></div>
                     <button class="submit-btn" onclick="fetchReportCard()">Generate Report Card</button>
                 </div>
                 <div class="card" id="reportCardResult" style="display: none; background: #fff; border: 2px dashed var(--primary);">
@@ -880,48 +898,50 @@
         fetchAnnouncements();
     }
 
+    // --- FIREBASE FIRESTORE DATA FUNCTIONS ---
+
     async function fetchDashboardStats() {
         try {
-            const res = await fetch(`${API_URL}/dashboard-stats`);
-            const data = await res.json();
-            document.getElementById('stat_students').innerText = data.totalStudents || 0;
-            document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
+            const studentsSnap = await db.collection('students').get();
+            const teachersSnap = await db.collection('teachers').get();
+            document.getElementById('stat_students').innerText = studentsSnap.size || 0;
+            document.getElementById('stat_teachers').innerText = teachersSnap.size || 0;
         } catch(e) { console.error(e); }
     }
 
     async function fetchStudents() {
         try {
             const selectedClass = document.getElementById('filter_class').value;
-            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
-            const res = await fetch(url);
-            const data = await res.json();
+            let query = db.collection('students');
+            if (selectedClass) {
+                query = query.where('class', '==', selectedClass);
+            }
+            const snapshot = await query.get();
             
             studentsGlobalCache = {};
-            if(Array.isArray(data)) {
-                data.forEach(s => {
-                    studentsGlobalCache[s.id] = s;
-                });
-            }
-
             const tbody = document.getElementById('studentTableBody');
-            if (!Array.isArray(data) || data.length === 0) {
+            if (snapshot.empty) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.forEach(s => {
+            snapshot.forEach(doc => {
+                const s = doc.data();
+                const id = doc.id;
+                studentsGlobalCache[id] = { id, ...s };
+
                 let displayName = s.name;
                 if(s.is_cr == 1 || s.is_cr === true) {
                     displayName += ` <span style="background:var(--accent); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;">(CR)</span>`;
                 }
                 const crBtnText = (s.is_cr == 1 || s.is_cr === true) ? 'Remove CR' : 'Make CR';
                 tbody.innerHTML += `<tr>
-                    <td>${s.id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                    <td>${id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
                     <td>
-                        <button class="btn-action btn-cr" onclick="toggleCR(${s.id}, ${(s.is_cr == 1 || s.is_cr === true) ? 0 : 1})">${crBtnText}</button>
-                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
+                        <button class="btn-action btn-cr" onclick="toggleCR('${id}', ${(s.is_cr == 1 || s.is_cr === true) ? 0 : 1})">${crBtnText}</button>
+                        <button class="btn-action btn-edit" onclick="editStudent('${id}', '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('student', '${id}')">Delete</button>
                     </td>
                 </tr>`;
             });
@@ -931,26 +951,12 @@
     async function toggleCR(id, makeCR) {
         showToast(makeCR ? "Assigning CR status..." : "Removing CR status...");
         try {
-            await fetch(`${API_URL}/update-student-cr/${id}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ is_cr: makeCR })
-            });
+            await db.collection('students').doc(id).update({ is_cr: makeCR });
             await fetchStudents();
             showToast("Updated CR status successfully!");
-        } catch(err) {
-            console.error(err);
-            try {
-                await fetch(`${API_URL}/update-student/${id}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ is_cr: makeCR })
-                });
-                await fetchStudents();
-                showToast("Updated CR status successfully!");
-            } catch(e2) {
-                showToast("Failed to update CR status.");
-            }
+        } catch(e) {
+            console.error(e);
+            showToast("Failed to update CR status.");
         }
     }
 
@@ -964,18 +970,23 @@
         const address = document.getElementById('address').value;
 
         if(!name || !roll_no) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating student..." : "Adding student instantly...");
-        resetStudentForm();
-        fetchStudents();
-
-        const endpoint = id ? `${API_URL}/update-student/${id}` : `${API_URL}/add-student`;
-        const method = id ? 'PUT' : 'POST';
-
-        fetch(endpoint, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
-        }).then(() => { loadData(); showToast("Saved successfully!"); });
+        showToast(id ? "Updating student..." : "Adding student...");
+        
+        try {
+            const data = { name, roll_no, class: class_name, parent_name, phone, address };
+            if (id) {
+                await db.collection('students').doc(id).update(data);
+            } else {
+                data.is_cr = false;
+                await db.collection('students').add(data);
+            }
+            resetStudentForm();
+            loadData();
+            showToast("Saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving student record.");
+        }
     }
 
     function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
@@ -1003,22 +1014,23 @@
 
     async function fetchTeachers() {
         try {
-            const res = await fetch(`${API_URL}/teachers`);
-            const data = await res.json();
+            const snapshot = await db.collection('teachers').get();
             const tbody = document.getElementById('teacherTableBody');
 
-            if (!Array.isArray(data) || data.length === 0) {
+            if (snapshot.empty) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.forEach(t => {
+            snapshot.forEach(doc => {
+                const t = doc.data();
+                const id = doc.id;
                 tbody.innerHTML += `<tr>
-                    <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
+                    <td>${id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
+                        <button class="btn-action btn-edit" onclick="editTeacher('${id}', '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', '${id}')">Delete</button>
                     </td>
                 </tr>`;
             });
@@ -1032,20 +1044,25 @@
         const phone = document.getElementById('t_phone').value;
 
         if(!name || !subject) { alert('Fill out required fields!'); return; }
-        document.getElementById('edit_teacher_id').value = '';
-        document.getElementById('t_name').value = '';
-        document.getElementById('t_subject').value = '';
-        document.getElementById('t_phone').value = '';
-
+        
         showToast("Saving teacher...");
-        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
-        const method = id ? 'PUT' : 'POST';
-
-        fetch(endpoint, {
-            method: method,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({name, subject, phone})
-        }).then(() => { loadData(); showToast("Teacher saved successfully!"); });
+        try {
+            const data = { name, subject, phone };
+            if (id) {
+                await db.collection('teachers').doc(id).update(data);
+            } else {
+                await db.collection('teachers').add(data);
+            }
+            document.getElementById('edit_teacher_id').value = '';
+            document.getElementById('t_name').value = '';
+            document.getElementById('t_subject').value = '';
+            document.getElementById('t_phone').value = '';
+            loadData();
+            showToast("Teacher saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving teacher.");
+        }
     }
 
     function editTeacher(id, name, subject, phone) {
@@ -1057,7 +1074,6 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
-    // --- NEW FUNCTIONS FOR CLASS-WISE BULK ATTENDANCE ---
     async function loadClassStudentsForAttendance() {
         const selectedClass = document.getElementById('bulk_att_class').value;
         const container = document.getElementById('classStudentsAttendanceContainer');
@@ -1070,10 +1086,9 @@
         container.innerHTML = `<p style="text-align: center; color: var(--primary); padding: 20px;">⏳ Loading students for ${selectedClass}...</p>`;
 
         try {
-            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(selectedClass)}`);
-            const students = await res.json();
+            const snapshot = await db.collection('students').where('class', '==', selectedClass).get();
 
-            if (!Array.isArray(students) || students.length === 0) {
+            if (snapshot.empty) {
                 container.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">Is class mein koi student registered nahi hai.</p>`;
                 return;
             }
@@ -1090,13 +1105,15 @@
                     <tbody>
             `;
 
-            students.forEach(s => {
+            snapshot.forEach(doc => {
+                const s = doc.data();
+                const id = doc.id;
                 html += `
                     <tr>
                         <td style="padding:8px; border:1px solid #cbd5e0;">${s.roll_no}</td>
                         <td style="padding:8px; border:1px solid #cbd5e0; font-weight:600;">${s.name}</td>
                         <td style="padding:8px; border:1px solid #cbd5e0; text-align:center;">
-                            <select class="student-att-status-select" data-student-id="${s.id}" style="padding:5px 10px; border-radius:4px; font-weight:bold;">
+                            <select class="student-att-status-select" data-student-id="${id}" data-student-name="${s.name}" data-roll-no="${s.roll_no}" data-class="${s.class}" style="padding:5px 10px; border-radius:4px; font-weight:bold;">
                                 <option value="Present" selected>Present</option>
                                 <option value="Absent">Absent</option>
                             </select>
@@ -1126,53 +1143,56 @@
         const date = document.getElementById('bulk_att_date').value;
         const selects = document.querySelectorAll('.student-att-status-select');
 
-        if (!selectedClass) {
-            alert('Baraye meharbani pehle class select karein!');
-            return;
-        }
-        if (!date) {
-            alert('Baraye meharbani date select karein!');
-            return;
-        }
-        if (selects.length === 0) {
-            alert('Koi student available nahi hai!');
-            return;
-        }
+        if (!selectedClass) { alert('Baraye meharbani pehle class select karein!'); return; }
+        if (!date) { alert('Baraye meharbani date select karein!'); return; }
+        if (selects.length === 0) { alert('Koi student available nahi hai!'); return; }
 
         showToast("Submitting attendance for entire class...");
 
-        let promises = [];
-        selects.forEach(sel => {
-            const student_id = sel.getAttribute('data-student-id');
-            const status = sel.value;
-
-            const payload = {
-                student_id: student_id,
-                class_name: selectedClass,
-                date: date,
-                status: status
-            };
-
-            promises.push(
-                fetch(`${API_URL}/mark-attendance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-            );
-        });
-
         try {
-            await Promise.all(promises);
+            const batch = db.batch();
+            selects.forEach(sel => {
+                const student_id = sel.getAttribute('data-student-id');
+                const student_name = sel.getAttribute('data-student-name');
+                const roll_no = sel.getAttribute('data-roll-no');
+                const class_name = sel.getAttribute('data-class');
+                const status = sel.value;
+
+                const ref = db.collection('attendance').doc();
+                batch.set(ref, { student_id, student_name, roll_no, class_name, date, status });
+            });
+
+            await batch.commit();
             showToast("🎉 Poori class ki attendance kamyabi se lag gayi!");
             fetchAttendance();
         } catch (err) {
             console.error(err);
             showToast("Kuch records save karne mein masla hua.");
-            fetchAttendance();
         }
     }
-    // ----------------------------------------------------
+
+    async function fetchAttendance() {
+        try {
+            const snapshot = await db.collection('attendance').get();
+            const tbody = document.getElementById('attendanceTableBody');
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            snapshot.forEach(doc => {
+                const a = doc.data();
+                const id = doc.id;
+                tbody.innerHTML += `<tr>
+                    <td>${id}</td><td>${a.student_name || '-'}</td><td>${a.roll_no || '-'}</td><td>${a.class_name || '-'}</td><td>${a.date}</td>
+                    <td><span class="${a.status === 'Present' ? 'badge-present' : 'badge-absent'}">${a.status}</span></td>
+                    <td>-</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', '${id}')">Delete</button></td>
+                </tr>`;
+            });
+        } catch(e) { console.error(e); }
+    }
 
     function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3; 
@@ -1207,145 +1227,56 @@
             return;
         }
 
-        showToast("📍 GPS location verify ho rahi hai... Baraye meharbani intezaar karein.");
+        showToast("📍 GPS location verify ho rahi hai...");
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
-
                 const distance = calculateDistanceMeters(userLat, userLng, COLLEGE_LAT, COLLEGE_LNG);
 
                 if (distance > ALLOWED_RADIUS_METERS) {
-                    alert(`❌ Attendance Failed!\nAap college ke premises se bahar hain (Distance: ${Math.round(distance)} meters). Aap ghar ya bahar se attendance mark nahi kar sakte! College ke andar aakar mark karein.`);
-                    showToast("❌ Location restricted: Outside college campus.");
+                    alert(`❌ Attendance Failed!\nAap college ke premises se bahar hain (Distance: ${Math.round(distance)} meters).`);
                     return;
                 }
 
-                showToast("✅ Location verified inside college! Saving attendance...");
+                showToast("✅ Location verified inside college! Saving...");
                 try {
-                    const res = await fetch(`${API_URL}/mark-staff-attendance`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ teacher_id, name, date, in_time, out_time, status, location_verified: true })
+                    await db.collection('staff_attendance').add({
+                        teacher_id, name, date, in_time, out_time, status, location_status: "Inside Campus (Verified)"
                     });
-
-                    if(res.ok) {
-                        fetchStaffAttendance();
-                        showToast("🎉 Staff In-Time & Out-Time marked successfully inside campus!");
-                    } else {
-                        saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
-                    }
+                    fetchStaffAttendance();
+                    showToast("🎉 Staff Attendance marked successfully!");
                 } catch(e) {
-                    saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
+                    console.error(e);
+                    showToast("Error saving staff attendance.");
                 }
             },
             (error) => {
-                alert('⚠️ GPS Location Access Denied!\nLocation on karein taake confirm ho sakay ke aap college ke andar hain.');
-                showToast("Location permission error.");
+                alert('⚠️ GPS Location Access Denied!');
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
 
-    function saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, locStatus) {
-        let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        staffAtts.push({ id: Date.now(), teacher_id, name, date, in_time, out_time, status, location_status: locStatus });
-        localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
-        fetchStaffAttendance();
-        showToast("Staff attendance saved securely!");
-    }
-
     async function fetchStaffAttendance() {
-        const monthFilter = document.getElementById('filter_staff_month').value;
-        let data = [];
         try {
-            const res = await fetch(`${API_URL}/staff-attendance`);
-            data = await res.json();
-            if(!Array.isArray(data) || data.length === 0) {
-                data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-            }
-        } catch(e) {
-            data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        }
-
-        if(monthFilter) {
-            data = data.filter(s => {
-                const recordDate = s.date ? s.date.split('T')[0] : '';
-                const recordMonth = recordDate.split('-')[1];
-                return recordMonth === monthFilter;
-            });
-        }
-
-        renderStaffTable(data);
-    }
-
-    function renderStaffTable(data) {
-        const tbody = document.getElementById('staffAttendanceTableBody');
-        if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No staff attendance records found for selected month.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = '';
-        data.forEach(s => {
-            const statusClass = s.status === 'Present' ? 'badge-present' : 'badge-absent';
-            const inTimeStr = s.in_time || s.att_type || '08:00';
-            const outTimeStr = s.out_time || '-';
-            
-            tbody.innerHTML += `<tr>
-                <td>${s.id}</td><td>${s.name}</td><td>${s.date ? s.date.split('T')[0] : '-'}</td>
-                <td><span style="color:#0284c7; font-weight:bold;">📥 ${inTimeStr}</span></td>
-                <td><span style="color:#7c3aed; font-weight:bold;">📤 ${outTimeStr}</span></td>
-                <td><span class="${statusClass}">${s.status}</span></td>
-                <td><span style="color:var(--success); font-weight:600;">🛡️ ${s.location_status || 'Verified'}</span></td>
-                <td><button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button></td>
-            </tr>`;
-        });
-    }
-
-    function deleteStaffAttendance(id) {
-        let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
-        staffAtts = staffAtts.filter(s => s.id !== id);
-        localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
-        fetchStaffAttendance();
-        showToast("Deleted successfully!");
-    }
-
-    async function fetchAttendance() {
-        try {
-            const selectedClass = document.getElementById('filter_att_class').value;
-            const monthFilter = document.getElementById('filter_att_month').value;
-            const url = selectedClass ? `${API_URL}/all-attendance?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/all-attendance`;
-            const res = await fetch(url);
-            let data = await res.json();
-            const tbody = document.getElementById('attendanceTableBody');
-            
-            if(Array.isArray(data) && monthFilter) {
-                data = data.filter(rec => {
-                    const recDate = rec.date ? rec.date.split('T')[0] : '';
-                    return recDate.split('-')[1] === monthFilter;
-                });
-            }
-
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>`;
+            const snapshot = await db.collection('staff_attendance').get();
+            const tbody = document.getElementById('staffAttendanceTableBody');
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
-            
+
             tbody.innerHTML = '';
-            data.forEach(rec => {
-                const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
-                const attendanceClass = rec.class_name || rec.class || (studentsGlobalCache[rec.student_id] ? studentsGlobalCache[rec.student_id].class : '-');
-                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
-                
+            snapshot.forEach(doc => {
+                const s = doc.data();
+                const id = doc.id;
                 tbody.innerHTML += `<tr>
-                    <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
-                    <td><span class="${statusClass}">${rec.status}</span></td>
-                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
-                    <td>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
-                    </td>
+                    <td>${s.teacher_id}</td><td>${s.name}</td><td>${s.date}</td><td>${s.in_time}</td><td>${s.out_time}</td>
+                    <td><span class="${s.status === 'Present' ? 'badge-present' : 'badge-absent'}">${s.status}</span></td>
+                    <td>${s.location_status || '-'}</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('staff_attendance', '${id}')">Delete</button></td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
@@ -1359,496 +1290,274 @@
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
 
-        if(!student_id || !amount) { alert('Enter Student ID and Amount!'); return; }
-        showToast(id ? "Updating fee..." : "Saving fee record...");
+        if(!student_id || !amount) { alert('Fill out required fields!'); return; }
+        
+        try {
+            let studentName = '-';
+            let rollNo = '-';
+            if(studentsGlobalCache[student_id]) {
+                studentName = studentsGlobalCache[student_id].name;
+                rollNo = studentsGlobalCache[student_id].roll_no;
+            }
 
-        const endpoint = id ? `${API_URL}/update-fee/${id}` : `${API_URL}/add-fee`;
-        const method = id ? 'PUT' : 'POST';
-
-        document.getElementById('edit_fee_id').value = '';
-        document.getElementById('feeFormTitle').innerText = "Fee Ledger Entry";
-        document.getElementById('feeSubmitBtn').innerText = "Save Fee Record";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, amount, status, date}) })
-        .then(() => { loadData(); showToast("Fee saved!"); });
-    }
-
-    function editFee(id, student_id, class_name, amount, status, date) {
-        document.getElementById('edit_fee_id').value = id;
-        document.getElementById('fee_student_id').value = student_id;
-        if(class_name && class_name !== '-') {
-            document.getElementById('fee_class_name').value = class_name;
+            const data = { student_id, student_name: studentName, roll_no: rollNo, class_name, amount: Number(amount), status, date };
+            if (id) {
+                await db.collection('fees').doc(id).update(data);
+            } else {
+                await db.collection('fees').add(data);
+            }
+            document.getElementById('edit_fee_id').value = '';
+            document.getElementById('fee_student_id').value = '';
+            document.getElementById('fee_amount').value = '';
+            fetchFees();
+            showToast("Fee record saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving fee record.");
         }
-        document.getElementById('fee_amount').value = amount;
-        document.getElementById('fee_status').value = status;
-        document.getElementById('fee_date').value = date.split('T')[0];
-        document.getElementById('feeFormTitle').innerText = "Edit Fee Record";
-        document.getElementById('feeSubmitBtn').innerText = "Update Fee";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchFees() {
         try {
-            const selectedClass = document.getElementById('filter_fee_class').value;
-            const monthFilter = document.getElementById('filter_fee_month').value;
-            const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
-            const res = await fetch(url);
-            let data = await res.json();
-            
-            allFeesCache = Array.isArray(data) ? data : [];
-            let filteredFees = [...allFeesCache];
-
-            if(monthFilter) {
-                filteredFees = filteredFees.filter(f => {
-                    const fDate = f.date ? f.date.split('T')[0] : '';
-                    return fDate.split('-')[1] === monthFilter;
-                });
-            }
-
-            let calculatedTotalFees = 0;
-            filteredFees.forEach(f => {
-                calculatedTotalFees += Number(f.amount) || 0;
-            });
-
-            document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
-            updateNetBalance();
-
+            const snapshot = await db.collection('fees').get();
             const tbody = document.getElementById('feeTableBody');
-            if (filteredFees.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found for selected month.</td></tr>`;
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
-            
+
             tbody.innerHTML = '';
-            filteredFees.forEach(f => {
-                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
-                const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
-                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
-                
+            let totalCollected = 0;
+            snapshot.forEach(doc => {
+                const f = doc.data();
+                const id = doc.id;
+                if(f.status === 'Paid') totalCollected += Number(f.amount || 0);
+
                 tbody.innerHTML += `<tr>
-                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
-                    <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
-                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${feeClass}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
-                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
-                    </td>
+                    <td>${id}</td><td>${f.student_name || '-'}</td><td>${f.roll_no || '-'}</td><td>${f.class_name || '-'}</td>
+                    <td>PKR ${f.amount}</td><td><span class="${f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid'}">${f.status}</span></td><td>${f.date}</td>
+                    <td>-</td><td>-</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('fees', '${id}')">Delete</button></td>
                 </tr>`;
             });
+            document.getElementById('stat_fees').innerText = `PKR ${totalCollected}`;
         } catch(e) { console.error(e); }
     }
 
-    function printFeeVoucher(name, roll, className, amount, status, date) {
-        const area = document.getElementById('printableArea');
-        area.innerHTML = `
-            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
-                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Fee Voucher & Payment Receipt</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <div><strong>Student Name:</strong> ${name}</div>
-                <div><strong>Roll No:</strong> ${roll}</div>
-                <div><strong>Class:</strong> ${className}</div>
-            </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
-                <tr>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Fee Description / Particulars</th>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: right;">Amount (PKR)</th>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #cbd5e0; padding:12px;">Tuition Dues & College Funds (${date})</td>
-                    <td style="border:1px solid #cbd5e0; padding:12px; text-align: right;">PKR ${amount}</td>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">Payment Status</td>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; text-align: right; color:${status==='Paid'?'#008037':'#d90429'};">${status}</td>
-                </tr>
-            </table>
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Cashier Signature</div>
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
-            </div>
-        `;
-        window.print();
-    }
-
     async function addMarks() {
-        const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
         const class_name = document.getElementById('marks_class_name').value;
         const subject = document.getElementById('marks_subject').value;
-        const marks_obtained = document.getElementById('marks_obtained').value;
-        const total_marks = document.getElementById('total_marks').value;
+        const obtained = document.getElementById('marks_obtained').value;
+        const total = document.getElementById('total_marks').value;
 
-        if(!student_id || !subject) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating marks..." : "Saving marks...");
+        if(!student_id || !subject || !obtained || !total) { alert('Fill out required fields!'); return; }
 
-        const endpoint = id ? `${API_URL}/update-marks/${id}` : `${API_URL}/add-marks`;
-        const method = id ? 'PUT' : 'POST';
+        try {
+            let studentName = '-';
+            let rollNo = '-';
+            if(studentsGlobalCache[student_id]) {
+                studentName = studentsGlobalCache[student_id].name;
+                rollNo = studentsGlobalCache[student_id].roll_no;
+            }
 
-        document.getElementById('edit_marks_id').value = '';
-        document.getElementById('marksFormTitle').innerText = "Exam Marks Entry";
-        document.getElementById('marksSubmitBtn').innerText = "Save Marks";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, subject, marks_obtained, total_marks}) })
-        .then(() => { loadData(); showToast("Marks saved!"); });
-    }
-
-    function editMarks(id, student_id, class_name, subject, obtained, total) {
-        document.getElementById('edit_marks_id').value = id;
-        document.getElementById('marks_student_id').value = student_id;
-        if(class_name && class_name !== '-') {
-            document.getElementById('marks_class_name').value = class_name;
+            await db.collection('marks').add({
+                student_id, student_name: studentName, roll_no: rollNo, class_name, subject, obtained: Number(obtained), total: Number(total)
+            });
+            document.getElementById('marks_student_id').value = '';
+            document.getElementById('marks_subject').value = '';
+            document.getElementById('marks_obtained').value = '';
+            document.getElementById('total_marks').value = '';
+            fetchMarks();
+            showToast("Marks saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving marks.");
         }
-        document.getElementById('marks_subject').value = subject;
-        document.getElementById('marks_obtained').value = obtained;
-        document.getElementById('total_marks').value = total;
-        document.getElementById('marksFormTitle').innerText = "Edit Exam Marks";
-        document.getElementById('marksSubmitBtn').innerText = "Update Marks";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchMarks() {
         try {
-            const selectedClass = document.getElementById('filter_marks_class').value;
-            const url = selectedClass ? `${API_URL}/marks?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/marks`;
-            const res = await fetch(url);
-            const data = await res.json();
-            
-            if(Array.isArray(data)) {
-                marksGlobalCache = data; 
-            }
-
+            const snapshot = await db.collection('marks').get();
             const tbody = document.getElementById('marksTableBody');
-            
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>`;
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
-            
+
             tbody.innerHTML = '';
-            data.forEach(m => {
-                const marksClass = m.class_name || m.student_class || m.className || m.class || (studentsGlobalCache[m.student_id] ? studentsGlobalCache[m.student_id].class : '-');
-                
+            snapshot.forEach(doc => {
+                const m = doc.data();
+                const id = doc.id;
                 tbody.innerHTML += `<tr>
-                    <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${marksClass}</span></td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${marksClass}', '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button>
-                    </td>
+                    <td>${id}</td><td>${m.student_name || '-'}</td><td>${m.roll_no || '-'}</td><td>${m.class_name || '-'}</td>
+                    <td>${m.subject}</td><td>${m.obtained}</td><td>${m.total}</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('marks', '${id}')">Delete</button></td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
     async function addTimetable() {
-        const id = document.getElementById('edit_tt_id').value;
         const class_name = document.getElementById('tt_class').value;
         const subject = document.getElementById('tt_subject').value;
-        const teacher_name = document.getElementById('tt_teacher').value;
+        const teacher = document.getElementById('tt_teacher').value;
         const time_slot = document.getElementById('tt_time').value;
 
         if(!class_name || !subject) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating timetable..." : "Saving timetable...");
 
-        const endpoint = id ? `${API_URL}/update-timetable/${id}` : `${API_URL}/add-timetable`;
-        const method = id ? 'PUT' : 'POST';
-
-        document.getElementById('edit_tt_id').value = '';
-        document.getElementById('ttFormTitle').innerText = "Add Class Timetable";
-        document.getElementById('ttSubmitBtn').innerText = "Save Timetable";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) })
-        .then(() => { loadData(); showToast("Timetable saved!"); });
-    }
-
-    function editTimetable(id, className, subject, teacher, time) {
-        document.getElementById('edit_tt_id').value = id;
-        document.getElementById('tt_class').value = className;
-        document.getElementById('tt_subject').value = subject;
-        document.getElementById('tt_teacher').value = teacher;
-        document.getElementById('tt_time').value = time;
-        document.getElementById('ttFormTitle').innerText = "Edit Timetable Entry";
-        document.getElementById('ttSubmitBtn').innerText = "Update Timetable";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        try {
+            await db.collection('timetable').add({ class_name, subject, teacher, time_slot });
+            document.getElementById('tt_class').value = '';
+            document.getElementById('tt_subject').value = '';
+            document.getElementById('tt_teacher').value = '';
+            document.getElementById('tt_time').value = '';
+            fetchTimetable();
+            showToast("Timetable saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving timetable.");
+        }
     }
 
     async function fetchTimetable() {
         try {
-            const res = await fetch(`${API_URL}/timetable`);
-            const data = await res.json();
-            
-            if (Array.isArray(data)) {
-                timetableGlobalCache = data;
-            }
-
+            const snapshot = await db.collection('timetable').get();
             const tbody = document.getElementById('timetableTableBody');
-            
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>`;
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.forEach(t => {
+            snapshot.forEach(doc => {
+                const t = doc.data();
+                const id = doc.id;
                 tbody.innerHTML += `<tr>
-                    <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
-                    <td><button class="btn-print" onclick="printTimetableSlip('${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">🖨️ Slip</button></td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editTimetable(${t.id}, '${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button>
-                    </td>
+                    <td>${id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher}</td><td>${t.time_slot}</td>
+                    <td>-</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('timetable', '${id}')">Delete</button></td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
-    function printTimetableSlip(className, subject, teacher, timeSlot) {
-        const area = document.getElementById('printableArea');
-        area.innerHTML = `
-            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
-                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Class Lecture Timetable Slip</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <div><strong>Class Name:</strong> ${className}</div>
-                <div><strong>Time Slot:</strong> ${timeSlot}</div>
-            </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
-                <tr>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Subject / Course</th>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Assigned Teacher</th>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; color:#0077b6;">${subject}</td>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">${teacher}</td>
-                </tr>
-            </table>
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
-            </div>
-        `;
-        window.print();
-    }
-
-    function printMasterTimetable() {
-        const area = document.getElementById('printableArea');
-        let rowsHtml = '';
-
-        if(timetableGlobalCache.length === 0) {
-            rowsHtml = `<tr><td colspan="5" style="text-align:center; padding:15px;">No timetable records found.</td></tr>`;
-        } else {
-            timetableGlobalCache.forEach((t, index) => {
-                rowsHtml += `
-                    <tr>
-                        <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${index + 1}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px; font-weight:600;">${t.class_name}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
-                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        area.innerHTML = `
-            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
-                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master Lecture Timetable</p>
-            </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
-                <thead>
-                    <tr style="background:#f1f5f9;">
-                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center;">#</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px;">Class Name</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px;">Subject</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px;">Teacher</th>
-                        <th style="border:1px solid #cbd5e0; padding:10px;">Time Slot</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
-            <div style="margin-top: 80px; display: flex; justify-content: space-linejoin; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
-            </div>
-        `;
-        window.print();
-    }
-
     async function addExpense() {
-        const id = document.getElementById('edit_exp_id').value;
         const title = document.getElementById('exp_title').value;
         const category = document.getElementById('exp_category').value;
         const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
 
         if(!title || !amount) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating expense..." : "Saving expense...");
 
-        const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
-        const method = id ? 'PUT' : 'POST';
-
-        document.getElementById('edit_exp_id').value = '';
-        document.getElementById('expFormTitle').innerText = "College Expense / Salary Entry";
-        document.getElementById('expSubmitBtn').innerText = "Save Expense";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
-        .then(() => { loadData(); showToast("Expense saved!"); });
+        try {
+            await db.collection('expenses').add({ title, category, amount: Number(amount), date });
+            document.getElementById('exp_title').value = '';
+            document.getElementById('exp_amount').value = '';
+            fetchExpenses();
+            showToast("Expense saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error saving expense.");
+        }
     }
 
     async function fetchExpenses() {
         try {
-            const monthFilter = document.getElementById('filter_exp_month').value;
-            const res = await fetch(`${API_URL}/expenses`);
-            let data = await res.json();
-            
-            allExpensesCache = Array.isArray(data) ? data : [];
-            let filteredExpenses = [...allExpensesCache];
-
-            if(monthFilter) {
-                filteredExpenses = filteredExpenses.filter(e => {
-                    const eDate = e.date ? e.date.split('T')[0] : '';
-                    return eDate.split('-')[1] === monthFilter;
-                });
-            }
-
-            let calculatedTotalExpenses = 0;
-            filteredExpenses.forEach(e => {
-                calculatedTotalExpenses += Number(e.amount) || 0;
-            });
-
-            document.getElementById('stat_expenses').innerText = `PKR ${calculatedTotalExpenses}`;
-            updateNetBalance();
-
+            const snapshot = await db.collection('expenses').get();
             const tbody = document.getElementById('expenseTableBody');
-            if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expense records found for selected month.</td></tr>`;
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            filteredExpenses.forEach(e => {
+            let totalExpenses = 0;
+            snapshot.forEach(doc => {
+                const e = doc.data();
+                const id = doc.id;
+                totalExpenses += Number(e.amount || 0);
+
                 tbody.innerHTML += `<tr>
-                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${e.date.split('T')[0]}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
-                    </td>
+                    <td>${id}</td><td>${e.title}</td><td>${e.category}</td><td>PKR ${e.amount}</td><td>${e.date}</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('expenses', '${id}')">Delete</button></td>
                 </tr>`;
             });
+            document.getElementById('stat_expenses').innerText = `PKR ${totalExpenses}`;
         } catch(e) { console.error(e); }
     }
 
-    function editExpense(id, title, category, amount, date) {
-        document.getElementById('edit_exp_id').value = id;
-        document.getElementById('exp_title').value = title;
-        document.getElementById('exp_category').value = category;
-        document.getElementById('exp_amount').value = amount;
-        document.getElementById('exp_date').value = date.split('T')[0];
-        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
-        document.getElementById('expSubmitBtn').innerText = "Update Expense";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function updateNetBalance() {
-        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').trim();
-        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').trim();
-        const totalFees = Number(feesText) || 0;
-        const totalExp = Number(expText) || 0;
-        const net = totalFees - totalExp;
-        document.getElementById('stat_balance').innerText = `PKR ${net}`;
-    }
-
     async function addAnnouncement() {
-        const id = document.getElementById('edit_ann_id').value;
         const title = document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
 
         if(!title || !message) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating notice..." : "Publishing notice...");
 
-        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
-        const method = id ? 'PUT' : 'POST';
-
-        document.getElementById('edit_ann_id').value = '';
-        document.getElementById('annFormTitle').innerText = "Publish College Notice";
-        document.getElementById('annSubmitBtn').innerText = "Publish Notice";
-
-        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) })
-        .then(() => { loadData(); showToast("Notice published!"); });
+        try {
+            await db.collection('announcements').add({ title, message, date });
+            document.getElementById('ann_title').value = '';
+            document.getElementById('ann_message').value = '';
+            fetchAnnouncements();
+            showToast("Notice published successfully!");
+        } catch(e) {
+            console.error(e);
+            showToast("Error publishing notice.");
+        }
     }
 
     async function fetchAnnouncements() {
         try {
-            const res = await fetch(`${API_URL}/announcements`);
-            const data = await res.json();
+            const snapshot = await db.collection('announcements').get();
             const tbody = document.getElementById('announcementTableBody');
-
-            if (!Array.isArray(data) || data.length === 0) {
+            if (snapshot.empty) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            data.forEach(a => {
+            snapshot.forEach(doc => {
+                const a = doc.data();
+                const id = doc.id;
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td><strong style="color:var(--primary);">${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
-                    </td>
+                    <td>${id}</td><td>${a.title}</td><td>${a.message}</td><td>${a.date}</td>
+                    <td><button class="btn-action btn-delete" onclick="deleteRecord('announcements', '${id}')">Delete</button></td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
-    function editAnnouncement(id, title, message, date) {
-        document.getElementById('edit_ann_id').value = id;
-        document.getElementById('ann_title').value = title;
-        document.getElementById('ann_message').value = message;
-        document.getElementById('ann_date').value = date.split('T')[0];
-        document.getElementById('annFormTitle').innerText = "Edit Notice";
-        document.getElementById('annSubmitBtn').innerText = "Update Notice";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     async function fetchReportCard() {
-        const student_id = document.getElementById('rc_student_id').value;
-        if(!student_id) { alert('Enter Student ID!'); return; }
+        const student_id = document.getElementById('rc_student_id').value.trim();
+        if(!student_id) { alert('Baraye meharbani Student ID enter karein!'); return; }
 
-        showToast("Generating report card...");
         try {
-            const res = await fetch(`${API_URL}/student-report/${student_id}`);
-            const data = await res.json();
-
-            if(!data || !data.student) {
-                alert('Student nahi mila!');
+            const studentDoc = await db.collection('students').doc(student_id).get();
+            if(!studentDoc.exists) {
+                alert('Is ID par koi student mojood nahi hai!');
                 return;
             }
+            const student = studentDoc.data();
 
-            document.getElementById('rc_name').innerText = data.student.name;
-            document.getElementById('rc_roll').innerText = data.student.roll_no;
-            document.getElementById('rc_class').innerText = data.student.class;
+            document.getElementById('rc_name').innerText = student.name;
+            document.getElementById('rc_roll').innerText = student.roll_no;
+            document.getElementById('rc_class').innerText = student.class;
 
+            const marksSnapshot = await db.collection('marks').where('student_id', '==', student_id).get();
             const tbody = document.getElementById('rcTableBody');
             tbody.innerHTML = '';
 
-            if(!Array.isArray(data.marks) || data.marks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam marks recorded for this student.</td></tr>`;
+            if(marksSnapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Is student ke marks abhi enter nahi kiye gaye.</td></tr>`;
             } else {
-                data.marks.forEach(m => {
-                    const pct = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
+                marksSnapshot.forEach(doc => {
+                    const m = doc.data();
+                    const pct = Math.round((m.obtained / m.total) * 100);
                     tbody.innerHTML += `
                         <tr>
                             <td>${m.subject}</td>
-                            <td>${m.marks_obtained}</td>
-                            <td>${m.total_marks}</td>
+                            <td>${m.obtained}</td>
+                            <td>${m.total}</td>
                             <td><span style="font-weight:bold; color:var(--success);">${pct}%</span></td>
                         </tr>
                     `;
@@ -1863,34 +1572,18 @@
         }
     }
 
-    async function deleteRecord(type, id) {
+    async function deleteRecord(collectionName, id) {
         if(!confirm("Kya aap waqai is record ko delete karna chahte hain?")) return;
         
-        let endpointMap = {
-            'student': 'delete-student',
-            'teacher': 'delete-teacher',
-            'attendance': 'delete-attendance',
-            'fee': 'delete-fee',
-            'marks': 'delete-marks',
-            'timetable': 'delete-timetable',
-            'expense': 'delete-expense',
-            'announcement': 'delete-announcement'
-        };
-
-        const endpoint = `${API_URL}/${endpointMap[type]}/${id}`;
         showToast("Deleting record...");
 
         try {
-            const res = await fetch(endpoint, { method: 'DELETE' });
-            if(res.ok) {
-                loadData();
-                showToast("Deleted successfully!");
-            } else {
-                showToast("Failed to delete record.");
-            }
+            await db.collection(collectionName).doc(id).delete();
+            loadData();
+            showToast("Deleted successfully!");
         } catch(e) {
             console.error(e);
-            showToast("Server connection error.");
+            showToast("Failed to delete record.");
         }
     }
 
@@ -1898,7 +1591,7 @@
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, ""); // Remove links like WhatsApp/Voucher if any
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, "");
 
         filename = filename ? filename.toLowerCase() : 'excel_data.xls';
         downloadLink = document.createElement("a");
@@ -1914,46 +1607,6 @@
         }
     }
 </script>
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  // Aapki Firebase Configuration
-  const firebaseConfig = {
-      apiKey: "AIzaSyA0_GKPiVU_sGN0SZPVANHza6auAw44rIY",
-      authDomain: "chss-portal.firebaseapp.com",
-      projectId: "chss-portal",
-      storageBucket: "chss-portal.firebasestorage.app",
-      messagingSenderId: "307506152660",
-      appId: "1:307506152660:web:87f00efd113d790470a741",
-      measurementId: "G-7VD2DX9XT9"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Student Save karne ka function
-  window.saveStudentToFirebase = async function(event) {
-      event.preventDefault();
-      
-      const fullName = document.querySelector("input[placeholder*='Abdullah']").value;
-      const rollNumber = document.querySelector("input[placeholder*='CCM-2026']").value;
-      const parentName = document.querySelector("input[placeholder*='Father Name']").value;
-      const phone = document.querySelector("input[placeholder*='03009876543']").value;
-      const address = document.querySelector("input[placeholder*='Home Address']").value;
-
-      try {
-          await addDoc(collection(db, "students"), {
-              fullName, rollNumber, parentName, phone, address,
-              createdAt: new Date()
-          });
-          alert("Student record successfully Firebase database mein save ho gaya!");
-          location.reload();
-      } catch (e) {
-          console.error("Error adding document: ", e);
-          alert("Data save karne mein error aaya.");
-      }
-  };
-</script>
+    
 </body>
 </html>
