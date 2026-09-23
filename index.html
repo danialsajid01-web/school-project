@@ -310,7 +310,7 @@
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Address</label><input type="text" id="address" placeholder="Home Address / City"></div>
                     </div>
-                    <button class="submit-btn" id="studentSubmitBtn" onclick="saveStudent()">Save Student Record</button>
+                    <button class="submit-btn" id="studentSubmitBtn" onclick="saveStudent()">Save Student Recordonclick="saveStudentToFirebase(event)"</button>
                 </div>
                 <div class="card">
                     <h3>
@@ -1913,6 +1913,47 @@
             downloadLink.click();
         }
     }
+</script>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // Aapki Firebase Configuration
+  const firebaseConfig = {
+      apiKey: "AIzaSyA0_GKPiVU_sGN0SZPVANHza6auAw44rIY",
+      authDomain: "chss-portal.firebaseapp.com",
+      projectId: "chss-portal",
+      storageBucket: "chss-portal.firebasestorage.app",
+      messagingSenderId: "307506152660",
+      appId: "1:307506152660:web:87f00efd113d790470a741",
+      measurementId: "G-7VD2DX9XT9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Student Save karne ka function
+  window.saveStudentToFirebase = async function(event) {
+      event.preventDefault();
+      
+      const fullName = document.querySelector("input[placeholder*='Abdullah']").value;
+      const rollNumber = document.querySelector("input[placeholder*='CCM-2026']").value;
+      const parentName = document.querySelector("input[placeholder*='Father Name']").value;
+      const phone = document.querySelector("input[placeholder*='03009876543']").value;
+      const address = document.querySelector("input[placeholder*='Home Address']").value;
+
+      try {
+          await addDoc(collection(db, "students"), {
+              fullName, rollNumber, parentName, phone, address,
+              createdAt: new Date()
+          });
+          alert("Student record successfully Firebase database mein save ho gaya!");
+          location.reload();
+      } catch (e) {
+          console.error("Error adding document: ", e);
+          alert("Data save karne mein error aaya.");
+      }
+  };
 </script>
 </body>
 </html>
