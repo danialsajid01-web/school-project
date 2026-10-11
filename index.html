@@ -314,15 +314,19 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
                         <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. SKANS-2026"></div>
-                        <div class="form-group"><label>Class / Faculty</label><select id="class_name">
+                        <div class="form-group"><label>Class</label><select id="class_name">
+                            <option value="Nursery">Nursery</option>
+                            <option value="Prep">Prep</option>
+                            <option value="1st Class">1st Class</option>
+                            <option value="2nd Class">2nd Class</option>
+                            <option value="3rd Class">3rd Class</option>
+                            <option value="4th Class">4th Class</option>
+                            <option value="5th Class">5th Class</option>
+                            <option value="6th Class">6th Class</option>
+                            <option value="7th Class">7th Class</option>
+                            <option value="8th Class">8th Class</option>
                             <option value="9th Class">9th Class</option>
-                            <option value="10th Class">10th Class</option>
-                            <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                            <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                            <option value="1st Year ICS">1st Year ICS</option>
-                            <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                            <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                            <option value="2nd Year ICS">2nd Year ICS</option>
+                            <option value="Matric">Matric</option>
                         </select></div>
                         <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
@@ -337,14 +341,18 @@
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
                             <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
                         </div>
@@ -393,14 +401,18 @@
                             <label>Select Class</label>
                             <select id="bulk_att_class" onchange="loadClassStudentsForAttendance()">
                                 <option value="">-- Choose Class --</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Attendance Date</label><input type="date" id="bulk_att_date"></div>
@@ -429,14 +441,18 @@
                             </select>
                             <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
                         </div>
@@ -493,16 +509,20 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="text" id="fee_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
-                            <label>Class / Faculty</label>
+                            <label>Class</label>
                             <select id="fee_class_name">
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
@@ -525,14 +545,18 @@
                             </select>
                             <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export Excel</button>
                         </div>
@@ -552,16 +576,20 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Student ID</label><input type="text" id="marks_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
-                            <label>Class / Faculty</label>
+                            <label>Class</label>
                             <select id="marks_class_name">
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Subject</label><input type="text" id="marks_subject" placeholder="Mathematics"></div>
@@ -577,14 +605,18 @@
                             <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
                             <select id="filter_marks_class" onchange="fetchMarks()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option>
+                                <option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option>
+                                <option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option>
+                                <option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option>
+                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="10th Class">10th Class</option>
-                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
-                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
-                                <option value="1st Year ICS">1st Year ICS</option>
-                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
-                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
-                                <option value="2nd Year ICS">2nd Year ICS</option>
+                                <option value="Matric">Matric</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export Excel</button>
                         </div>
@@ -602,8 +634,8 @@
                     <h3 id="ttFormTitle">Add Class Timetable</h3>
                     <input type="hidden" id="edit_tt_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year Pre-Medical"></div>
-                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Physics"></div>
+                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="9th Class"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Mathematics"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="tt_teacher" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Time Slot</label><input type="text" id="tt_time" placeholder="08:30 AM - 09:15 AM"></div>
                     </div>
