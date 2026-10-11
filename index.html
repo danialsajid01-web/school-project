@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
+    <title>Skans Education Academy - ERP & Faculty Portal</title>
     
     <!-- Firebase SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -13,9 +13,9 @@
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
-            authDomain: "chss-portal.firebaseapp.com",
-            projectId: "chss-portal",
-            storageBucket: "chss-portal.appspot.com",
+            authDomain: "skans-portal.firebaseapp.com",
+            projectId: "skans-portal",
+            storageBucket: "skans-portal.appspot.com",
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
             appId: "YOUR_APP_ID"
         };
@@ -211,11 +211,11 @@
         <div class="light-beam"></div>
         <div class="college-logo-preview">
             <svg width="120" height="120" viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="5"/>
-                <text x="100" y="50" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
-                <text x="100" y="70" fill="#ffb703" font-size="13" font-weight="bold" text-anchor="middle">MINCHINABAD</text>
-                <circle cx="100" cy="85" r="16" fill="#ffb703"/>
-                <text x="100" y="155" fill="#000000" font-size="22" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+                <circle cx="100" cy="100" r="95" fill="#0077b6" stroke="#ffb703" stroke-width="5"/>
+                <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">SKANS</text>
+                <text x="100" y="75" fill="#ffb703" font-size="12" font-weight="bold" text-anchor="middle">EDUCATION</text>
+                <circle cx="100" cy="90" r="16" fill="#ffb703"/>
+                <text x="100" y="155" fill="#ffffff" font-size="20" font-weight="bold" text-anchor="middle" font-family="serif">ACADEMY</text>
             </svg>
         </div>
         
@@ -225,7 +225,7 @@
         </div>
 
         <div class="login-card">
-            <h2>City College Minchinabad</h2>
+            <h2>Skans Education Academy</h2>
             <p class="sub-title">Select Portal Role & Login</p>
             <select id="login_role" class="login-select">
                 <option value="admin">Admin Portal</option>
@@ -243,14 +243,14 @@
             <div class="header-left">
                 <div class="header-logo">
                     <svg width="75" height="75" viewBox="0 0 200 200">
-                        <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="6"/>
-                        <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
-                        <text x="100" y="150" fill="#000000" font-size="24" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
+                        <circle cx="100" cy="100" r="95" fill="#0077b6" stroke="#ffb703" stroke-width="6"/>
+                        <text x="100" y="65" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">SKANS</text>
+                        <text x="100" y="145" fill="#ffffff" font-size="18" font-weight="bold" text-anchor="middle" font-family="serif">ACADEMY</text>
                     </svg>
                 </div>
                 <div>
-                    <h1>City College Minchinabad (CHSS)</h1>
-                    <p>🎓 Faculty & Admin Management System</p>
+                    <h1>Skans Education Academy</h1>
+                    <p>🎓 ERP & Faculty Portal Management System</p>
                 </div>
             </div>
             <div>
@@ -313,7 +313,7 @@
                     <input type="hidden" id="edit_student_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
-                        <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
+                        <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. SKANS-2026"></div>
                         <div class="form-group"><label>Class / Faculty</label><select id="class_name">
                             <option value="9th Class">9th Class</option>
                             <option value="10th Class">10th Class</option>
@@ -452,7 +452,7 @@
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
-                    <p style="font-size: 13px; color: #666; margin-top: -6px;">System GPS verification use karega taake koi bhi teacher college premises ke bahar (ghar se) attendance mark na kar sakay.</p>
+                    <p style="font-size: 13px; color: #666; margin-top: -6px;">System GPS verification use karega taake koi bhi teacher academy premises ke bahar (ghar se) attendance mark na kar sakay.</p>
                     <div class="form-grid">
                         <div class="form-group"><label>Teacher ID</label><input type="text" id="staff_att_id" placeholder="Enter Teacher ID"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="staff_att_name" placeholder="Sir Sajid"></div>
@@ -627,7 +627,7 @@
             <!-- EXPENSES TAB -->
             <div id="expenses" class="tab-section">
                 <div class="card">
-                    <h3 id="expFormTitle">College Expense / Salary Entry</h3>
+                    <h3 id="expFormTitle">Academy Expense / Salary Entry</h3>
                     <input type="hidden" id="edit_exp_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Title</label><input type="text" id="exp_title" placeholder="Utility Bills"></div>
@@ -661,7 +661,7 @@
             <!-- ANNOUNCEMENTS TAB -->
             <div id="announcements" class="tab-section">
                 <div class="card">
-                    <h3 id="annFormTitle">Publish College Notice</h3>
+                    <h3 id="annFormTitle">Publish Academy Notice</h3>
                     <input type="hidden" id="edit_ann_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Notice Title</label><input type="text" id="ann_title" placeholder="Mid-Term Schedule"></div>
@@ -691,7 +691,7 @@
                 </div>
                 <div class="card" id="reportCardResult" style="display: none; background: #fff; border: 2px dashed var(--primary);">
                     <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 15px;">
-                        <h2 style="color: var(--primary); margin: 0;">City College Minchinabad (CHSS)</h2>
+                        <h2 style="color: var(--primary); margin: 0;">Skans Education Academy</h2>
                         <p style="margin: 4px 0; color: #666; font-size: 13px;">Official Annual Examination Report Card</p>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px;">
@@ -740,9 +740,9 @@
     }
 
     window.onload = function() {
-        const isLogged = localStorage.getItem('chss_logged');
-        const savedRole = localStorage.getItem('chss_role');
-        const savedTab = localStorage.getItem('chss_tab');
+        const isLogged = localStorage.getItem('skans_logged');
+        const savedRole = localStorage.getItem('skans_role');
+        const savedTab = localStorage.getItem('skans_tab');
 
         const todayStr = getPakistaniDateString();
         ['att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date', 'bulk_att_date'].forEach(id => {
@@ -763,7 +763,7 @@
                 if(targetBtn) switchTab(currentActiveTab, targetBtn);
             }, 50);
         } else {
-            localStorage.removeItem('chss_logged');
+            localStorage.removeItem('skans_logged');
             document.body.classList.remove('light-on');
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('dashboard-screen').style.display = 'none';
@@ -788,9 +788,9 @@
 
         if (uInput === validCreds.user && pInput === validCreds.pass) {
             currentUserRole = role;
-            localStorage.setItem('chss_role', role);
-            localStorage.setItem('chss_logged', 'true');
-            localStorage.setItem('chss_tab', 'students');
+            localStorage.setItem('skans_role', role);
+            localStorage.setItem('skans_logged', 'true');
+            localStorage.setItem('skans_tab', 'students');
 
             document.body.classList.add('light-on');
             showToast(`Logged in successfully as ${role.toUpperCase()}`);
@@ -806,9 +806,9 @@
     }
 
     function logout() {
-        localStorage.removeItem('chss_logged');
-        localStorage.removeItem('chss_role');
-        localStorage.removeItem('chss_tab');
+        localStorage.removeItem('skans_logged');
+        localStorage.removeItem('skans_role');
+        localStorage.removeItem('skans_tab');
         document.body.classList.remove('light-on');
         document.getElementById('dashboard-screen').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
@@ -844,7 +844,7 @@
 
     function switchTab(tabId, btnElement) {
         currentActiveTab = tabId;
-        localStorage.setItem('chss_tab', tabId);
+        localStorage.setItem('skans_tab', tabId);
         document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
@@ -1236,11 +1236,11 @@
                 const distance = calculateDistanceMeters(userLat, userLng, COLLEGE_LAT, COLLEGE_LNG);
 
                 if (distance > ALLOWED_RADIUS_METERS) {
-                    alert(`❌ Attendance Failed!\nAap college ke premises se bahar hain (Distance: ${Math.round(distance)} meters).`);
+                    alert(`❌ Attendance Failed!\nAap academy ke premises se bahar hain (Distance: ${Math.round(distance)} meters).`);
                     return;
                 }
 
-                showToast("✅ Location verified inside college! Saving...");
+                showToast("✅ Location verified inside academy! Saving...");
                 try {
                     await db.collection('staff_attendance').add({
                         teacher_id, name, date, in_time, out_time, status, location_status: "Inside Campus (Verified)"
