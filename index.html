@@ -8,6 +8,8 @@
     <!-- Firebase SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <!-- Chart.js Library for Financial Profit/Loss Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // Firebase Configuration
@@ -304,6 +306,17 @@
                 <div class="card" style="margin: 0; background: linear-gradient(135deg, #560bad, #7209b7); color: white; border: none;">
                     <h4 style="margin: 0 0 8px; color: white; border: none; font-size: 13px; opacity: 0.9;">Net Balance</h4>
                     <h2 id="stat_balance" style="margin: 0; font-size: 20px;">PKR 0</h2>
+                </div>
+            </div>
+
+            <!-- FINANCIAL PROFIT & LOSS GRAPH TAB / SECTION -->
+            <div id="financial-graph" class="tab-section">
+                <div class="card">
+                    <h3>📈 Academy Financial Profit & Loss Overview</h3>
+                    <p style="font-size: 13px; color: #666; margin-top: -6px;">Yeh graph fee collection aur total expenses ka mawazna (comparison) kar ke net profit ya loss show karta hai.</p>
+                    <div style="width: 100%; max-width: 800px; margin: 20px auto; background: #fff; padding: 15px; border-radius: 8px;">
+                        <canvas id="profitAndLossChart" style="width: 100%; max-height: 400px;"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -752,6 +765,7 @@
     let timetableGlobalCache = []; 
     let allFeesCache = [];
     let allExpensesCache = [];
+    let profitLossChartInstance = null;
 
     const COLLEGE_LAT = 30.1631; 
     const COLLEGE_LNG = 73.5726;
@@ -866,6 +880,7 @@
         
         if (currentUserRole !== 'teacher') {
             navHtml += `<button class="nav-btn" onclick="switchTab('expenses', this)">💰 Expenses</button>`;
+            navHtml += `<button class="nav-btn" onclick="switchTab('financial-graph', this)">📈 Profit/Loss Graph</button>`;
         }
         
         navHtml += `<button class="nav-btn" onclick="switchTab('announcements', this)">📢 Notices</button>
@@ -882,6 +897,10 @@
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         if(btnElement) btnElement.classList.add('active');
+
+        if(tabId === 'financial-graph') {
+            renderProfitAndLossChart();
+        }
     }
 
     function filterTable(tableID, searchInput) {
@@ -1374,6 +1393,7 @@
                 </tr>`;
             });
             document.getElementById('stat_fees').innerText = `PKR ${totalCollected}`;
+            if(currentActiveTab === 'financial-graph') renderProfitAndLossChart();
         } catch(e) { console.error(e); }
     }
 
@@ -1517,6 +1537,7 @@
                 </tr>`;
             });
             document.getElementById('stat_expenses').innerText = `PKR ${totalExpenses}`;
+            if(currentActiveTab === 'financial-graph') renderProfitAndLossChart();
         } catch(e) { console.error(e); }
     }
 
@@ -1603,6 +1624,72 @@
             console.error(e);
             alert('Error generating report card.');
         }
+    }
+
+    async function renderProfitAndLossChart() {
+        const ctx = document.getElementById('profitAndLossChart').getContext('2d');
+        
+        let totalFeesCollected = 0;
+        let totalExpensesVal = 0;
+
+        try {
+            const feesSnap = await db.collection('fees').get();
+            feesSnap.forEach(doc => {
+                const f = doc.data();
+                if(f.status === 'Paid') totalFeesCollected += Number(f.amount || 0);
+            });
+
+            const expSnap = await db.collection('expenses').get();
+            expSnap.forEach(doc => {
+                const e = doc.data();
+                totalExpensesVal += Number(e.amount || 0);
+            });
+        } catch(err) {
+            console.error(err);
+        }
+
+        const netProfitOrLoss = totalFeesCollected - totalExpensesVal;
+
+        if (profitAndLossChartInstance) {
+            profitAndLossChartInstance.destroy();
+        }
+
+        profitAndLossChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Revenue / Fees', 'Total Expenses', 'Net Balance (Profit / Loss)'],
+                datasets: [{
+                    label: 'Amount in PKR',
+                    data: [totalFeesCollected, totalExpensesVal, netProfitOrLoss],
+                    backgroundColor: [
+                        'rgba(0, 128, 55, 0.7)',
+                        'rgba(217, 4, 41, 0.7)',
+                        netProfitOrLoss >= 0 ? 'rgba(0, 119, 182, 0.7)' : 'rgba(217, 4, 41, 0.9)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 128, 55, 1)',
+                        'rgba(217, 4, 41, 1)',
+                        netProfitOrLoss >= 0 ? 'rgba(0, 119, 182, 1)' : 'rgba(217, 4, 41, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Financial Status Bar Chart (PKR)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
     }
 
     async function deleteRecord(collectionName, id) {
