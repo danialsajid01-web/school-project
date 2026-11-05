@@ -162,6 +162,7 @@
         .btn-delete-all { background: #7f1d1d; color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
         .btn-cr { background: #3a0ca3; color: white; }
         .btn-excel { background: var(--success); color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-print-table { background: #0284c7; color: white; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
         .btn-print { background: var(--primary); color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 600; border: none; }
 
         table { width: 100%; margin-top: 12px; border-collapse: collapse; border-radius: 6px; overflow: hidden; }
@@ -309,6 +310,11 @@
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
                         <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. SKANS-2026"></div>
                         <div class="form-group"><label>Class / Faculty</label><select id="class_name">
+                            <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                            <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                            <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                            <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                            <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
                             <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
                             <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
                             <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
@@ -327,12 +333,18 @@
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('studentTable', this)">
                             <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
                                 <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
                                 <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
                                 <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option><option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('studentTable', 'Enrolled Students Directory')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('student')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -361,6 +373,7 @@
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_teacher" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('teacherTable', this)">
                             <button class="btn-excel" onclick="exportTableToExcel('teacherTable', 'Faculty_Directory.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('teacherTable', 'Faculty Directory')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('teacher')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -381,6 +394,11 @@
                             <label>Select Class</label>
                             <select id="bulk_att_class" onchange="loadClassStudentsForAttendance()">
                                 <option value="">-- Choose Class --</option>
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
                                 <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
                                 <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
@@ -411,7 +429,20 @@
                                 <option value="07">July</option><option value="08">August</option><option value="09">September</option>
                                 <option value="10">October</option><option value="11">November</option><option value="12">December</option>
                             </select>
+                            <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
+                                <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option><option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('attendanceTable', 'Student Attendance Logs')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('attendance')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -450,6 +481,7 @@
                                 <option value="10">October</option><option value="11">November</option><option value="12">December</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('staffAttendanceTable', 'Staff_Attendance.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('staffAttendanceTable', 'Faculty Attendance History')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('staff-attendance')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -470,6 +502,11 @@
                         <div class="form-group">
                             <label>Class / Faculty</label>
                             <select id="fee_class_name">
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
                                 <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
                                 <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
@@ -494,7 +531,20 @@
                                 <option value="07">July</option><option value="08">August</option><option value="09">September</option>
                                 <option value="10">October</option><option value="11">November</option><option value="12">December</option>
                             </select>
+                            <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
+                                <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option><option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('feeTable', 'Fee Collection Records')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('fee')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -515,6 +565,11 @@
                         <div class="form-group">
                             <label>Class / Faculty</label>
                             <select id="marks_class_name">
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
                                 <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
                                 <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
@@ -532,7 +587,20 @@
                         <span>Exam Results Ledger</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('marksTable', this)">
+                            <select id="filter_marks_class" onchange="fetchMarks()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
+                                <option value="">All Classes</option>
+                                <option value="Nursery">Nursery</option><option value="Prep">Prep</option>
+                                <option value="1st Class">1st Class</option><option value="2nd Class">2nd Class</option>
+                                <option value="3rd Class">3rd Class</option><option value="4th Class">4th Class</option>
+                                <option value="5th Class">5th Class</option><option value="6th Class">6th Class</option>
+                                <option value="7th Class">7th Class</option><option value="8th Class">8th Class</option>
+                                <option value="9th Class">9th Class</option><option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option><option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option><option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option><option value="2nd Year ICS">2nd Year ICS</option>
+                            </select>
                             <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export</button>
+                            <button class="btn-print-table" onclick="printSectionTable('marksTable', 'Exam Results Ledger')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('marks')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -561,7 +629,7 @@
                         <span>Master Timetable</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_timetable" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('timetableTable', this)">
-                            <button class="btn-excel" style="background: var(--primary);" onclick="printMasterTimetable()">🖨️ Print</button>
+                            <button class="btn-excel" style="background: var(--primary);" onclick="printMasterTimetable()">🖨️ Print Master</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('timetable')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -597,6 +665,7 @@
                                 <option value="07">July</option><option value="08">August</option><option value="09">September</option>
                                 <option value="10">October</option><option value="11">November</option><option value="12">December</option>
                             </select>
+                            <button class="btn-print-table" onclick="printSectionTable('expenseTable', 'Financial Expense Ledger')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('expense')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -624,6 +693,7 @@
                         <span>Notice Board</span>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <input type="text" id="search_announcement" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('announcementTable', this)">
+                            <button class="btn-print-table" onclick="printSectionTable('announcementTable', 'Academy Notice Board')">🖨️ Print</button>
                             <button class="btn-delete-all" onclick="deleteAllRecords('announcement')">🗑️ Delete All</button>
                         </div>
                     </h3>
@@ -858,9 +928,6 @@
 
     function renderPerformanceChart(totalFeeNum, totalExpNum) {
         const container = document.getElementById('performanceChartContainer');
-        const netVal = totalFeeNum - totalExpNum;
-        
-        // Simulating monthly breakdown bars or proportions for visual graph
         const monthsData = [
             { label: 'Jul', fee: totalFeeNum * 0.7, exp: totalExpNum * 0.8 },
             { label: 'Aug', fee: totalFeeNum * 0.85, exp: totalExpNum * 0.9 },
@@ -1295,18 +1362,26 @@
         try {
             const selectedClass = document.getElementById('filter_fee_class').value;
             const monthFilter = document.getElementById('filter_fee_month').value;
-            const res = await fetch(selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`);
+            const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
+            const res = await fetch(url);
             let data = await res.json();
             
-            allFeesCache = Array.isArray(data) ? data : [];
+            if(!Array.isArray(data)) {
+                data = data.fees || data.data || [];
+            }
+
+            allFeesCache = data;
             let filteredFees = [...allFeesCache];
 
             if(monthFilter) {
-                filteredFees = filteredFees.filter(f => (f.date ? f.date.split('T')[0] : '').split('-')[1] === monthFilter);
+                filteredFees = filteredFees.filter(f => {
+                    const fDate = f.date ? f.date.split('T')[0] : '';
+                    return fDate.split('-')[1] === monthFilter;
+                });
             }
 
             let calculatedTotalFees = 0;
-            filteredFees.forEach(f => calculatedTotalFees += Number(f.amount) || 0);
+            filteredFees.forEach(f => { calculatedTotalFees += Number(f.amount) || 0; });
 
             document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
             updateNetBalance();
@@ -1319,20 +1394,29 @@
             
             tbody.innerHTML = '';
             filteredFees.forEach(f => {
+                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
                 const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
-                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - Skans Academy`);
+                const studentName = f.name || f.student_name || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].name : 'Unknown');
+                const studentRoll = f.roll_no || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].roll_no : '-');
+                const fDate = f.date ? f.date.split('T')[0] : getPakistaniDateString();
+
+                const msg = encodeURIComponent(`Fee update for ${studentName} (Roll: ${studentRoll}). Amount: PKR ${f.amount}, Status: ${f.status}. - Skans Academy`);
+                
                 tbody.innerHTML += `<tr>
-                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
-                    <td><span class="${f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid'}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
-                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${feeClass}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
+                    <td>${f.id}</td><td>${studentName}</td><td>${studentRoll}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
+                    <td><span class="${statusClass}">${f.status}</span></td><td>${fDate}</td>
+                    <td><button class="btn-print" onclick="printFeeVoucher('${studentName}', '${studentRoll}', '${feeClass}', ${f.amount}, '${f.status}', '${fDate}')">📄 Voucher</button></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id || 0}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
                     </td>
                 </tr>`;
             });
-        } catch(e) { console.error(e); }
+        } catch(e) {
+            console.error("Fee fetch error:", e);
+            document.getElementById('feeTableBody').innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--danger);">Server se data load karne mein error aaya hai.</td></tr>`;
+        }
     }
 
     function printFeeVoucher(name, roll, className, amount, status, date) {
@@ -1554,6 +1638,35 @@
         window.print();
     }
 
+    // Generic Print Function for any table section
+    function printSectionTable(tableID, titleText) {
+        const area = document.getElementById('printableArea');
+        const originalTable = document.getElementById(tableID);
+        if(!originalTable) return;
+        
+        const clonedTable = originalTable.cloneNode(true);
+        const rows = clonedTable.rows;
+        for (let i = 0; i < rows.length; i++) {
+            let cellCount = rows[i].cells.length;
+            if (cellCount > 0) {
+                rows[i].deleteCell(cellCount - 1);
+            }
+        }
+
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #560bad; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #560bad; margin: 0; font-size: 24px; font-weight: 800;">SKANS EDUCATION ACADEMY</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">${titleText}</p>
+            </div>
+            ${clonedTable.outerHTML}
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Prepared By</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
     async function addExpense() {
         const id = document.getElementById('edit_exp_id').value;
         const title = document.getElementById('exp_title').value;
@@ -1630,7 +1743,6 @@
         const net = totalFees - totalExp;
         document.getElementById('stat_balance').innerText = `PKR ${net}`;
         
-        // Render performance graph with updated values
         renderPerformanceChart(totalFees, totalExp);
     }
 
@@ -1731,10 +1843,8 @@
         } catch(e) { showToast("Server connection error."); }
     }
 
-    // --- NEW DELETE ALL RECORDS FUNCTIONALITY ---
     async function deleteAllRecords(type) {
-        if(!confirm(`⚠️ WARNING: Kya aap waqai is section ke SABHI records delete karna chahte hain? Ye action undo nahi ho sakta!`)) return;
-        
+        if(!confirm(`⚠️ WARNING: Kya aap waqai is section ke SABHI records delete karna chahte hain?`)) return;
         showToast("Deleting all records...");
 
         if (type === 'staff-attendance') {
@@ -1750,7 +1860,6 @@
             'expense': 'expenses', 'announcement': 'announcements'
         };
 
-        // Fallback approach: fetches list and deletes each record ID sequentially
         try {
             const res = await fetch(`${API_URL}/${endpointMap[type]}`);
             const items = await res.json();
