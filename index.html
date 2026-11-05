@@ -172,13 +172,16 @@
         .badge-present, .badge-paid { color: #008037; font-weight: bold; background: #e6f4ea; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         .badge-absent, .badge-unpaid, .badge-expense { color: var(--danger); font-weight: bold; background: #fde8e8; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
 
-        /* Performance Graph Card Styling */
-        .chart-container { display: flex; align-items: flex-end; gap: 15px; height: 180px; padding: 20px 10px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; overflow-x: auto; }
-        .chart-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 50px; height: 100%; justify-content: flex-end; }
-        .chart-bar { width: 100%; max-width: 36px; background: linear-gradient(to top, var(--primary), var(--secondary)); border-radius: 6px 6px 0 0; transition: height 0.6s ease; position: relative; }
-        .chart-bar:hover { opacity: 0.85; }
-        .chart-bar span { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: var(--primary); white-space: nowrap; }
-        .chart-label { margin-top: 8px; font-size: 11px; font-weight: 600; color: #475569; text-align: center; }
+        /* Advanced Performance & Profit/Loss Graph Styling */
+        .chart-container { display: flex; align-items: flex-end; gap: 20px; height: 220px; padding: 25px 15px 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 15px; overflow-x: auto; }
+        .chart-group { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 90px; height: 100%; justify-content: flex-end; }
+        .bars-flex { display: flex; gap: 5px; align-items: flex-end; height: 160px; }
+        .chart-bar { width: 24px; border-radius: 4px 4px 0 0; transition: height 0.6s ease; position: relative; }
+        .chart-bar span { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: bold; color: #1e293b; white-space: nowrap; }
+        .chart-label { margin-top: 8px; font-size: 12px; font-weight: 700; color: #475569; text-align: center; }
+        .net-badge { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 4px; white-space: nowrap; }
+        .net-profit { background: #e6f4ea; color: #008037; }
+        .net-loss { background: #fde8e8; color: #d90429; }
 
         #printableArea {
             display: none; background: #ffffff; color: #333333; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -290,14 +293,14 @@
                 </div>
             </div>
 
-            <!-- PERFORMANCE GRAPH CARD -->
+            <!-- ADVANCED PERFORMANCE & PROFIT/LOSS GRAPH CARD -->
             <div class="card" id="performanceGraphCard">
                 <h3>
-                    <span>📈 Academy Performance & Financial Growth Graph</span>
-                    <span style="font-size: 11px; font-weight: normal; color: #64748b;">Monthly Fee vs Expense Comparison</span>
+                    <span>📈 Advanced Financial & Profit/Loss Graph</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #64748b;">Fee vs Expense & Net Balance Analysis</span>
                 </h3>
                 <div class="chart-container" id="performanceChartContainer">
-                    <!-- Dynamic Bars rendered via JS -->
+                    <!-- Dynamic Advanced Bars rendered via JS -->
                 </div>
             </div>
 
@@ -941,14 +944,18 @@
         monthsData.forEach(m => {
             let feeHeight = Math.round((m.fee / maxVal) * 130);
             let expHeight = Math.round((m.exp / maxVal) * 130);
+            let netVal = m.fee - m.exp;
+            let netClass = netVal >= 0 ? 'net-profit' : 'net-loss';
+            let netText = netVal >= 0 ? `+${Math.round(netVal)}` : `${Math.round(netVal)}`;
 
             html += `
-                <div class="chart-bar-wrap" title="Fee: PKR ${Math.round(m.fee)} | Exp: PKR ${Math.round(m.exp)}">
-                    <div style="display: flex; gap: 4px; align-items: flex-end; height: 140px;">
+                <div class="chart-group" title="Fee: PKR ${Math.round(m.fee)} | Exp: PKR ${Math.round(m.exp)} | Net: PKR ${Math.round(netVal)}">
+                    <div class="bars-flex">
                         <div class="chart-bar" style="height: ${feeHeight}px; background: linear-gradient(to top, #008037, #2ecc71);" title="Fee"><span>${Math.round(m.fee/1000)}k</span></div>
-                        <div class="chart-bar" style="height: ${expHeight}px; background: linear-gradient(to top, #d90429, #ff4d4d);" title="Expense"></div>
+                        <div class="chart-bar" style="height: ${expHeight}px; background: linear-gradient(to top, #d90429, #ff4d4d);" title="Expense"><span>${Math.round(m.exp/1000)}k</span></div>
                     </div>
                     <div class="chart-label">${m.label}</div>
+                    <div class="net-badge ${netClass}">${netText}</div>
                 </div>
             `;
         });
@@ -1638,7 +1645,7 @@
         window.print();
     }
 
-    // Generic Print Function for any table section
+    // Advanced Print Function with Automatic Total calculation for table columns
     function printSectionTable(tableID, titleText) {
         const area = document.getElementById('printableArea');
         const originalTable = document.getElementById(tableID);
@@ -1646,11 +1653,44 @@
         
         const clonedTable = originalTable.cloneNode(true);
         const rows = clonedTable.rows;
+        
+        // Remove Action buttons column
         for (let i = 0; i < rows.length; i++) {
             let cellCount = rows[i].cells.length;
             if (cellCount > 0) {
                 rows[i].deleteCell(cellCount - 1);
             }
+        }
+
+        // Calculate and append Total row dynamically based on numerical columns (e.g. Amount, Marks, etc.)
+        let colCount = clonedTable.rows[0].cells.length;
+        let totalRow = clonedTable.tFoot ? clonedTable.tFoot.insertRow() : clonedTable.insertRow();
+        totalRow.style.fontWeight = 'bold';
+        totalRow.style.backgroundColor = '#f1f5f9';
+
+        for (let c = 0; c < colCount; c++) {
+            let cell = totalRow.insertCell();
+            if (c === 0) {
+                cell.innerText = "Total Summary:";
+            } else {
+                let sum = 0;
+                let hasNumeric = false;
+                for (let r = 1; r < rows.length - 1; r++) {
+                    let cellText = rows[r].cells[c] ? rows[r].cells[c].innerText.replace(/[^0-9.-]+/g,"") : "";
+                    let num = parseFloat(cellText);
+                    if (!isNaN(num)) {
+                        sum += num;
+                        hasNumeric = true;
+                    }
+                }
+                if (hasNumeric) {
+                    cell.innerText = sum.toLocaleString();
+                } else {
+                    cell.innerText = "-";
+                }
+            }
+            cell.style.border = "1px solid #cbd5e0";
+            cell.style.padding = "10px";
         }
 
         area.innerHTML = `
