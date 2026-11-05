@@ -3,29 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skans Education Academy - ERP & Faculty Portal</title>
+    <title>City College Minchinabad (CHSS) - ERP & Faculty Portal</title>
     
-    <!-- Firebase SDK Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    <!-- Chart.js Library for Financial Profit/Loss Graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "skans-portal.firebaseapp.com",
-            projectId: "skans-portal",
-            storageBucket: "skans-portal.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
         const API_URL = 'https://school-project-production-3962.up.railway.app';
     </script>
 
@@ -135,11 +115,10 @@
         }
 
         .navbar {
-            background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); display: flex; justify-content: flex-start;
+            background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); display: flex; justify-content: space-between;
             align-items: center; padding: 14px 35px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid rgba(255, 183, 3, 0.3);
-            gap: 20px;
         }
-        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-start; }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .nav-btn {
             background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 9px 14px;
             font-size: 12px; font-weight: 600; color: #cbd5e1; cursor: pointer; border-radius: 8px; transition: all 0.2s;
@@ -150,7 +129,7 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #ffffff; border-color: var(--accent);
             box-shadow: 0 6px 20px rgba(0, 119, 182, 0.5); font-weight: 700;
         }
-        .role-badge { font-weight: 800; color: var(--accent); font-size: 12px; letter-spacing: 1px; padding: 7px 14px; background: rgba(255, 183, 3, 0.1); border-radius: 6px; border: 1px solid rgba(255, 183, 3, 0.3); text-transform: uppercase; margin-left: auto; }
+        .role-badge { font-weight: 800; color: var(--accent); font-size: 12px; letter-spacing: 1px; padding: 7px 14px; background: rgba(255, 183, 3, 0.1); border-radius: 6px; border: 1px solid rgba(255, 183, 3, 0.3); text-transform: uppercase; }
 
         .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
         .tab-section { display: none; }
@@ -214,11 +193,11 @@
         <div class="light-beam"></div>
         <div class="college-logo-preview">
             <svg width="120" height="120" viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="95" fill="#0077b6" stroke="#ffb703" stroke-width="5"/>
-                <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">SKANS</text>
-                <text x="100" y="75" fill="#ffb703" font-size="12" font-weight="bold" text-anchor="middle">EDUCATION</text>
-                <circle cx="100" cy="90" r="16" fill="#ffb703"/>
-                <text x="100" y="155" fill="#ffffff" font-size="20" font-weight="bold" text-anchor="middle" font-family="serif">ACADEMY</text>
+                <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="5"/>
+                <text x="100" y="50" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+                <text x="100" y="70" fill="#ffb703" font-size="13" font-weight="bold" text-anchor="middle">MINCHINABAD</text>
+                <circle cx="100" cy="85" r="16" fill="#ffb703"/>
+                <text x="100" y="155" fill="#000000" font-size="22" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
             </svg>
         </div>
         
@@ -228,7 +207,7 @@
         </div>
 
         <div class="login-card">
-            <h2>Skans Education Academy</h2>
+            <h2>City College Minchinabad</h2>
             <p class="sub-title">Select Portal Role & Login</p>
             <select id="login_role" class="login-select">
                 <option value="admin">Admin Portal</option>
@@ -246,14 +225,14 @@
             <div class="header-left">
                 <div class="header-logo">
                     <svg width="75" height="75" viewBox="0 0 200 200">
-                        <circle cx="100" cy="100" r="95" fill="#0077b6" stroke="#ffb703" stroke-width="6"/>
-                        <text x="100" y="65" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">SKANS</text>
-                        <text x="100" y="145" fill="#ffffff" font-size="18" font-weight="bold" text-anchor="middle" font-family="serif">ACADEMY</text>
+                        <circle cx="100" cy="100" r="95" fill="#0099ff" stroke="#ffb703" stroke-width="6"/>
+                        <text x="100" y="55" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">CITY</text>
+                        <text x="100" y="150" fill="#000000" font-size="24" font-weight="bold" text-anchor="middle" font-family="serif">CHSS</text>
                     </svg>
                 </div>
                 <div>
-                    <h1>Skans Education Academy</h1>
-                    <p>🎓 ERP & Faculty Portal Management System</p>
+                    <h1>City College Minchinabad (CHSS)</h1>
+                    <p>🎓 Faculty & Admin Management System</p>
                 </div>
             </div>
             <div>
@@ -309,17 +288,6 @@
                 </div>
             </div>
 
-            <!-- FINANCIAL PROFIT & LOSS GRAPH TAB / SECTION -->
-            <div id="financial-graph" class="tab-section">
-                <div class="card">
-                    <h3>📈 Academy Financial Profit & Loss Overview</h3>
-                    <p style="font-size: 13px; color: #666; margin-top: -6px;">Yeh graph fee collection aur total expenses ka mawazna (comparison) kar ke net profit ya loss show karta hai.</p>
-                    <div style="width: 100%; max-width: 800px; margin: 20px auto; background: #fff; padding: 15px; border-radius: 8px;">
-                        <canvas id="profitAndLossChart" style="width: 100%; max-height: 400px;"></canvas>
-                    </div>
-                </div>
-            </div>
-
             <!-- STUDENTS TAB -->
             <div id="students" class="tab-section active">
                 <div class="card">
@@ -327,20 +295,16 @@
                     <input type="hidden" id="edit_student_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="e.g. Abdullah"></div>
-                        <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. SKANS-2026"></div>
-                        <div class="form-group"><label>Class</label><select id="class_name">
-                            <option value="Nursery">Nursery</option>
-                            <option value="Prep">Prep</option>
-                            <option value="1st Class">1st Class</option>
-                            <option value="2nd Class">2nd Class</option>
-                            <option value="3rd Class">3rd Class</option>
-                            <option value="4th Class">4th Class</option>
-                            <option value="5th Class">5th Class</option>
-                            <option value="6th Class">6th Class</option>
-                            <option value="7th Class">7th Class</option>
-                            <option value="8th Class">8th Class</option>
+                        <div class="form-group"><label>Roll Number</label><input type="text" id="roll_no" placeholder="e.g. CCM-2026"></div>
+                        <div class="form-group"><label>Class / Faculty</label><select id="class_name">
                             <option value="9th Class">9th Class</option>
-                            <option value="Matric">Matric</option>
+                            <option value="10th Class">10th Class</option>
+                            <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                            <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                            <option value="1st Year ICS">1st Year ICS</option>
+                            <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                            <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                            <option value="2nd Year ICS">2nd Year ICS</option>
                         </select></div>
                         <div class="form-group"><label>Parent Name</label><input type="text" id="parent_name" placeholder="Father Name"></div>
                         <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="03009876543"></div>
@@ -355,18 +319,14 @@
                             <input type="text" id="search_student" class="search-box" placeholder="🔍 Search name/roll..." onkeyup="filterTable('studentTable', this)">
                             <select id="filter_class" onchange="fetchStudents()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('studentTable', 'Students_Directory.xls')">📥 Export Excel</button>
                         </div>
@@ -405,7 +365,7 @@
                 </div>
             </div>
 
-            <!-- STUDENT ATTENDANCE TAB -->
+            <!-- STUDENT ATTENDANCE TAB (UPDATED FOR BATCH CLASS ATTENDANCE) -->
             <div id="attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>📋 Class-Wise Bulk Attendance Management</h3>
@@ -415,18 +375,14 @@
                             <label>Select Class</label>
                             <select id="bulk_att_class" onchange="loadClassStudentsForAttendance()">
                                 <option value="">-- Choose Class --</option>
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Attendance Date</label><input type="date" id="bulk_att_date"></div>
@@ -455,18 +411,14 @@
                             </select>
                             <select id="filter_att_class" onchange="fetchAttendance()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('attendanceTable', 'Student_Attendance.xls')">📥 Export Excel</button>
                         </div>
@@ -482,9 +434,9 @@
             <div id="staff-attendance" class="tab-section">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <h3>🏢 Secure Staff & Faculty Attendance (Location Verified)</h3>
-                    <p style="font-size: 13px; color: #666; margin-top: -6px;">System GPS verification use karega taake koi bhi teacher academy premises ke bahar (ghar se) attendance mark na kar sakay.</p>
+                    <p style="font-size: 13px; color: #666; margin-top: -6px;">System GPS verification use karega taake koi bhi teacher college premises ke bahar (ghar se) attendance mark na kar sakay.</p>
                     <div class="form-grid">
-                        <div class="form-group"><label>Teacher ID</label><input type="text" id="staff_att_id" placeholder="Enter Teacher ID"></div>
+                        <div class="form-group"><label>Teacher ID</label><input type="number" id="staff_att_id" placeholder="Enter Teacher ID"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="staff_att_name" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Date</label><input type="date" id="staff_att_date"></div>
                         <div class="form-group"><label>In-Time</label><input type="time" id="staff_in_time" value="08:00"></div>
@@ -521,22 +473,18 @@
                     <h3 id="feeFormTitle">Fee Ledger Entry</h3>
                     <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="text" id="fee_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
-                            <label>Class</label>
+                            <label>Class / Faculty</label>
                             <select id="fee_class_name">
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
@@ -559,18 +507,14 @@
                             </select>
                             <select id="filter_fee_class" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('feeTable', 'Fee_Ledger.xls')">📥 Export Excel</button>
                         </div>
@@ -588,22 +532,18 @@
                     <h3 id="marksFormTitle">Exam Marks Entry</h3>
                     <input type="hidden" id="edit_marks_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="text" id="marks_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Student ID</label><input type="number" id="marks_student_id" placeholder="Student ID"></div>
                         <div class="form-group">
-                            <label>Class</label>
+                            <label>Class / Faculty</label>
                             <select id="marks_class_name">
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                         </div>
                         <div class="form-group"><label>Subject</label><input type="text" id="marks_subject" placeholder="Mathematics"></div>
@@ -619,18 +559,14 @@
                             <input type="text" id="search_marks" class="search-box" placeholder="🔍 Search results..." onkeyup="filterTable('marksTable', this)">
                             <select id="filter_marks_class" onchange="fetchMarks()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
                                 <option value="">All Classes</option>
-                                <option value="Nursery">Nursery</option>
-                                <option value="Prep">Prep</option>
-                                <option value="1st Class">1st Class</option>
-                                <option value="2nd Class">2nd Class</option>
-                                <option value="3rd Class">3rd Class</option>
-                                <option value="4th Class">4th Class</option>
-                                <option value="5th Class">5th Class</option>
-                                <option value="6th Class">6th Class</option>
-                                <option value="7th Class">7th Class</option>
-                                <option value="8th Class">8th Class</option>
                                 <option value="9th Class">9th Class</option>
-                                <option value="Matric">Matric</option>
+                                <option value="10th Class">10th Class</option>
+                                <option value="1st Year Pre-Medical">1st Year Pre-Medical</option>
+                                <option value="1st Year Pre-Engineering">1st Year Pre-Engineering</option>
+                                <option value="1st Year ICS">1st Year ICS</option>
+                                <option value="2nd Year Pre-Medical">2nd Year Pre-Medical</option>
+                                <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option>
+                                <option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                             <button class="btn-excel" onclick="exportTableToExcel('marksTable', 'Exam_Results.xls')">📥 Export Excel</button>
                         </div>
@@ -648,8 +584,8 @@
                     <h3 id="ttFormTitle">Add Class Timetable</h3>
                     <input type="hidden" id="edit_tt_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="9th Class"></div>
-                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Mathematics"></div>
+                        <div class="form-group"><label>Class Name</label><input type="text" id="tt_class" placeholder="1st Year Pre-Medical"></div>
+                        <div class="form-group"><label>Subject</label><input type="text" id="tt_subject" placeholder="Physics"></div>
                         <div class="form-group"><label>Teacher Name</label><input type="text" id="tt_teacher" placeholder="Sir Sajid"></div>
                         <div class="form-group"><label>Time Slot</label><input type="text" id="tt_time" placeholder="08:30 AM - 09:15 AM"></div>
                     </div>
@@ -673,7 +609,7 @@
             <!-- EXPENSES TAB -->
             <div id="expenses" class="tab-section">
                 <div class="card">
-                    <h3 id="expFormTitle">Academy Expense / Salary Entry</h3>
+                    <h3 id="expFormTitle">College Expense / Salary Entry</h3>
                     <input type="hidden" id="edit_exp_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Title</label><input type="text" id="exp_title" placeholder="Utility Bills"></div>
@@ -707,7 +643,7 @@
             <!-- ANNOUNCEMENTS TAB -->
             <div id="announcements" class="tab-section">
                 <div class="card">
-                    <h3 id="annFormTitle">Publish Academy Notice</h3>
+                    <h3 id="annFormTitle">Publish College Notice</h3>
                     <input type="hidden" id="edit_ann_id">
                     <div class="form-grid">
                         <div class="form-group"><label>Notice Title</label><input type="text" id="ann_title" placeholder="Mid-Term Schedule"></div>
@@ -732,12 +668,12 @@
             <div id="report-card" class="tab-section">
                 <div class="card">
                     <h3>Generate Student Report Card</h3>
-                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="text" id="rc_student_id" placeholder="Enter Student ID"></div></div>
+                    <div class="form-grid"><div class="form-group"><label>Student ID</label><input type="number" id="rc_student_id" placeholder="Enter Student ID"></div></div>
                     <button class="submit-btn" onclick="fetchReportCard()">Generate Report Card</button>
                 </div>
                 <div class="card" id="reportCardResult" style="display: none; background: #fff; border: 2px dashed var(--primary);">
                     <div style="text-align: center; border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 15px;">
-                        <h2 style="color: var(--primary); margin: 0;">Skans Education Academy</h2>
+                        <h2 style="color: var(--primary); margin: 0;">City College Minchinabad (CHSS)</h2>
                         <p style="margin: 4px 0; color: #666; font-size: 13px;">Official Annual Examination Report Card</p>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px;">
@@ -765,7 +701,6 @@
     let timetableGlobalCache = []; 
     let allFeesCache = [];
     let allExpensesCache = [];
-    let profitLossChartInstance = null;
 
     const COLLEGE_LAT = 30.1631; 
     const COLLEGE_LNG = 73.5726;
@@ -787,9 +722,9 @@
     }
 
     window.onload = function() {
-        const isLogged = localStorage.getItem('skans_logged');
-        const savedRole = localStorage.getItem('skans_role');
-        const savedTab = localStorage.getItem('skans_tab');
+        const isLogged = localStorage.getItem('chss_logged');
+        const savedRole = localStorage.getItem('chss_role');
+        const savedTab = localStorage.getItem('chss_tab');
 
         const todayStr = getPakistaniDateString();
         ['att_date', 'fee_date', 'exp_date', 'ann_date', 'staff_att_date', 'bulk_att_date'].forEach(id => {
@@ -810,7 +745,7 @@
                 if(targetBtn) switchTab(currentActiveTab, targetBtn);
             }, 50);
         } else {
-            localStorage.removeItem('skans_logged');
+            localStorage.removeItem('chss_logged');
             document.body.classList.remove('light-on');
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('dashboard-screen').style.display = 'none';
@@ -835,9 +770,9 @@
 
         if (uInput === validCreds.user && pInput === validCreds.pass) {
             currentUserRole = role;
-            localStorage.setItem('skans_role', role);
-            localStorage.setItem('skans_logged', 'true');
-            localStorage.setItem('skans_tab', 'students');
+            localStorage.setItem('chss_role', role);
+            localStorage.setItem('chss_logged', 'true');
+            localStorage.setItem('chss_tab', 'students');
 
             document.body.classList.add('light-on');
             showToast(`Logged in successfully as ${role.toUpperCase()}`);
@@ -853,9 +788,9 @@
     }
 
     function logout() {
-        localStorage.removeItem('skans_logged');
-        localStorage.removeItem('skans_role');
-        localStorage.removeItem('skans_tab');
+        localStorage.removeItem('chss_logged');
+        localStorage.removeItem('chss_role');
+        localStorage.removeItem('chss_tab');
         document.body.classList.remove('light-on');
         document.getElementById('dashboard-screen').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
@@ -880,7 +815,6 @@
         
         if (currentUserRole !== 'teacher') {
             navHtml += `<button class="nav-btn" onclick="switchTab('expenses', this)">💰 Expenses</button>`;
-            navHtml += `<button class="nav-btn" onclick="switchTab('financial-graph', this)">📈 Profit/Loss Graph</button>`;
         }
         
         navHtml += `<button class="nav-btn" onclick="switchTab('announcements', this)">📢 Notices</button>
@@ -892,15 +826,11 @@
 
     function switchTab(tabId, btnElement) {
         currentActiveTab = tabId;
-        localStorage.setItem('skans_tab', tabId);
+        localStorage.setItem('chss_tab', tabId);
         document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         if(btnElement) btnElement.classList.add('active');
-
-        if(tabId === 'financial-graph') {
-            renderProfitAndLossChart();
-        }
     }
 
     function filterTable(tableID, searchInput) {
@@ -950,50 +880,48 @@
         fetchAnnouncements();
     }
 
-    // --- FIREBASE FIRESTORE DATA FUNCTIONS ---
-
     async function fetchDashboardStats() {
         try {
-            const studentsSnap = await db.collection('students').get();
-            const teachersSnap = await db.collection('teachers').get();
-            document.getElementById('stat_students').innerText = studentsSnap.size || 0;
-            document.getElementById('stat_teachers').innerText = teachersSnap.size || 0;
+            const res = await fetch(`${API_URL}/dashboard-stats`);
+            const data = await res.json();
+            document.getElementById('stat_students').innerText = data.totalStudents || 0;
+            document.getElementById('stat_teachers').innerText = data.totalTeachers || 0;
         } catch(e) { console.error(e); }
     }
 
     async function fetchStudents() {
         try {
             const selectedClass = document.getElementById('filter_class').value;
-            let query = db.collection('students');
-            if (selectedClass) {
-                query = query.where('class', '==', selectedClass);
-            }
-            const snapshot = await query.get();
+            const url = selectedClass ? `${API_URL}/students?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/students`;
+            const res = await fetch(url);
+            const data = await res.json();
             
             studentsGlobalCache = {};
+            if(Array.isArray(data)) {
+                data.forEach(s => {
+                    studentsGlobalCache[s.id] = s;
+                });
+            }
+
             const tbody = document.getElementById('studentTableBody');
-            if (snapshot.empty) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const s = doc.data();
-                const id = doc.id;
-                studentsGlobalCache[id] = { id, ...s };
-
+            data.forEach(s => {
                 let displayName = s.name;
                 if(s.is_cr == 1 || s.is_cr === true) {
                     displayName += ` <span style="background:var(--accent); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px;">(CR)</span>`;
                 }
                 const crBtnText = (s.is_cr == 1 || s.is_cr === true) ? 'Remove CR' : 'Make CR';
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
+                    <td>${s.id}</td><td>${displayName}</td><td>${s.roll_no}</td><td>${s.class}</td><td>${s.parent_name || '-'}</td><td>${s.phone || '-'}</td><td>${s.address || '-'}</td>
                     <td>
-                        <button class="btn-action btn-cr" onclick="toggleCR('${id}', ${(s.is_cr == 1 || s.is_cr === true) ? 0 : 1})">${crBtnText}</button>
-                        <button class="btn-action btn-edit" onclick="editStudent('${id}', '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('student', '${id}')">Delete</button>
+                        <button class="btn-action btn-cr" onclick="toggleCR(${s.id}, ${(s.is_cr == 1 || s.is_cr === true) ? 0 : 1})">${crBtnText}</button>
+                        <button class="btn-action btn-edit" onclick="editStudent(${s.id}, '${s.name}', '${s.roll_no}', '${s.class}', '${s.parent_name || ''}', '${s.phone || ''}', '${s.address || ''}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('student', ${s.id})">Delete</button>
                     </td>
                 </tr>`;
             });
@@ -1003,12 +931,26 @@
     async function toggleCR(id, makeCR) {
         showToast(makeCR ? "Assigning CR status..." : "Removing CR status...");
         try {
-            await db.collection('students').doc(id).update({ is_cr: makeCR });
+            await fetch(`${API_URL}/update-student-cr/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ is_cr: makeCR })
+            });
             await fetchStudents();
             showToast("Updated CR status successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Failed to update CR status.");
+        } catch(err) {
+            console.error(err);
+            try {
+                await fetch(`${API_URL}/update-student/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ is_cr: makeCR })
+                });
+                await fetchStudents();
+                showToast("Updated CR status successfully!");
+            } catch(e2) {
+                showToast("Failed to update CR status.");
+            }
         }
     }
 
@@ -1022,23 +964,18 @@
         const address = document.getElementById('address').value;
 
         if(!name || !roll_no) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating student..." : "Adding student...");
-        
-        try {
-            const data = { name, roll_no, class: class_name, parent_name, phone, address };
-            if (id) {
-                await db.collection('students').doc(id).update(data);
-            } else {
-                data.is_cr = false;
-                await db.collection('students').add(data);
-            }
-            resetStudentForm();
-            loadData();
-            showToast("Saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving student record.");
-        }
+        showToast(id ? "Updating student..." : "Adding student instantly...");
+        resetStudentForm();
+        fetchStudents();
+
+        const endpoint = id ? `${API_URL}/update-student/${id}` : `${API_URL}/add-student`;
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, roll_no, class_name, parent_name, phone, address})
+        }).then(() => { loadData(); showToast("Saved successfully!"); });
     }
 
     function editStudent(id, name, roll_no, class_name, parent_name, phone, address) {
@@ -1066,23 +1003,22 @@
 
     async function fetchTeachers() {
         try {
-            const snapshot = await db.collection('teachers').get();
+            const res = await fetch(`${API_URL}/teachers`);
+            const data = await res.json();
             const tbody = document.getElementById('teacherTableBody');
 
-            if (snapshot.empty) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const t = doc.data();
-                const id = doc.id;
+            data.forEach(t => {
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
+                    <td>${t.id}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.phone}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editTeacher('${id}', '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', '${id}')">Delete</button>
+                        <button class="btn-action btn-edit" onclick="editTeacher(${t.id}, '${t.name}', '${t.subject}', '${t.phone}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('teacher', ${t.id})">Delete</button>
                     </td>
                 </tr>`;
             });
@@ -1096,25 +1032,20 @@
         const phone = document.getElementById('t_phone').value;
 
         if(!name || !subject) { alert('Fill out required fields!'); return; }
-        
+        document.getElementById('edit_teacher_id').value = '';
+        document.getElementById('t_name').value = '';
+        document.getElementById('t_subject').value = '';
+        document.getElementById('t_phone').value = '';
+
         showToast("Saving teacher...");
-        try {
-            const data = { name, subject, phone };
-            if (id) {
-                await db.collection('teachers').doc(id).update(data);
-            } else {
-                await db.collection('teachers').add(data);
-            }
-            document.getElementById('edit_teacher_id').value = '';
-            document.getElementById('t_name').value = '';
-            document.getElementById('t_subject').value = '';
-            document.getElementById('t_phone').value = '';
-            loadData();
-            showToast("Teacher saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving teacher.");
-        }
+        const endpoint = id ? `${API_URL}/update-teacher/${id}` : `${API_URL}/add-teacher`;
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, subject, phone})
+        }).then(() => { loadData(); showToast("Teacher saved successfully!"); });
     }
 
     function editTeacher(id, name, subject, phone) {
@@ -1126,6 +1057,7 @@
         document.getElementById('teacherSubmitBtn').innerText = "Update Teacher";
     }
 
+    // --- NEW FUNCTIONS FOR CLASS-WISE BULK ATTENDANCE ---
     async function loadClassStudentsForAttendance() {
         const selectedClass = document.getElementById('bulk_att_class').value;
         const container = document.getElementById('classStudentsAttendanceContainer');
@@ -1138,9 +1070,10 @@
         container.innerHTML = `<p style="text-align: center; color: var(--primary); padding: 20px;">⏳ Loading students for ${selectedClass}...</p>`;
 
         try {
-            const snapshot = await db.collection('students').where('class', '==', selectedClass).get();
+            const res = await fetch(`${API_URL}/students?class=${encodeURIComponent(selectedClass)}`);
+            const students = await res.json();
 
-            if (snapshot.empty) {
+            if (!Array.isArray(students) || students.length === 0) {
                 container.innerHTML = `<p style="text-align: center; color: var(--danger); padding: 20px;">Is class mein koi student registered nahi hai.</p>`;
                 return;
             }
@@ -1157,15 +1090,13 @@
                     <tbody>
             `;
 
-            snapshot.forEach(doc => {
-                const s = doc.data();
-                const id = doc.id;
+            students.forEach(s => {
                 html += `
                     <tr>
                         <td style="padding:8px; border:1px solid #cbd5e0;">${s.roll_no}</td>
                         <td style="padding:8px; border:1px solid #cbd5e0; font-weight:600;">${s.name}</td>
                         <td style="padding:8px; border:1px solid #cbd5e0; text-align:center;">
-                            <select class="student-att-status-select" data-student-id="${id}" data-student-name="${s.name}" data-roll-no="${s.roll_no}" data-class="${s.class}" style="padding:5px 10px; border-radius:4px; font-weight:bold;">
+                            <select class="student-att-status-select" data-student-id="${s.id}" style="padding:5px 10px; border-radius:4px; font-weight:bold;">
                                 <option value="Present" selected>Present</option>
                                 <option value="Absent">Absent</option>
                             </select>
@@ -1195,56 +1126,53 @@
         const date = document.getElementById('bulk_att_date').value;
         const selects = document.querySelectorAll('.student-att-status-select');
 
-        if (!selectedClass) { alert('Baraye meharbani pehle class select karein!'); return; }
-        if (!date) { alert('Baraye meharbani date select karein!'); return; }
-        if (selects.length === 0) { alert('Koi student available nahi hai!'); return; }
+        if (!selectedClass) {
+            alert('Baraye meharbani pehle class select karein!');
+            return;
+        }
+        if (!date) {
+            alert('Baraye meharbani date select karein!');
+            return;
+        }
+        if (selects.length === 0) {
+            alert('Koi student available nahi hai!');
+            return;
+        }
 
         showToast("Submitting attendance for entire class...");
 
+        let promises = [];
+        selects.forEach(sel => {
+            const student_id = sel.getAttribute('data-student-id');
+            const status = sel.value;
+
+            const payload = {
+                student_id: student_id,
+                class_name: selectedClass,
+                date: date,
+                status: status
+            };
+
+            promises.push(
+                fetch(`${API_URL}/mark-attendance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+            );
+        });
+
         try {
-            const batch = db.batch();
-            selects.forEach(sel => {
-                const student_id = sel.getAttribute('data-student-id');
-                const student_name = sel.getAttribute('data-student-name');
-                const roll_no = sel.getAttribute('data-roll-no');
-                const class_name = sel.getAttribute('data-class');
-                const status = sel.value;
-
-                const ref = db.collection('attendance').doc();
-                batch.set(ref, { student_id, student_name, roll_no, class_name, date, status });
-            });
-
-            await batch.commit();
+            await Promise.all(promises);
             showToast("🎉 Poori class ki attendance kamyabi se lag gayi!");
             fetchAttendance();
         } catch (err) {
             console.error(err);
             showToast("Kuch records save karne mein masla hua.");
+            fetchAttendance();
         }
     }
-
-    async function fetchAttendance() {
-        try {
-            const snapshot = await db.collection('attendance').get();
-            const tbody = document.getElementById('attendanceTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const a = doc.data();
-                const id = doc.id;
-                tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${a.student_name || '-'}</td><td>${a.roll_no || '-'}</td><td>${a.class_name || '-'}</td><td>${a.date}</td>
-                    <td><span class="${a.status === 'Present' ? 'badge-present' : 'badge-absent'}">${a.status}</span></td>
-                    <td>-</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('attendance', '${id}')">Delete</button></td>
-                </tr>`;
-            });
-        } catch(e) { console.error(e); }
-    }
+    // ----------------------------------------------------
 
     function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371e3; 
@@ -1279,56 +1207,145 @@
             return;
         }
 
-        showToast("📍 GPS location verify ho rahi hai...");
+        showToast("📍 GPS location verify ho rahi hai... Baraye meharbani intezaar karein.");
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
+
                 const distance = calculateDistanceMeters(userLat, userLng, COLLEGE_LAT, COLLEGE_LNG);
 
                 if (distance > ALLOWED_RADIUS_METERS) {
-                    alert(`❌ Attendance Failed!\nAap academy ke premises se bahar hain (Distance: ${Math.round(distance)} meters).`);
+                    alert(`❌ Attendance Failed!\nAap college ke premises se bahar hain (Distance: ${Math.round(distance)} meters). Aap ghar ya bahar se attendance mark nahi kar sakte! College ke andar aakar mark karein.`);
+                    showToast("❌ Location restricted: Outside college campus.");
                     return;
                 }
 
-                showToast("✅ Location verified inside academy! Saving...");
+                showToast("✅ Location verified inside college! Saving attendance...");
                 try {
-                    await db.collection('staff_attendance').add({
-                        teacher_id, name, date, in_time, out_time, status, location_status: "Inside Campus (Verified)"
+                    const res = await fetch(`${API_URL}/mark-staff-attendance`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ teacher_id, name, date, in_time, out_time, status, location_verified: true })
                     });
-                    fetchStaffAttendance();
-                    showToast("🎉 Staff Attendance marked successfully!");
+
+                    if(res.ok) {
+                        fetchStaffAttendance();
+                        showToast("🎉 Staff In-Time & Out-Time marked successfully inside campus!");
+                    } else {
+                        saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
+                    }
                 } catch(e) {
-                    console.error(e);
-                    showToast("Error saving staff attendance.");
+                    saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, "Inside Campus (Verified)");
                 }
             },
             (error) => {
-                alert('⚠️ GPS Location Access Denied!');
+                alert('⚠️ GPS Location Access Denied!\nLocation on karein taake confirm ho sakay ke aap college ke andar hain.');
+                showToast("Location permission error.");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
 
+    function saveStaffAttendanceLocally(teacher_id, name, date, in_time, out_time, status, locStatus) {
+        let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
+        staffAtts.push({ id: Date.now(), teacher_id, name, date, in_time, out_time, status, location_status: locStatus });
+        localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
+        fetchStaffAttendance();
+        showToast("Staff attendance saved securely!");
+    }
+
     async function fetchStaffAttendance() {
+        const monthFilter = document.getElementById('filter_staff_month').value;
+        let data = [];
         try {
-            const snapshot = await db.collection('staff_attendance').get();
-            const tbody = document.getElementById('staffAttendanceTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
-                return;
+            const res = await fetch(`${API_URL}/staff-attendance`);
+            data = await res.json();
+            if(!Array.isArray(data) || data.length === 0) {
+                data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
+            }
+        } catch(e) {
+            data = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
+        }
+
+        if(monthFilter) {
+            data = data.filter(s => {
+                const recordDate = s.date ? s.date.split('T')[0] : '';
+                const recordMonth = recordDate.split('-')[1];
+                return recordMonth === monthFilter;
+            });
+        }
+
+        renderStaffTable(data);
+    }
+
+    function renderStaffTable(data) {
+        const tbody = document.getElementById('staffAttendanceTableBody');
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No staff attendance records found for selected month.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach(s => {
+            const statusClass = s.status === 'Present' ? 'badge-present' : 'badge-absent';
+            const inTimeStr = s.in_time || s.att_type || '08:00';
+            const outTimeStr = s.out_time || '-';
+            
+            tbody.innerHTML += `<tr>
+                <td>${s.id}</td><td>${s.name}</td><td>${s.date ? s.date.split('T')[0] : '-'}</td>
+                <td><span style="color:#0284c7; font-weight:bold;">📥 ${inTimeStr}</span></td>
+                <td><span style="color:#7c3aed; font-weight:bold;">📤 ${outTimeStr}</span></td>
+                <td><span class="${statusClass}">${s.status}</span></td>
+                <td><span style="color:var(--success); font-weight:600;">🛡️ ${s.location_status || 'Verified'}</span></td>
+                <td><button class="btn-action btn-delete" onclick="deleteStaffAttendance(${s.id})">Delete</button></td>
+            </tr>`;
+        });
+    }
+
+    function deleteStaffAttendance(id) {
+        let staffAtts = JSON.parse(localStorage.getItem('chss_staff_atts') || '[]');
+        staffAtts = staffAtts.filter(s => s.id !== id);
+        localStorage.setItem('chss_staff_atts', JSON.stringify(staffAtts));
+        fetchStaffAttendance();
+        showToast("Deleted successfully!");
+    }
+
+    async function fetchAttendance() {
+        try {
+            const selectedClass = document.getElementById('filter_att_class').value;
+            const monthFilter = document.getElementById('filter_att_month').value;
+            const url = selectedClass ? `${API_URL}/all-attendance?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/all-attendance`;
+            const res = await fetch(url);
+            let data = await res.json();
+            const tbody = document.getElementById('attendanceTableBody');
+            
+            if(Array.isArray(data) && monthFilter) {
+                data = data.filter(rec => {
+                    const recDate = rec.date ? rec.date.split('T')[0] : '';
+                    return recDate.split('-')[1] === monthFilter;
+                });
             }
 
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No attendance found.</td></tr>`;
+                return;
+            }
+            
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const s = doc.data();
-                const id = doc.id;
+            data.forEach(rec => {
+                const statusClass = rec.status === 'Present' ? 'badge-present' : 'badge-absent';
+                const attendanceClass = rec.class_name || rec.class || (studentsGlobalCache[rec.student_id] ? studentsGlobalCache[rec.student_id].class : '-');
+                const msg = encodeURIComponent(`Child ${rec.name} was ${rec.status} in class ${attendanceClass} on ${rec.date.split('T')[0]}. - CHSS`);
+                
                 tbody.innerHTML += `<tr>
-                    <td>${s.teacher_id}</td><td>${s.name}</td><td>${s.date}</td><td>${s.in_time}</td><td>${s.out_time}</td>
-                    <td><span class="${s.status === 'Present' ? 'badge-present' : 'badge-absent'}">${s.status}</span></td>
-                    <td>${s.location_status || '-'}</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('staff_attendance', '${id}')">Delete</button></td>
+                    <td>${rec.id}</td><td>${rec.name}</td><td>${rec.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${attendanceClass}</span></td><td>${rec.date.split('T')[0]}</td>
+                    <td><span class="${statusClass}">${rec.status}</span></td>
+                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
+                    <td>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('attendance', ${rec.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
@@ -1342,276 +1359,496 @@
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
 
-        if(!student_id || !amount) { alert('Fill out required fields!'); return; }
-        
-        try {
-            let studentName = '-';
-            let rollNo = '-';
-            if(studentsGlobalCache[student_id]) {
-                studentName = studentsGlobalCache[student_id].name;
-                rollNo = studentsGlobalCache[student_id].roll_no;
-            }
+        if(!student_id || !amount) { alert('Enter Student ID and Amount!'); return; }
+        showToast(id ? "Updating fee..." : "Saving fee record...");
 
-            const data = { student_id, student_name: studentName, roll_no: rollNo, class_name, amount: Number(amount), status, date };
-            if (id) {
-                await db.collection('fees').doc(id).update(data);
-            } else {
-                await db.collection('fees').add(data);
-            }
-            document.getElementById('edit_fee_id').value = '';
-            document.getElementById('fee_student_id').value = '';
-            document.getElementById('fee_amount').value = '';
-            fetchFees();
-            showToast("Fee record saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving fee record.");
+        const endpoint = id ? `${API_URL}/update-fee/${id}` : `${API_URL}/add-fee`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_fee_id').value = '';
+        document.getElementById('feeFormTitle').innerText = "Fee Ledger Entry";
+        document.getElementById('feeSubmitBtn').innerText = "Save Fee Record";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, amount, status, date}) })
+        .then(() => { loadData(); showToast("Fee saved!"); });
+    }
+
+    function editFee(id, student_id, class_name, amount, status, date) {
+        document.getElementById('edit_fee_id').value = id;
+        document.getElementById('fee_student_id').value = student_id;
+        if(class_name && class_name !== '-') {
+            document.getElementById('fee_class_name').value = class_name;
         }
+        document.getElementById('fee_amount').value = amount;
+        document.getElementById('fee_status').value = status;
+        document.getElementById('fee_date').value = date.split('T')[0];
+        document.getElementById('feeFormTitle').innerText = "Edit Fee Record";
+        document.getElementById('feeSubmitBtn').innerText = "Update Fee";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchFees() {
         try {
-            const snapshot = await db.collection('fees').get();
-            const tbody = document.getElementById('feeTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
-                return;
+            const selectedClass = document.getElementById('filter_fee_class').value;
+            const monthFilter = document.getElementById('filter_fee_month').value;
+            const url = selectedClass ? `${API_URL}/fees?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/fees`;
+            const res = await fetch(url);
+            let data = await res.json();
+            
+            allFeesCache = Array.isArray(data) ? data : [];
+            let filteredFees = [...allFeesCache];
+
+            if(monthFilter) {
+                filteredFees = filteredFees.filter(f => {
+                    const fDate = f.date ? f.date.split('T')[0] : '';
+                    return fDate.split('-')[1] === monthFilter;
+                });
             }
 
-            tbody.innerHTML = '';
-            let totalCollected = 0;
-            snapshot.forEach(doc => {
-                const f = doc.data();
-                const id = doc.id;
-                if(f.status === 'Paid') totalCollected += Number(f.amount || 0);
+            let calculatedTotalFees = 0;
+            filteredFees.forEach(f => {
+                calculatedTotalFees += Number(f.amount) || 0;
+            });
 
+            document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
+            updateNetBalance();
+
+            const tbody = document.getElementById('feeTableBody');
+            if (filteredFees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found for selected month.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            filteredFees.forEach(f => {
+                const statusClass = f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+                const feeClass = f.class_name || f.student_class || f.className || f.class || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].class : '-');
+                const msg = encodeURIComponent(`Fee update for ${f.name} (Roll: ${f.roll_no}). Amount: PKR ${f.amount}, Status: ${f.status}. - CHSS`);
+                
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${f.student_name || '-'}</td><td>${f.roll_no || '-'}</td><td>${f.class_name || '-'}</td>
-                    <td>PKR ${f.amount}</td><td><span class="${f.status === 'Paid' ? 'badge-paid' : 'badge-unpaid'}">${f.status}</span></td><td>${f.date}</td>
-                    <td>-</td><td>-</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('fees', '${id}')">Delete</button></td>
+                    <td>${f.id}</td><td>${f.name}</td><td>${f.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
+                    <td><span class="${statusClass}">${f.status}</span></td><td>${f.date.split('T')[0]}</td>
+                    <td><button class="btn-print" onclick="printFeeVoucher('${f.name}', '${f.roll_no}', '${feeClass}', ${f.amount}, '${f.status}', '${f.date.split('T')[0]}')">📄 Voucher</button></td>
+                    <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
-            document.getElementById('stat_fees').innerText = `PKR ${totalCollected}`;
-            if(currentActiveTab === 'financial-graph') renderProfitAndLossChart();
         } catch(e) { console.error(e); }
     }
 
+    function printFeeVoucher(name, roll, className, amount, status, date) {
+        const area = document.getElementById('printableArea');
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Fee Voucher & Payment Receipt</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div><strong>Student Name:</strong> ${name}</div>
+                <div><strong>Roll No:</strong> ${roll}</div>
+                <div><strong>Class:</strong> ${className}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <tr>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Fee Description / Particulars</th>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: right;">Amount (PKR)</th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px;">Tuition Dues & College Funds (${date})</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; text-align: right;">PKR ${amount}</td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">Payment Status</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; text-align: right; color:${status==='Paid'?'#008037':'#d90429'};">${status}</td>
+                </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Cashier Signature</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
     async function addMarks() {
+        const id = document.getElementById('edit_marks_id').value;
         const student_id = document.getElementById('marks_student_id').value;
         const class_name = document.getElementById('marks_class_name').value;
         const subject = document.getElementById('marks_subject').value;
-        const obtained = document.getElementById('marks_obtained').value;
-        const total = document.getElementById('total_marks').value;
+        const marks_obtained = document.getElementById('marks_obtained').value;
+        const total_marks = document.getElementById('total_marks').value;
 
-        if(!student_id || !subject || !obtained || !total) { alert('Fill out required fields!'); return; }
+        if(!student_id || !subject) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating marks..." : "Saving marks...");
 
-        try {
-            let studentName = '-';
-            let rollNo = '-';
-            if(studentsGlobalCache[student_id]) {
-                studentName = studentsGlobalCache[student_id].name;
-                rollNo = studentsGlobalCache[student_id].roll_no;
-            }
+        const endpoint = id ? `${API_URL}/update-marks/${id}` : `${API_URL}/add-marks`;
+        const method = id ? 'PUT' : 'POST';
 
-            await db.collection('marks').add({
-                student_id, student_name: studentName, roll_no: rollNo, class_name, subject, obtained: Number(obtained), total: Number(total)
-            });
-            document.getElementById('marks_student_id').value = '';
-            document.getElementById('marks_subject').value = '';
-            document.getElementById('marks_obtained').value = '';
-            document.getElementById('total_marks').value = '';
-            fetchMarks();
-            showToast("Marks saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving marks.");
+        document.getElementById('edit_marks_id').value = '';
+        document.getElementById('marksFormTitle').innerText = "Exam Marks Entry";
+        document.getElementById('marksSubmitBtn').innerText = "Save Marks";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, subject, marks_obtained, total_marks}) })
+        .then(() => { loadData(); showToast("Marks saved!"); });
+    }
+
+    function editMarks(id, student_id, class_name, subject, obtained, total) {
+        document.getElementById('edit_marks_id').value = id;
+        document.getElementById('marks_student_id').value = student_id;
+        if(class_name && class_name !== '-') {
+            document.getElementById('marks_class_name').value = class_name;
         }
+        document.getElementById('marks_subject').value = subject;
+        document.getElementById('marks_obtained').value = obtained;
+        document.getElementById('total_marks').value = total;
+        document.getElementById('marksFormTitle').innerText = "Edit Exam Marks";
+        document.getElementById('marksSubmitBtn').innerText = "Update Marks";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchMarks() {
         try {
-            const snapshot = await db.collection('marks').get();
-            const tbody = document.getElementById('marksTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
-                return;
+            const selectedClass = document.getElementById('filter_marks_class').value;
+            const url = selectedClass ? `${API_URL}/marks?class=${encodeURIComponent(selectedClass)}` : `${API_URL}/marks`;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if(Array.isArray(data)) {
+                marksGlobalCache = data; 
             }
 
+            const tbody = document.getElementById('marksTableBody');
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #a0aec0;">No exam marks found.</td></tr>`;
+                return;
+            }
+            
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const m = doc.data();
-                const id = doc.id;
+            data.forEach(m => {
+                const marksClass = m.class_name || m.student_class || m.className || m.class || (studentsGlobalCache[m.student_id] ? studentsGlobalCache[m.student_id].class : '-');
+                
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${m.student_name || '-'}</td><td>${m.roll_no || '-'}</td><td>${m.class_name || '-'}</td>
-                    <td>${m.subject}</td><td>${m.obtained}</td><td>${m.total}</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('marks', '${id}')">Delete</button></td>
+                    <td>${m.id}</td><td>${m.name}</td><td>${m.roll_no}</td><td><span style="font-weight:600; color:var(--primary);">${marksClass}</span></td><td>${m.subject}</td><td>${m.marks_obtained}</td><td>${m.total_marks}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editMarks(${m.id}, ${m.student_id}, '${marksClass}', '${m.subject}', ${m.marks_obtained}, ${m.total_marks})">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('marks', ${m.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
     async function addTimetable() {
+        const id = document.getElementById('edit_tt_id').value;
         const class_name = document.getElementById('tt_class').value;
         const subject = document.getElementById('tt_subject').value;
-        const teacher = document.getElementById('tt_teacher').value;
+        const teacher_name = document.getElementById('tt_teacher').value;
         const time_slot = document.getElementById('tt_time').value;
 
         if(!class_name || !subject) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating timetable..." : "Saving timetable...");
 
-        try {
-            await db.collection('timetable').add({ class_name, subject, teacher, time_slot });
-            document.getElementById('tt_class').value = '';
-            document.getElementById('tt_subject').value = '';
-            document.getElementById('tt_teacher').value = '';
-            document.getElementById('tt_time').value = '';
-            fetchTimetable();
-            showToast("Timetable saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving timetable.");
-        }
+        const endpoint = id ? `${API_URL}/update-timetable/${id}` : `${API_URL}/add-timetable`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_tt_id').value = '';
+        document.getElementById('ttFormTitle').innerText = "Add Class Timetable";
+        document.getElementById('ttSubmitBtn').innerText = "Save Timetable";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({class_name, subject, teacher_name, time_slot}) })
+        .then(() => { loadData(); showToast("Timetable saved!"); });
+    }
+
+    function editTimetable(id, className, subject, teacher, time) {
+        document.getElementById('edit_tt_id').value = id;
+        document.getElementById('tt_class').value = className;
+        document.getElementById('tt_subject').value = subject;
+        document.getElementById('tt_teacher').value = teacher;
+        document.getElementById('tt_time').value = time;
+        document.getElementById('ttFormTitle').innerText = "Edit Timetable Entry";
+        document.getElementById('ttSubmitBtn').innerText = "Update Timetable";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function fetchTimetable() {
         try {
-            const snapshot = await db.collection('timetable').get();
+            const res = await fetch(`${API_URL}/timetable`);
+            const data = await res.json();
+            
+            if (Array.isArray(data)) {
+                timetableGlobalCache = data;
+            }
+
             const tbody = document.getElementById('timetableTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No timetable found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const t = doc.data();
-                const id = doc.id;
+            data.forEach(t => {
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher}</td><td>${t.time_slot}</td>
-                    <td>-</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('timetable', '${id}')">Delete</button></td>
+                    <td>${t.id}</td><td>${t.class_name}</td><td>${t.subject}</td><td>${t.teacher_name}</td><td>${t.time_slot}</td>
+                    <td><button class="btn-print" onclick="printTimetableSlip('${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">🖨️ Slip</button></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editTimetable(${t.id}, '${t.class_name}', '${t.subject}', '${t.teacher_name}', '${t.time_slot}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('timetable', ${t.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
+    function printTimetableSlip(className, subject, teacher, timeSlot) {
+        const area = document.getElementById('printableArea');
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Class Lecture Timetable Slip</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div><strong>Class Name:</strong> ${className}</div>
+                <div><strong>Time Slot:</strong> ${timeSlot}</div>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <tr>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Subject / Course</th>
+                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Assigned Teacher</th>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; color:#0077b6;">${subject}</td>
+                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">${teacher}</td>
+                </tr>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
+    function printMasterTimetable() {
+        const area = document.getElementById('printableArea');
+        let rowsHtml = '';
+
+        if(timetableGlobalCache.length === 0) {
+            rowsHtml = `<tr><td colspan="5" style="text-align:center; padding:15px;">No timetable records found.</td></tr>`;
+        } else {
+            timetableGlobalCache.forEach((t, index) => {
+                rowsHtml += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${index + 1}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px; font-weight:600;">${t.class_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.subject}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.teacher_name}</td>
+                        <td style="border:1px solid #cbd5e0; padding:10px;">${t.time_slot}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        area.innerHTML = `
+            <div style="text-align: center; border-bottom: 3px solid #0077b6; padding-bottom: 15px; margin-bottom: 25px;">
+                <h1 style="color: #0077b6; margin: 0; font-size: 24px; font-weight: 800;">CITY COLLEGE MINCHINABAD (CHSS)</h1>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Master Lecture Timetable</p>
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="border:1px solid #cbd5e0; padding:10px; text-align:center;">#</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Class Name</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Subject</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Teacher</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Time Slot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+            <div style="margin-top: 80px; display: flex; justify-content: space-linejoin; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Incharge Timetable</div>
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
+            </div>
+        `;
+        window.print();
+    }
+
     async function addExpense() {
+        const id = document.getElementById('edit_exp_id').value;
         const title = document.getElementById('exp_title').value;
         const category = document.getElementById('exp_category').value;
         const amount = document.getElementById('exp_amount').value;
         const date = document.getElementById('exp_date').value;
 
         if(!title || !amount) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating expense..." : "Saving expense...");
 
-        try {
-            await db.collection('expenses').add({ title, category, amount: Number(amount), date });
-            document.getElementById('exp_title').value = '';
-            document.getElementById('exp_amount').value = '';
-            fetchExpenses();
-            showToast("Expense saved successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error saving expense.");
-        }
+        const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_exp_id').value = '';
+        document.getElementById('expFormTitle').innerText = "College Expense / Salary Entry";
+        document.getElementById('expSubmitBtn').innerText = "Save Expense";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
+        .then(() => { loadData(); showToast("Expense saved!"); });
     }
 
     async function fetchExpenses() {
         try {
-            const snapshot = await db.collection('expenses').get();
+            const monthFilter = document.getElementById('filter_exp_month').value;
+            const res = await fetch(`${API_URL}/expenses`);
+            let data = await res.json();
+            
+            allExpensesCache = Array.isArray(data) ? data : [];
+            let filteredExpenses = [...allExpensesCache];
+
+            if(monthFilter) {
+                filteredExpenses = filteredExpenses.filter(e => {
+                    const eDate = e.date ? e.date.split('T')[0] : '';
+                    return eDate.split('-')[1] === monthFilter;
+                });
+            }
+
+            let calculatedTotalExpenses = 0;
+            filteredExpenses.forEach(e => {
+                calculatedTotalExpenses += Number(e.amount) || 0;
+            });
+
+            document.getElementById('stat_expenses').innerText = `PKR ${calculatedTotalExpenses}`;
+            updateNetBalance();
+
             const tbody = document.getElementById('expenseTableBody');
-            if (snapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No expense records found for selected month.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            let totalExpenses = 0;
-            snapshot.forEach(doc => {
-                const e = doc.data();
-                const id = doc.id;
-                totalExpenses += Number(e.amount || 0);
-
+            filteredExpenses.forEach(e => {
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${e.title}</td><td>${e.category}</td><td>PKR ${e.amount}</td><td>${e.date}</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('expenses', '${id}')">Delete</button></td>
+                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${e.date.split('T')[0]}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
-            document.getElementById('stat_expenses').innerText = `PKR ${totalExpenses}`;
-            if(currentActiveTab === 'financial-graph') renderProfitAndLossChart();
         } catch(e) { console.error(e); }
     }
 
+    function editExpense(id, title, category, amount, date) {
+        document.getElementById('edit_exp_id').value = id;
+        document.getElementById('exp_title').value = title;
+        document.getElementById('exp_category').value = category;
+        document.getElementById('exp_amount').value = amount;
+        document.getElementById('exp_date').value = date.split('T')[0];
+        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
+        document.getElementById('expSubmitBtn').innerText = "Update Expense";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateNetBalance() {
+        const feesText = document.getElementById('stat_fees').innerText.replace('PKR ', '').trim();
+        const expText = document.getElementById('stat_expenses').innerText.replace('PKR ', '').trim();
+        const totalFees = Number(feesText) || 0;
+        const totalExp = Number(expText) || 0;
+        const net = totalFees - totalExp;
+        document.getElementById('stat_balance').innerText = `PKR ${net}`;
+    }
+
     async function addAnnouncement() {
+        const id = document.getElementById('edit_ann_id').value;
         const title = document.getElementById('ann_title').value;
         const message = document.getElementById('ann_message').value;
         const date = document.getElementById('ann_date').value;
 
         if(!title || !message) { alert('Fill out required fields!'); return; }
+        showToast(id ? "Updating notice..." : "Publishing notice...");
 
-        try {
-            await db.collection('announcements').add({ title, message, date });
-            document.getElementById('ann_title').value = '';
-            document.getElementById('ann_message').value = '';
-            fetchAnnouncements();
-            showToast("Notice published successfully!");
-        } catch(e) {
-            console.error(e);
-            showToast("Error publishing notice.");
-        }
+        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
+        const method = id ? 'PUT' : 'POST';
+
+        document.getElementById('edit_ann_id').value = '';
+        document.getElementById('annFormTitle').innerText = "Publish College Notice";
+        document.getElementById('annSubmitBtn').innerText = "Publish Notice";
+
+        fetch(endpoint, { method: method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) })
+        .then(() => { loadData(); showToast("Notice published!"); });
     }
 
     async function fetchAnnouncements() {
         try {
-            const snapshot = await db.collection('announcements').get();
+            const res = await fetch(`${API_URL}/announcements`);
+            const data = await res.json();
             const tbody = document.getElementById('announcementTableBody');
-            if (snapshot.empty) {
+
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #a0aec0;">No notices found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            snapshot.forEach(doc => {
-                const a = doc.data();
-                const id = doc.id;
+            data.forEach(a => {
                 tbody.innerHTML += `<tr>
-                    <td>${id}</td><td>${a.title}</td><td>${a.message}</td><td>${a.date}</td>
-                    <td><button class="btn-action btn-delete" onclick="deleteRecord('announcements', '${id}')">Delete</button></td>
+                    <td>${a.id}</td><td><strong style="color:var(--primary);">${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
+                    </td>
                 </tr>`;
             });
         } catch(e) { console.error(e); }
     }
 
-    async function fetchReportCard() {
-        const student_id = document.getElementById('rc_student_id').value.trim();
-        if(!student_id) { alert('Baraye meharbani Student ID enter karein!'); return; }
+    function editAnnouncement(id, title, message, date) {
+        document.getElementById('edit_ann_id').value = id;
+        document.getElementById('ann_title').value = title;
+        document.getElementById('ann_message').value = message;
+        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('annFormTitle').innerText = "Edit Notice";
+        document.getElementById('annSubmitBtn').innerText = "Update Notice";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
+    async function fetchReportCard() {
+        const student_id = document.getElementById('rc_student_id').value;
+        if(!student_id) { alert('Enter Student ID!'); return; }
+
+        showToast("Generating report card...");
         try {
-            const studentDoc = await db.collection('students').doc(student_id).get();
-            if(!studentDoc.exists) {
-                alert('Is ID par koi student mojood nahi hai!');
+            const res = await fetch(`${API_URL}/student-report/${student_id}`);
+            const data = await res.json();
+
+            if(!data || !data.student) {
+                alert('Student nahi mila!');
                 return;
             }
-            const student = studentDoc.data();
 
-            document.getElementById('rc_name').innerText = student.name;
-            document.getElementById('rc_roll').innerText = student.roll_no;
-            document.getElementById('rc_class').innerText = student.class;
+            document.getElementById('rc_name').innerText = data.student.name;
+            document.getElementById('rc_roll').innerText = data.student.roll_no;
+            document.getElementById('rc_class').innerText = data.student.class;
 
-            const marksSnapshot = await db.collection('marks').where('student_id', '==', student_id).get();
             const tbody = document.getElementById('rcTableBody');
             tbody.innerHTML = '';
 
-            if(marksSnapshot.empty) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Is student ke marks abhi enter nahi kiye gaye.</td></tr>`;
+            if(!Array.isArray(data.marks) || data.marks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">No exam marks recorded for this student.</td></tr>`;
             } else {
-                marksSnapshot.forEach(doc => {
-                    const m = doc.data();
-                    const pct = Math.round((m.obtained / m.total) * 100);
+                data.marks.forEach(m => {
+                    const pct = ((m.marks_obtained / m.total_marks) * 100).toFixed(1);
                     tbody.innerHTML += `
                         <tr>
                             <td>${m.subject}</td>
-                            <td>${m.obtained}</td>
-                            <td>${m.total}</td>
+                            <td>${m.marks_obtained}</td>
+                            <td>${m.total_marks}</td>
                             <td><span style="font-weight:bold; color:var(--success);">${pct}%</span></td>
                         </tr>
                     `;
@@ -1626,84 +1863,34 @@
         }
     }
 
-    async function renderProfitAndLossChart() {
-        const ctx = document.getElementById('profitAndLossChart').getContext('2d');
-        
-        let totalFeesCollected = 0;
-        let totalExpensesVal = 0;
-
-        try {
-            const feesSnap = await db.collection('fees').get();
-            feesSnap.forEach(doc => {
-                const f = doc.data();
-                if(f.status === 'Paid') totalFeesCollected += Number(f.amount || 0);
-            });
-
-            const expSnap = await db.collection('expenses').get();
-            expSnap.forEach(doc => {
-                const e = doc.data();
-                totalExpensesVal += Number(e.amount || 0);
-            });
-        } catch(err) {
-            console.error(err);
-        }
-
-        const netProfitOrLoss = totalFeesCollected - totalExpensesVal;
-
-        if (profitAndLossChartInstance) {
-            profitAndLossChartInstance.destroy();
-        }
-
-        profitAndLossChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Total Revenue / Fees', 'Total Expenses', 'Net Balance (Profit / Loss)'],
-                datasets: [{
-                    label: 'Amount in PKR',
-                    data: [totalFeesCollected, totalExpensesVal, netProfitOrLoss],
-                    backgroundColor: [
-                        'rgba(0, 128, 55, 0.7)',
-                        'rgba(217, 4, 41, 0.7)',
-                        netProfitOrLoss >= 0 ? 'rgba(0, 119, 182, 0.7)' : 'rgba(217, 4, 41, 0.9)'
-                    ],
-                    borderColor: [
-                        'rgba(0, 128, 55, 1)',
-                        'rgba(217, 4, 41, 1)',
-                        netProfitOrLoss >= 0 ? 'rgba(0, 119, 182, 1)' : 'rgba(217, 4, 41, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    title: {
-                        display: true,
-                        text: 'Financial Status Bar Chart (PKR)'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-
-    async function deleteRecord(collectionName, id) {
+    async function deleteRecord(type, id) {
         if(!confirm("Kya aap waqai is record ko delete karna chahte hain?")) return;
         
+        let endpointMap = {
+            'student': 'delete-student',
+            'teacher': 'delete-teacher',
+            'attendance': 'delete-attendance',
+            'fee': 'delete-fee',
+            'marks': 'delete-marks',
+            'timetable': 'delete-timetable',
+            'expense': 'delete-expense',
+            'announcement': 'delete-announcement'
+        };
+
+        const endpoint = `${API_URL}/${endpointMap[type]}/${id}`;
         showToast("Deleting record...");
 
         try {
-            await db.collection(collectionName).doc(id).delete();
-            loadData();
-            showToast("Deleted successfully!");
+            const res = await fetch(endpoint, { method: 'DELETE' });
+            if(res.ok) {
+                loadData();
+                showToast("Deleted successfully!");
+            } else {
+                showToast("Failed to delete record.");
+            }
         } catch(e) {
             console.error(e);
-            showToast("Failed to delete record.");
+            showToast("Server connection error.");
         }
     }
 
@@ -1711,7 +1898,7 @@
         let downloadLink;
         let dataType = 'application/vnd.ms-excel';
         let tableSelect = document.getElementById(tableID);
-        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, "");
+        let tableHTML = tableSelect.outerHTML.replace(/<a\b[^>]*>(.*?)<\/a>/gi, ""); // Remove links like WhatsApp/Voucher if any
 
         filename = filename ? filename.toLowerCase() : 'excel_data.xls';
         downloadLink = document.createElement("a");
@@ -1727,6 +1914,5 @@
         }
     }
 </script>
-    
 </body>
 </html>
