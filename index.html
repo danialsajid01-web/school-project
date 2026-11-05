@@ -297,7 +297,7 @@
             <div class="card" id="performanceGraphCard">
                 <h3>
                     <span>📈 Advanced Financial & Profit/Loss Graph</span>
-                    <span style="font-size: 11px; font-weight: normal; color: #64748b;">Fee vs Expense & Net Balance Analysis</span>
+                    <span style="font-size: 11px; font-weight: normal; color: #64748b;">Active Month-Wise Fee vs Expense & Net Balance Analysis</span>
                 </h3>
                 <div class="chart-container" id="performanceChartContainer">
                     <!-- Dynamic Advanced Bars rendered via JS -->
@@ -929,32 +929,63 @@
         } catch(e) { console.error(e); }
     }
 
-    function renderPerformanceChart(totalFeeNum, totalExpNum) {
+    // ADVANCED DYNAMIC GRAPH: Sirf un mahino ko show karega jin mein data entry hui hai
+    function renderPerformanceChart() {
         const container = document.getElementById('performanceChartContainer');
-        const monthsData = [
-            { label: 'Jul', fee: totalFeeNum * 0.7, exp: totalExpNum * 0.8 },
-            { label: 'Aug', fee: totalFeeNum * 0.85, exp: totalExpNum * 0.9 },
-            { label: 'Sep', fee: totalFeeNum * 0.95, exp: totalExpNum * 0.95 },
-            { label: 'Oct', fee: totalFeeNum, exp: totalExpNum },
-        ];
+        const monthNames = {
+            '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
+            '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
+            '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+        };
 
-        let maxVal = Math.max(...monthsData.map(d => Math.max(d.fee, d.exp)), 10000);
+        let monthlyMap = {};
+
+        // Aggregate Fees by Month
+        allFeesCache.forEach(f => {
+            let fDate = f.date ? f.date.split('T')[0] : '';
+            let mCode = fDate ? fDate.split('-')[1] : null;
+            if(mCode) {
+                if(!monthlyMap[mCode]) monthlyMap[mCode] = { fee: 0, exp: 0 };
+                monthlyMap[mCode].fee += Number(f.amount) || 0;
+            }
+        });
+
+        // Aggregate Expenses by Month
+        allExpensesCache.forEach(e => {
+            let eDate = e.date ? e.date.split('T')[0] : '';
+            let mCode = eDate ? eDate.split('-')[1] : null;
+            if(mCode) {
+                if(!monthlyMap[mCode]) monthlyMap[mCode] = { fee: 0, exp: 0 };
+                monthlyMap[mCode].exp += Number(e.amount) || 0;
+            }
+        });
+
+        let sortedMonths = Object.keys(monthlyMap).sort();
+
+        if (sortedMonths.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: #64748b; width: 100%; padding: 30px; font-weight: 600;">Abhi kisi mahine mein Fee ya Expense record enter nahi hua. Data enter karne par graph yahan show hoga.</p>`;
+            return;
+        }
+
+        let maxVal = Math.max(...sortedMonths.map(m => Math.max(monthlyMap[m].fee, monthlyMap[m].exp)), 10000);
 
         let html = '';
-        monthsData.forEach(m => {
-            let feeHeight = Math.round((m.fee / maxVal) * 130);
-            let expHeight = Math.round((m.exp / maxVal) * 130);
-            let netVal = m.fee - m.exp;
+        sortedMonths.forEach(mCode => {
+            let data = monthlyMap[mCode];
+            let feeHeight = Math.round((data.fee / maxVal) * 130);
+            let expHeight = Math.round((data.exp / maxVal) * 130);
+            let netVal = data.fee - data.exp;
             let netClass = netVal >= 0 ? 'net-profit' : 'net-loss';
             let netText = netVal >= 0 ? `+${Math.round(netVal)}` : `${Math.round(netVal)}`;
+            let labelName = monthNames[mCode] || mCode;
 
             html += `
-                <div class="chart-group" title="Fee: PKR ${Math.round(m.fee)} | Exp: PKR ${Math.round(m.exp)} | Net: PKR ${Math.round(netVal)}">
+                <div class="chart-group" title="Month: ${labelName} | Fee: PKR ${Math.round(data.fee)} | Exp: PKR ${Math.round(data.exp)} | Net: PKR ${Math.round(netVal)}">
                     <div class="bars-flex">
-                        <div class="chart-bar" style="height: ${feeHeight}px; background: linear-gradient(to top, #008037, #2ecc71);" title="Fee"><span>${Math.round(m.fee/1000)}k</span></div>
-                        <div class="chart-bar" style="height: ${expHeight}px; background: linear-gradient(to top, #d90429, #ff4d4d);" title="Expense"><span>${Math.round(m.exp/1000)}k</span></div>
+                        <div class="chart-bar" style="height: ${feeHeight}px; background: linear-gradient(to top, #008037, #2ecc71);" title="Fee"><span>${Math.round(data.fee/1000)}k</span></div>
+                        <div class="chart-bar" style="height: ${expHeight}px; background: linear-gradient(to top, #d90429, #ff4d4d);" title="Expense"><span>${Math.round(data.exp/1000)}k</span></div>
                     </div>
-                    <div class="chart-label">${m.label}</div>
+                    <div class="chart-label">${labelName}</div>
                     <div class="net-badge ${netClass}">${netText}</div>
                 </div>
             `;
@@ -1783,7 +1814,7 @@
         const net = totalFees - totalExp;
         document.getElementById('stat_balance').innerText = `PKR ${net}`;
         
-        renderPerformanceChart(totalFees, totalExp);
+        renderPerformanceChart();
     }
 
     async function addAnnouncement() {
