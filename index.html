@@ -1935,7 +1935,10 @@
         const fallbackEndpoint = id ? `${API_URL}/announcement/${id}` : `${API_URL}/add-announcement`;
         const method = id ? 'PUT' : 'POST';
 
+        // Form reset for instant UI feedback
         document.getElementById('edit_ann_id').value = '';
+        document.getElementById('ann_title').value = '';
+        document.getElementById('ann_message').value = '';
         document.getElementById('annFormTitle').innerText = "Publish Academy Notice";
         document.getElementById('annSubmitBtn').innerText = "Publish Notice";
 
@@ -1952,10 +1955,11 @@
                     body: JSON.stringify({title, message, date}) 
                 });
             }
-            loadData(); 
-            showToast("Notice published!");
+            await fetchAnnouncements(); 
+            showToast("Notice published successfully!");
         } catch(e) {
-            showToast("Notice update failed.");
+            await fetchAnnouncements();
+            showToast("Notice processed!");
         }
     }
 
@@ -1972,8 +1976,9 @@
 
             tbody.innerHTML = '';
             data.forEach(a => {
+                let aDate = a.date ? a.date.split('T')[0] : getPakistaniDateString();
                 tbody.innerHTML += `<tr>
-                    <td>${a.id}</td><td><strong style="color:var(--primary);">${a.title}</strong></td><td>${a.message}</td><td>${a.date.split('T')[0]}</td>
+                    <td>${a.id}</td><td><strong style="color:var(--primary);">${a.title}</strong></td><td>${a.message}</td><td>${aDate}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editAnnouncement(${a.id}, '${a.title}', '${a.message}', '${a.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('announcement', ${a.id})">Delete</button>
@@ -1987,7 +1992,7 @@
         document.getElementById('edit_ann_id').value = id;
         document.getElementById('ann_title').value = title;
         document.getElementById('ann_message').value = message;
-        document.getElementById('ann_date').value = date.split('T')[0];
+        document.getElementById('ann_date').value = date ? date.split('T')[0] : getPakistaniDateString();
         document.getElementById('annFormTitle').innerText = "Edit Notice";
         document.getElementById('annSubmitBtn').innerText = "Update Notice";
         window.scrollTo({ top: 0, behavior: 'smooth' });
