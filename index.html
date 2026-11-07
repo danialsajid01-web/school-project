@@ -1828,13 +1828,32 @@
         if(!title || !amount) { alert('Fill out required fields!'); return; }
         showToast(id ? "Updating expense/vendor record..." : "Saving expense/vendor record...");
 
-        const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
+        const primaryEndpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
+        const fallbackEndpoint = id ? `${API_URL}/expense/${id}` : `${API_URL}/add-expense`;
+        const method = id ? 'PUT' : 'POST';
+
         document.getElementById('edit_exp_id').value = '';
         document.getElementById('expFormTitle').innerText = "💰 Academy Expense, Salary & Vendor Payable Entry";
         document.getElementById('expSubmitBtn').innerText = "Save Expense / Vendor Record";
 
-        fetch(endpoint, { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, status, date}) })
-        .then(() => { loadData(); showToast("Expense/Vendor record saved!"); });
+        try {
+            let res = await fetch(primaryEndpoint, { 
+                method: method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({title, category, amount, status, date}) 
+            });
+            if (!res.ok && id) {
+                await fetch(fallbackEndpoint, { 
+                    method: method, 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({title, category, amount, status, date}) 
+                });
+            }
+            loadData(); 
+            showToast("Expense/Vendor record saved!");
+        } catch(e) {
+            showToast("Expense record update failed.");
+        }
     }
 
     async function fetchExpenses() {
@@ -1912,13 +1931,32 @@
         if(!title || !message) { alert('Fill out required fields!'); return; }
         showToast(id ? "Updating notice..." : "Publishing notice...");
 
-        const endpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
+        const primaryEndpoint = id ? `${API_URL}/update-announcement/${id}` : `${API_URL}/add-announcement`;
+        const fallbackEndpoint = id ? `${API_URL}/announcement/${id}` : `${API_URL}/add-announcement`;
+        const method = id ? 'PUT' : 'POST';
+
         document.getElementById('edit_ann_id').value = '';
         document.getElementById('annFormTitle').innerText = "Publish Academy Notice";
         document.getElementById('annSubmitBtn').innerText = "Publish Notice";
 
-        fetch(endpoint, { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, message, date}) })
-        .then(() => { loadData(); showToast("Notice published!"); });
+        try {
+            let res = await fetch(primaryEndpoint, { 
+                method: method, 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({title, message, date}) 
+            });
+            if (!res.ok && id) {
+                await fetch(fallbackEndpoint, { 
+                    method: method, 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({title, message, date}) 
+                });
+            }
+            loadData(); 
+            showToast("Notice published!");
+        } catch(e) {
+            showToast("Notice update failed.");
+        }
     }
 
     async function fetchAnnouncements() {
