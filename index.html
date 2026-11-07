@@ -495,13 +495,13 @@
                 </div>
             </div>
 
-            <!-- FEES TAB -->
+            <!-- FEES TAB (Enhanced with Ledger, Concession & Fine Automation) -->
             <div id="fees" class="tab-section">
-                <div class="card">
-                    <h3 id="feeFormTitle">Fee Ledger Entry</h3>
+                <div class="card" style="border: 2px solid var(--accent);">
+                    <h3 id="feeFormTitle">💳 Advanced Fee Ledger Entry (Concession & Fine Auto-Calc)</h3>
                     <input type="hidden" id="edit_fee_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID"></div>
+                        <div class="form-group"><label>Student ID</label><input type="number" id="fee_student_id" placeholder="Student ID" onblur="autoFetchStudentForFee(this.value)"></div>
                         <div class="form-group">
                             <label>Class / Faculty</label>
                             <select id="fee_class_name">
@@ -516,15 +516,18 @@
                                 <option value="2nd Year Pre-Engineering">2nd Year Pre-Engineering</option><option value="2nd Year ICS">2nd Year ICS</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>Amount (PKR)</label><input type="number" id="fee_amount" placeholder="4500"></div>
-                        <div class="form-group"><label>Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
+                        <div class="form-group"><label>Base Tuition Fee (PKR)</label><input type="number" id="fee_amount" placeholder="5000" oninput="calculateNetFee()"></div>
+                        <div class="form-group"><label>Concession / Scholarship (PKR)</label><input type="number" id="fee_concession" placeholder="500" value="0" oninput="calculateNetFee()"></div>
+                        <div class="form-group"><label>Late Fee Fine (PKR)</label><input type="number" id="fee_fine" placeholder="200" value="0" oninput="calculateNetFee()"></div>
+                        <div class="form-group"><label>Net Payable Amount (PKR)</label><input type="number" id="fee_net_amount" placeholder="4700" readonly style="background:#f1f5f9; font-weight:bold; color:var(--primary);"></div>
+                        <div class="form-group"><label>Payment Status</label><select id="fee_status"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
                         <div class="form-group"><label>Date</label><input type="date" id="fee_date"></div>
                     </div>
-                    <button class="submit-btn" id="feeSubmitBtn" onclick="addFee()">Save Fee Record</button>
+                    <button class="submit-btn" id="feeSubmitBtn" onclick="addFee()">Save Fee Record & Ledger</button>
                 </div>
                 <div class="card">
                     <h3>
-                        <span>Fee Collection Records</span>
+                        <span>Fee Collection Records & Individual Ledger</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_fee" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('feeTable', this)">
                             <select id="filter_fee_month" onchange="fetchFees()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
@@ -552,7 +555,7 @@
                         </div>
                     </h3>
                     <table id="feeTable">
-                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Amount</th><th>Status</th><th>Date</th><th>Voucher</th><th>WhatsApp</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Student Name</th><th>Roll No</th><th>Class</th><th>Base Fee</th><th>Concession</th><th>Fine</th><th>Net Amount</th><th>Status</th><th>Date</th><th>Ledger</th><th>WhatsApp</th><th>Actions</th></tr></thead>
                         <tbody id="feeTableBody"></tbody>
                     </table>
                 </div>
@@ -643,22 +646,38 @@
                 </div>
             </div>
 
-            <!-- EXPENSES TAB -->
+            <!-- EXPENSES TAB (Enhanced with Vendor Accounts & Payables) -->
             <div id="expenses" class="tab-section">
-                <div class="card">
-                    <h3 id="expFormTitle">Academy Expense / Salary Entry</h3>
+                <div class="card" style="border: 2px solid var(--accent);">
+                    <h3 id="expFormTitle">💰 Academy Expense, Salary & Vendor Payable Entry</h3>
                     <input type="hidden" id="edit_exp_id">
                     <div class="form-grid">
-                        <div class="form-group"><label>Title</label><input type="text" id="exp_title" placeholder="Utility Bills"></div>
-                        <div class="form-group"><label>Category</label><select id="exp_category"><option value="Salary">Salary</option><option value="Utility Bill">Utility Bill</option><option value="Maintenance">Maintenance</option><option value="Supplies">Supplies</option></select></div>
+                        <div class="form-group"><label>Expense / Vendor Title</label><input type="text" id="exp_title" placeholder="Utility Bills or Book Supplier (Ali Stationers)"></div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="exp_category">
+                                <option value="Salary">Salary</option>
+                                <option value="Utility Bill">Utility Bill</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Supplies">Supplies</option>
+                                <option value="Vendor Payable">Vendor Payable</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Amount (PKR)</label><input type="number" id="exp_amount" placeholder="30000"></div>
+                        <div class="form-group">
+                            <label>Payment Status</label>
+                            <select id="exp_status">
+                                <option value="Paid">Paid</option>
+                                <option value="Pending Payable">Pending Payable (Due to Vendor)</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Date</label><input type="date" id="exp_date"></div>
                     </div>
-                    <button class="submit-btn" id="expSubmitBtn" onclick="addExpense()">Save Expense</button>
+                    <button class="submit-btn" id="expSubmitBtn" onclick="addExpense()">Save Expense / Vendor Record</button>
                 </div>
                 <div class="card">
                     <h3>
-                        <span>Financial Expense Ledger</span>
+                        <span>Financial Expense & Vendor Payable Ledger</span>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <input type="text" id="search_expense" class="search-box" placeholder="🔍 Search..." onkeyup="filterTable('expenseTable', this)">
                             <select id="filter_exp_month" onchange="fetchExpenses()" style="padding: 6px; font-size: 12px; border-radius: 6px; border: 1px solid #cbd5e0;">
@@ -673,7 +692,7 @@
                         </div>
                     </h3>
                     <table id="expenseTable">
-                        <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="expenseTableBody"></tbody>
                     </table>
                 </div>
@@ -946,7 +965,7 @@
             let mCode = fDate ? fDate.split('-')[1] : null;
             if(mCode) {
                 if(!monthlyMap[mCode]) monthlyMap[mCode] = { fee: 0, exp: 0 };
-                monthlyMap[mCode].fee += Number(f.amount) || 0;
+                monthlyMap[mCode].fee += Number(f.net_amount || f.amount) || 0;
             }
         });
 
@@ -1364,31 +1383,58 @@
         } catch(e) { console.error(e); }
     }
 
+    function autoFetchStudentForFee(studentId) {
+        if(!studentId) return;
+        if(studentsGlobalCache[studentId]) {
+            const st = studentsGlobalCache[studentId];
+            if(st.class) document.getElementById('fee_class_name').value = st.class;
+            showToast(`Auto-selected class for ${st.name}`);
+        }
+    }
+
+    function calculateNetFee() {
+        const base = Number(document.getElementById('fee_amount').value) || 0;
+        const concession = Number(document.getElementById('fee_concession').value) || 0;
+        const fine = Number(document.getElementById('fee_fine').value) || 0;
+        const net = Math.max(0, base - concession + fine);
+        document.getElementById('fee_net_amount').value = net;
+    }
+
     async function addFee() {
         const id = document.getElementById('edit_fee_id').value;
         const student_id = document.getElementById('fee_student_id').value;
         const class_name = document.getElementById('fee_class_name').value;
         const amount = document.getElementById('fee_amount').value;
+        const concession = document.getElementById('fee_concession').value || 0;
+        const fine = document.getElementById('fee_fine').value || 0;
+        const net_amount = document.getElementById('fee_net_amount').value || amount;
         const status = document.getElementById('fee_status').value;
         const date = document.getElementById('fee_date').value;
 
         if(!student_id || !amount) { alert('Enter Student ID and Amount!'); return; }
-        showToast(id ? "Updating fee..." : "Saving fee record...");
+        showToast(id ? "Updating fee..." : "Saving fee record & ledger...");
 
         const endpoint = id ? `${API_URL}/update-fee/${id}` : `${API_URL}/add-fee`;
         document.getElementById('edit_fee_id').value = '';
-        document.getElementById('feeFormTitle').innerText = "Fee Ledger Entry";
-        document.getElementById('feeSubmitBtn').innerText = "Save Fee Record";
+        document.getElementById('feeFormTitle').innerText = "💳 Advanced Fee Ledger Entry (Concession & Fine Auto-Calc)";
+        document.getElementById('feeSubmitBtn').innerText = "Save Fee Record & Ledger";
 
-        fetch(endpoint, { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({student_id, class_name, amount, status, date}) })
-        .then(() => { loadData(); showToast("Fee saved!"); });
+        fetch(endpoint, { 
+            method: id ? 'PUT' : 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({student_id, class_name, amount, concession, fine, net_amount, status, date}) 
+        })
+        .then(() => { loadData(); showToast("Fee & Ledger saved successfully!"); });
     }
 
-    function editFee(id, student_id, class_name, amount, status, date) {
+    function editFee(id, student_id, class_name, amount, concession, fine, net_amount, status, date) {
         document.getElementById('edit_fee_id').value = id;
         document.getElementById('fee_student_id').value = student_id;
         if(class_name && class_name !== '-') document.getElementById('fee_class_name').value = class_name;
         document.getElementById('fee_amount').value = amount;
+        document.getElementById('fee_concession').value = concession || 0;
+        document.getElementById('fee_fine').value = fine || 0;
+        document.getElementById('fee_net_amount').value = net_amount || amount;
         document.getElementById('fee_status').value = status;
         document.getElementById('fee_date').value = date.split('T')[0];
         document.getElementById('feeFormTitle').innerText = "Edit Fee Record";
@@ -1419,14 +1465,14 @@
             }
 
             let calculatedTotalFees = 0;
-            filteredFees.forEach(f => { calculatedTotalFees += Number(f.amount) || 0; });
+            filteredFees.forEach(f => { calculatedTotalFees += Number(f.net_amount || f.amount) || 0; });
 
             document.getElementById('stat_fees').innerText = `PKR ${calculatedTotalFees}`;
             updateNetBalance();
 
             const tbody = document.getElementById('feeTableBody');
             if (filteredFees.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: #a0aec0;">No fee records found.</td></tr>`;
                 return;
             }
             
@@ -1437,54 +1483,90 @@
                 const studentName = f.name || f.student_name || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].name : 'Unknown');
                 const studentRoll = f.roll_no || (studentsGlobalCache[f.student_id] ? studentsGlobalCache[f.student_id].roll_no : '-');
                 const fDate = f.date ? f.date.split('T')[0] : getPakistaniDateString();
+                const baseAmt = Number(f.amount) || 0;
+                const concAmt = Number(f.concession) || 0;
+                const fineAmt = Number(f.fine) || 0;
+                const netAmt = Number(f.net_amount) || (baseAmt - concAmt + fineAmt);
 
-                const msg = encodeURIComponent(`Fee update for ${studentName} (Roll: ${studentRoll}). Amount: PKR ${f.amount}, Status: ${f.status}. - Skans Academy`);
+                const msg = encodeURIComponent(`Fee update for ${studentName} (Roll: ${studentRoll}). Net Amount: PKR ${netAmt}, Status: ${f.status}. - Skans Academy`);
                 
                 tbody.innerHTML += `<tr>
-                    <td>${f.id}</td><td>${studentName}</td><td>${studentRoll}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td><td>PKR ${f.amount}</td>
+                    <td>${f.id}</td><td>${studentName}</td><td>${studentRoll}</td><td><span style="font-weight:600; color:var(--primary);">${feeClass}</span></td>
+                    <td>PKR ${baseAmt}</td><td style="color:#d90429;">-PKR ${concAmt}</td><td style="color:#f59e0b;">+PKR ${fineAmt}</td>
+                    <td><strong style="color:var(--success);">PKR ${netAmt}</strong></td>
                     <td><span class="${statusClass}">${f.status}</span></td><td>${fDate}</td>
-                    <td><button class="btn-print" onclick="printFeeVoucher('${studentName}', '${studentRoll}', '${feeClass}', ${f.amount}, '${f.status}', '${fDate}')">📄 Voucher</button></td>
+                    <td><button class="btn-print" onclick="printStudentLedger(${f.student_id}, '${studentName}', '${studentRoll}', '${feeClass}')">📊 Ledger</button></td>
                     <td><a href="https://wa.me/?text=${msg}" target="_blank" style="background: #25d366; color: white; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 11px;">💬 Send</a></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id || 0}, '${feeClass}', ${f.amount}, '${f.status}', '${f.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editFee(${f.id}, ${f.student_id || 0}, '${feeClass}', ${baseAmt}, ${concAmt}, ${fineAmt}, ${netAmt}, '${f.status}', '${f.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('fee', ${f.id})">Delete</button>
                     </td>
                 </tr>`;
             });
         } catch(e) {
             console.error("Fee fetch error:", e);
-            document.getElementById('feeTableBody').innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--danger);">Server se data load karne mein error aaya hai.</td></tr>`;
+            document.getElementById('feeTableBody').innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--danger);">Server se data load karne mein error aaya hai.</td></tr>`;
         }
     }
 
-    function printFeeVoucher(name, roll, className, amount, status, date) {
+    function printStudentLedger(studentId, name, roll, className) {
+        const studentFees = allFeesCache.filter(f => Number(f.student_id) === Number(studentId));
+        let totalBilled = 0;
+        let totalPaid = 0;
+        let rowsHtml = '';
+
+        if(studentFees.length === 0) {
+            rowsHtml = `<tr><td colspan="6" style="text-align:center; padding:15px;">No fee transactions found for this student.</td></tr>`;
+        } else {
+            studentFees.forEach((f, idx) => {
+                let net = Number(f.net_amount || f.amount) || 0;
+                totalBilled += net;
+                if(f.status === 'Paid') totalPaid += net;
+                let fDate = f.date ? f.date.split('T')[0] : '-';
+                rowsHtml += `<tr>
+                    <td style="border:1px solid #cbd5e0; padding:10px; text-align:center;">${idx + 1}</td>
+                    <td style="border:1px solid #cbd5e0; padding:10px;">${fDate}</td>
+                    <td style="border:1px solid #cbd5e0; padding:10px;">PKR ${f.amount || 0} (Conc: ${f.concession || 0}, Fine: ${f.fine || 0})</td>
+                    <td style="border:1px solid #cbd5e0; padding:10px; font-weight:bold;">PKR ${net}</td>
+                    <td style="border:1px solid #cbd5e0; padding:10px; color:${f.status==='Paid'?'#008037':'#d90429'}; font-weight:bold;">${f.status}</td>
+                    <td style="border:1px solid #cbd5e0; padding:10px;">Tuition Dues</td>
+                </tr>`;
+            });
+        }
+
+        let balanceDue = totalBilled - totalPaid;
+
         const area = document.getElementById('printableArea');
         area.innerHTML = `
             <div style="text-align: center; border-bottom: 3px solid #560bad; padding-bottom: 15px; margin-bottom: 25px;">
                 <h1 style="color: #560bad; margin: 0; font-size: 24px; font-weight: 800;">SKANS EDUCATION ACADEMY</h1>
-                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Official Fee Voucher & Payment Receipt</p>
+                <p style="margin: 6px 0 0; font-weight: 600; font-size: 14px; color: #555;">Student Account Statement / Fee Ledger Summary</p>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <div><strong>Student Name:</strong> ${name}</div>
                 <div><strong>Roll No:</strong> ${roll}</div>
                 <div><strong>Class:</strong> ${className}</div>
             </div>
-            <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
-                <tr>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: left;">Fee Description / Particulars</th>
-                    <th style="border:1px solid #cbd5e0; padding:12px; background:#f1f5f9; text-align: right;">Amount (PKR)</th>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #cbd5e0; padding:12px;">Tuition Dues & Academy Funds (${date})</td>
-                    <td style="border:1px solid #cbd5e0; padding:12px; text-align: right;">PKR ${amount}</td>
-                </tr>
-                <tr>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold;">Payment Status</td>
-                    <td style="border:1px solid #cbd5e0; padding:12px; font-weight:bold; text-align: right; color:${status==='Paid'?'#008037':'#d90429'};">${status}</td>
-                </tr>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 25px;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="border:1px solid #cbd5e0; padding:10px;">#</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Date</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Particulars</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Net Amount</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Status</th>
+                        <th style="border:1px solid #cbd5e0; padding:10px;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
             </table>
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Cashier Signature</div>
+            <div style="background:#f1f5f9; padding:15px; border-radius:8px; border:1px solid #cbd5e0; margin-bottom:40px; font-size:14px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Billed:</span><strong>PKR ${totalBilled}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#008037;"><span>Total Paid:</span><strong>PKR ${totalPaid}</strong></div>
+                <div style="display:flex; justify-content:space-between; color:#d90429; font-size:16px; border-top:1px solid #cbd5e0; pt:5px;"><span>Balance Pending (Debit):</span><strong>PKR ${balanceDue}</strong></div>
+            </div>
+            <div style="margin-top: 60px; display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
+                <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Accountant Signature</div>
                 <div style="border-top: 2px solid #333; width: 220px; text-align: center; padding-top: 8px;">Principal Stamp</div>
             </div>
         `;
@@ -1676,7 +1758,6 @@
         window.print();
     }
 
-    // Advanced Print Function with Automatic Total calculation for table columns
     function printSectionTable(tableID, titleText) {
         const area = document.getElementById('printableArea');
         const originalTable = document.getElementById(tableID);
@@ -1685,7 +1766,6 @@
         const clonedTable = originalTable.cloneNode(true);
         const rows = clonedTable.rows;
         
-        // Remove Action buttons column
         for (let i = 0; i < rows.length; i++) {
             let cellCount = rows[i].cells.length;
             if (cellCount > 0) {
@@ -1693,7 +1773,6 @@
             }
         }
 
-        // Calculate and append Total row dynamically based on numerical columns (e.g. Amount, Marks, etc.)
         let colCount = clonedTable.rows[0].cells.length;
         let totalRow = clonedTable.tFoot ? clonedTable.tFoot.insertRow() : clonedTable.insertRow();
         totalRow.style.fontWeight = 'bold';
@@ -1743,18 +1822,19 @@
         const title = document.getElementById('exp_title').value;
         const category = document.getElementById('exp_category').value;
         const amount = document.getElementById('exp_amount').value;
+        const status = document.getElementById('exp_status').value;
         const date = document.getElementById('exp_date').value;
 
         if(!title || !amount) { alert('Fill out required fields!'); return; }
-        showToast(id ? "Updating expense..." : "Saving expense...");
+        showToast(id ? "Updating expense/vendor record..." : "Saving expense/vendor record...");
 
         const endpoint = id ? `${API_URL}/update-expense/${id}` : `${API_URL}/add-expense`;
         document.getElementById('edit_exp_id').value = '';
-        document.getElementById('expFormTitle').innerText = "Academy Expense / Salary Entry";
-        document.getElementById('expSubmitBtn').innerText = "Save Expense";
+        document.getElementById('expFormTitle').innerText = "💰 Academy Expense, Salary & Vendor Payable Entry";
+        document.getElementById('expSubmitBtn').innerText = "Save Expense / Vendor Record";
 
-        fetch(endpoint, { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, date}) })
-        .then(() => { loadData(); showToast("Expense saved!"); });
+        fetch(endpoint, { method: id ? 'PUT' : 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({title, category, amount, status, date}) })
+        .then(() => { loadData(); showToast("Expense/Vendor record saved!"); });
     }
 
     async function fetchExpenses() {
@@ -1771,23 +1851,28 @@
             }
 
             let calculatedTotalExpenses = 0;
-            filteredExpenses.forEach(e => calculatedTotalExpenses += Number(e.amount) || 0);
+            filteredExpenses.forEach(e => {
+                if(e.status !== 'Pending Payable') {
+                    calculatedTotalExpenses += Number(e.amount) || 0;
+                }
+            });
 
             document.getElementById('stat_expenses').innerText = `PKR ${calculatedTotalExpenses}`;
             updateNetBalance();
 
             const tbody = document.getElementById('expenseTableBody');
             if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #a0aec0;">No records found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
             filteredExpenses.forEach(e => {
+                const statusBadge = e.status === 'Pending Payable' ? `<span style="background:#fde8e8; color:var(--danger); padding:3px 6px; border-radius:4px; font-weight:bold;">Pending Payable</span>` : `<span style="background:#e6f4ea; color:#008037; padding:3px 6px; border-radius:4px; font-weight:bold;">Paid</span>`;
                 tbody.innerHTML += `<tr>
-                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${e.date.split('T')[0]}</td>
+                    <td>${e.id}</td><td>${e.title}</td><td>${e.category}</td><td><span style="color:var(--danger); font-weight:bold;">PKR ${e.amount}</span></td><td>${statusBadge}</td><td>${e.date.split('T')[0]}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.date}')">Edit</button>
+                        <button class="btn-action btn-edit" onclick="editExpense(${e.id}, '${e.title}', '${e.category}', ${e.amount}, '${e.status || 'Paid'}', '${e.date}')">Edit</button>
                         <button class="btn-action btn-delete" onclick="deleteRecord('expense', ${e.id})">Delete</button>
                     </td>
                 </tr>`;
@@ -1795,14 +1880,15 @@
         } catch(e) { console.error(e); }
     }
 
-    function editExpense(id, title, category, amount, date) {
+    function editExpense(id, title, category, amount, status, date) {
         document.getElementById('edit_exp_id').value = id;
         document.getElementById('exp_title').value = title;
         document.getElementById('exp_category').value = category;
         document.getElementById('exp_amount').value = amount;
+        document.getElementById('exp_status').value = status || 'Paid';
         document.getElementById('exp_date').value = date.split('T')[0];
-        document.getElementById('expFormTitle').innerText = "Edit Expense Record";
-        document.getElementById('expSubmitBtn').innerText = "Update Expense";
+        document.getElementById('expFormTitle').innerText = "Edit Expense / Vendor Record";
+        document.getElementById('expSubmitBtn').innerText = "Update Expense / Vendor";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
